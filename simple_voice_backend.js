@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const ChefSocialRealtimeHandler = require('./realtime-handler');
 const NaturalConversationHandler = require('./natural-conversation-fallback');
+const EnhancedVoiceAgent = require('./enhanced-voice-agent');
 const ChefSocialAuth = require('./auth-system');
 const SMSService = require('./sms-service');
 const I18nManager = require('./i18n');
@@ -52,6 +53,9 @@ const realtimeHandler = new ChefSocialRealtimeHandler();
 // Initialize Natural Conversation Handler
 const naturalHandler = new NaturalConversationHandler();
 
+// Initialize Enhanced Voice Agent
+const enhancedVoiceAgent = new EnhancedVoiceAgent();
+
 // Security Middleware
 app.use(helmet({
     contentSecurityPolicy: {
@@ -59,8 +63,8 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
-            scriptSrc: ["'self'", "js.stripe.com"],
-            connectSrc: ["'self'", "api.openai.com", "api.stripe.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "js.stripe.com"],
+            connectSrc: ["'self'", "api.openai.com", "api.stripe.com", "ws:", "wss:"],
             imgSrc: ["'self'", "data:", "https:"],
             mediaSrc: ["'self'", "data:"]
         }
@@ -1806,6 +1810,169 @@ async function generateContent(transcript, imageAnalysis, language = 'en') {
     }
 }
 
+// Enhanced Voice Agent Endpoints
+app.post('/api/enhanced-conversation/start', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const { language, region, timezone } = req.body;
+        
+        console.log('🚀 Starting enhanced voice conversation session...');
+        
+        const sessionId = `enhanced_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+        
+        const userContext = {
+            userId: req.userId,
+            language: language || req.language || 'en',
+            region: region || 'en-US',
+            timezone: timezone || 'UTC'
+        };
+        
+        const session = enhancedVoiceAgent.createSession(sessionId, userContext);
+        const greeting = enhancedVoiceAgent.getInitialGreeting(userContext.language);
+        
+        res.json({
+            success: true,
+            sessionId: sessionId,
+            greeting: greeting,
+            language: userContext.language,
+            region: userContext.region,
+            message: "Enhanced conversation session started! I'm your intelligent restaurant marketing expert."
+        });
+        
+    } catch (error) {
+        console.error('❌ Enhanced conversation start error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to start enhanced conversation session'
+        });
+    }
+});
+
+app.post('/api/enhanced-conversation/audio', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const { audio, sessionId } = req.body;
+        
+        if (!audio || !sessionId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Audio data and session ID required'
+            });
+        }
+        
+        console.log('🎵 Processing enhanced conversational audio...');
+        
+        // Convert base64 audio to buffer
+        const audioBuffer = Buffer.from(audio, 'base64');
+        
+        // Get user context
+        const userContext = {
+            userId: req.userId,
+            language: req.language || 'en'
+        };
+        
+        // Process with enhanced voice agent
+        const result = await enhancedVoiceAgent.processVoiceInput(sessionId, audioBuffer, userContext);
+        
+        res.json({
+            success: true,
+            transcript: result.transcript,
+            response: result.response,
+            sessionId: result.sessionId,
+            conversationState: result.conversationState,
+            restaurantProfile: result.restaurantProfile,
+            audioResponse: result.audioResponse ? result.audioResponse.toString('base64') : null,
+            metadata: result.metadata
+        });
+        
+    } catch (error) {
+        console.error('❌ Enhanced conversation audio error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process enhanced conversational audio'
+        });
+    }
+});
+
+app.get('/api/enhanced-conversation/session/:sessionId', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const session = enhancedVoiceAgent.activeSessions.get(sessionId);
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                error: 'Session not found'
+            });
+        }
+        
+        // Verify session belongs to user
+        if (session.userContext.userId !== req.userId) {
+            return res.status(403).json({
+                success: false,
+                error: 'Access denied'
+            });
+        }
+        
+        res.json({
+            success: true,
+            session: {
+                id: session.id,
+                conversationState: session.conversationState,
+                restaurantProfile: session.restaurantProfile,
+                userContext: session.userContext,
+                conversationHistory: session.conversationHistory,
+                startTime: session.startTime,
+                lastActivity: session.lastActivity
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Get session error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get session data'
+        });
+    }
+});
+
+app.post('/api/enhanced-conversation/generate-content', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const { sessionId, contentType = 'social_media' } = req.body;
+        
+        const content = await enhancedVoiceAgent.createContentFromConversation(sessionId, contentType);
+        
+        res.json({
+            success: true,
+            content: content,
+            message: 'Content generated based on conversation context'
+        });
+        
+    } catch (error) {
+        console.error('❌ Generate content from conversation error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate content from conversation'
+        });
+    }
+});
+
+app.get('/api/enhanced-conversation/stats', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const stats = enhancedVoiceAgent.getSessionStats();
+        
+        res.json({
+            success: true,
+            stats: stats
+        });
+        
+    } catch (error) {
+        console.error('❌ Get conversation stats error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get conversation statistics'
+        });
+    }
+});
+
 // New Realtime Conversation endpoint
 app.post('/api/conversation/start', async (req, res) => {
     try {
@@ -1884,6 +2051,163 @@ const wss = new WebSocket.Server({
 
 console.log('🔌 WebSocket server ready at ws://localhost:' + PORT + '/ws/conversation');
 console.log('🧠 Natural conversation ready at ws://localhost:' + PORT + '/ws/natural-conversation');
+console.log('🚀 Enhanced voice agent ready at ws://localhost:' + PORT + '/ws/enhanced-conversation');
+
+// Enhanced Voice Agent WebSocket
+const enhancedWss = new WebSocket.Server({ 
+    server,
+    path: '/ws/enhanced-conversation'
+});
+
+// Enhanced Voice Agent WebSocket Handler
+enhancedWss.on('connection', (ws) => {
+    console.log('🚀 New enhanced voice agent client connected');
+    
+    let sessionId = null;
+    let userId = null;
+    
+    ws.on('message', async (message) => {
+        try {
+            const data = JSON.parse(message);
+            
+            if (data.type === 'start_enhanced_session') {
+                // Verify authentication (in production, validate JWT token)
+                userId = data.userId || 'demo_user';
+                
+                sessionId = `enhanced_ws_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+                
+                const userContext = {
+                    userId: userId,
+                    language: data.language || 'en',
+                    region: data.region || 'en-US',
+                    timezone: data.timezone || 'UTC'
+                };
+                
+                // Create enhanced conversation session
+                const session = enhancedVoiceAgent.createSession(sessionId, userContext);
+                const greeting = enhancedVoiceAgent.getInitialGreeting(userContext.language);
+                
+                // Send initial greeting
+                ws.send(JSON.stringify({
+                    type: 'session_ready',
+                    sessionId: sessionId,
+                    greeting: greeting,
+                    language: userContext.language,
+                    region: userContext.region,
+                    conversationState: session.conversationState
+                }));
+                
+                console.log('✅ Enhanced session started:', sessionId);
+                
+            } else if (data.type === 'audio_chunk') {
+                if (!sessionId) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'No active session. Please start a session first.'
+                    }));
+                    return;
+                }
+                
+                // Convert audio array to buffer
+                const audioBuffer = Buffer.from(data.audio);
+                
+                // Process with enhanced voice agent
+                const result = await enhancedVoiceAgent.processVoiceInput(sessionId, audioBuffer, { userId: userId });
+                
+                // Send comprehensive response back to client
+                ws.send(JSON.stringify({
+                    type: 'enhanced_response',
+                    transcript: result.transcript,
+                    response: result.response,
+                    audioResponse: result.audioResponse ? result.audioResponse.toString('base64') : null,
+                    conversationState: result.conversationState,
+                    restaurantProfile: result.restaurantProfile,
+                    metadata: result.metadata,
+                    sessionId: sessionId
+                }));
+                
+            } else if (data.type === 'generate_content') {
+                if (!sessionId) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'No active session for content generation.'
+                    }));
+                    return;
+                }
+                
+                try {
+                    const content = await enhancedVoiceAgent.createContentFromConversation(sessionId, data.contentType || 'social_media');
+                    
+                    ws.send(JSON.stringify({
+                        type: 'content_generated',
+                        content: content,
+                        sessionId: sessionId
+                    }));
+                } catch (contentError) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Failed to generate content from conversation.'
+                    }));
+                }
+                
+            } else if (data.type === 'get_session_data') {
+                if (!sessionId) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'No active session.'
+                    }));
+                    return;
+                }
+                
+                const session = enhancedVoiceAgent.activeSessions.get(sessionId);
+                if (session) {
+                    ws.send(JSON.stringify({
+                        type: 'session_data',
+                        sessionId: sessionId,
+                        conversationState: session.conversationState,
+                        restaurantProfile: session.restaurantProfile,
+                        conversationHistory: session.conversationHistory.filter(msg => msg.role !== 'system'),
+                        stats: {
+                            duration: Date.now() - session.startTime,
+                            messageCount: session.conversationHistory.length,
+                            phase: session.conversationState.phase
+                        }
+                    }));
+                }
+                
+            } else if (data.type === 'end_session') {
+                if (sessionId) {
+                    enhancedVoiceAgent.closeSession(sessionId);
+                    ws.send(JSON.stringify({
+                        type: 'session_ended',
+                        sessionId: sessionId,
+                        message: 'Session ended successfully.'
+                    }));
+                    sessionId = null;
+                    userId = null;
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Enhanced voice agent WebSocket error:', error);
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Sorry, I had trouble processing that. Could you try again?'
+            }));
+        }
+    });
+    
+    ws.on('close', () => {
+        console.log('🚀 Enhanced voice agent client disconnected');
+        if (sessionId) {
+            enhancedVoiceAgent.closeSession(sessionId);
+        }
+    });
+    
+    ws.on('error', (error) => {
+        console.error('❌ Enhanced voice agent WebSocket error:', error);
+    });
+});
 
 // Natural Conversation WebSocket
 const naturalWss = new WebSocket.Server({ 

@@ -178,46 +178,49 @@
 
 ---
 
-## Stripe Integration
+## 📞 **Questions About Usage or Features?**
 
-### Base Plan Configuration
-- **Stripe Price ID**: `price_complete_monthly` (to be configured)
-- **Amount**: $7900 (in cents)
-- **Interval**: month
-- **Trial Period**: 14 days
+**Live chat:** Talk to someone who knows restaurants  
+**Email:** Detailed feature questions answered same day  
+**Phone:** For agencies and multi-location setups  
 
-### Usage Tracking Requirements
-- Voice minutes used/remaining
-- Images generated/remaining  
-- Videos created/remaining
-- Additional locations count
-- Team members count
-- API calls made/remaining
+## 🚀 **Start Your Free Trial**
 
-### Overage Billing
-- **Metered billing** for voice minutes, images, videos
-- **Quantity-based billing** for extra locations/users
-- **Usage warnings** at 80% and 95% thresholds
-- **Monthly overage cap** of $100 maximum
+### **Everything Included for 14 Days:**
+- Full feature access
+- Real usage limits (not reduced "trial" limits)
+- Set up your actual restaurant accounts
+- See what your usage patterns actually look like
 
-### Environment Variables Required
-```
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_COMPLETE=price_complete_monthly
-STRIPE_PRICE_VOICE_OVERAGE=price_voice_minute_overage
-STRIPE_PRICE_IMAGE_OVERAGE=price_image_overage
-STRIPE_PRICE_VIDEO_OVERAGE=price_video_overage
-STRIPE_PRICE_EXTRA_LOCATION=price_extra_location_monthly
-STRIPE_PRICE_EXTRA_USER=price_extra_user_monthly
-```
+### **After Trial:**
+- Continue for $79/month if it's helping
+- Cancel anytime if it's not
+- Export all your data either way
 
-## API Endpoints
+---
 
-- `GET /api/pricing` - Get current pricing structure and user limits
-- `GET /api/usage` - Get current month usage statistics
-- `POST /api/register` - Register user with ChefSocial Complete plan
-- `POST /api/usage/track` - Track usage for billing (internal)
-- `POST /api/billing/estimate` - Estimate next month's bill with current usage
-- `POST /api/stripe/webhook` - Handle Stripe webhooks for payments and usage
+## 💬 **What Restaurant Owners Say:**
+
+*"I was paying $400/month across four different tools. Now I pay $85/month total (including some overages) and get way more features."*  
+**- Tony R., Tony's Pizza**
+
+*"The voice thing alone saves me 2 hours a day. Everything else is just bonus."*  
+**- Marie L., Café Bonjour**
+
+*"Finally found software that doesn't punish you for being successful. More posts, more customers, more revenue - and the costs stay reasonable."*  
+**- David S., Corner Bistro Group**
+
+---
+
+## 🎯 **Bottom Line**
+
+**One price. Everything included. Fair usage limits. Cheap overages.**
+
+**Try it free. See what you actually use. Pay for real value.**
+
+**No games, no gotchas, no vendor lock-in bullshit.**
+
+---
+
+### [**Start Free Trial - No Credit Card Required →**](#)
+*See your actual usage patterns before you commit to anything*

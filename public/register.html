@@ -3,10 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - ChefSocial Voice</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Get Started - ChefSocial Voice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #ff4757 75%, #ff3742 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #3b4a59 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-light: #fafafa;
+            --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 25px 50px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,51 +29,199 @@
         }
 
         body {
-            font-family: 'Source Sans Pro', sans-serif;
-            line-height: 1.6;
-            color: #374151;
-            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef2f2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            padding-top: 120px;
+            padding-bottom: 60px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1.2;
         }
 
-        .container {
-            max-width: 500px;
-            width: 100%;
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
-        }
-
-        .register-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.1);
-            border: 1px solid rgba(234, 88, 12, 0.1);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #374151;
+            gap: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
             text-decoration: none;
-            margin-bottom: 2rem;
         }
 
         .logo-icon {
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 0.25rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .register-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        /* Hero Side */
+        .hero-side {
+            color: white;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .feature-highlights {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .feature-highlight {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-icon {
             font-size: 2rem;
-            color: #ea580c;
+        }
+
+        .feature-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Register Card */
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: var(--shadow-strong);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .register-header {
@@ -66,466 +229,1013 @@
             margin-bottom: 2rem;
         }
 
-        .register-header h1 {
-            font-size: 2rem;
-            color: #ea580c;
+        .register-title {
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
         }
 
-        .register-header p {
-            color: #6b7280;
+        .register-subtitle {
+            color: var(--text-secondary);
             font-size: 1.1rem;
         }
 
-        .pricing-section {
+        /* Pricing Preview */
+        .pricing-preview {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(247, 147, 30, 0.08) 100%);
+            border: 1px solid rgba(255, 107, 53, 0.15);
+            border-radius: 15px;
+            padding: 1.25rem;
             margin-bottom: 2rem;
-        }
-
-        .single-plan-card {
-            background: white;
-            border: 2px solid #ea580c;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.15);
-        }
-
-        .plan-header {
             text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .trial-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        .feature-column h4 {
-            color: #ea580c;
-            margin-bottom: 1rem;
-            font-size: 1rem;
+        .trial-badge {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
-        .overage-info {
-            background: #fef7ed;
-            border: 1px solid #fed7aa;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .overage-info h4 {
-            color: #ea580c;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .overage-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.5rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: #7c2d12;
-        }
-
-        .plan-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
+        .then-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .plan-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ea580c;
-            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .plan-price .period {
+        .plan-period {
+            color: var(--text-secondary);
             font-size: 1rem;
-            color: #6b7280;
-            font-weight: 400;
+            font-weight: 500;
         }
 
-        .plan-description {
-            color: #6b7280;
-            margin-bottom: 1rem;
+        .trial-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
         }
 
-        .plan-features {
-            list-style: none;
-        }
-
-        .plan-features li {
-            color: #374151;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .plan-features li::before {
-            content: "✓";
-            color: #ea580c;
-            font-weight: bold;
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
             margin-bottom: 1.5rem;
         }
 
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #ea580c;
-        }
-
-        .card-element {
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
             background: white;
         }
 
+        .card-element {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
         .card-element.StripeElement--focus {
-            border-color: #ea580c;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.2rem;
+        }
+
+        .terms-checkbox label {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .terms-checkbox a {
+            color: #ff6b35;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .terms-checkbox a:hover {
+            text-decoration: underline;
         }
 
         .btn-primary {
             width: 100%;
-            background: linear-gradient(to right, #ea580c, #dc2626);
+            background: var(--primary-gradient);
             color: white;
-            padding: 1rem 2rem;
+            padding: 1.25rem 2rem;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+            box-shadow: var(--shadow-medium);
         }
 
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .login-link {
             text-align: center;
-            margin-top: 1.5rem;
-            color: #6b7280;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
         .login-link a {
-            color: #ea580c;
+            color: #ff6b35;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .login-link a:hover {
             text-decoration: underline;
         }
 
+        .security-note {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e0;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Messages */
         .error-message {
-            background: #fef2f2;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
             border: 1px solid #fecaca;
             color: #dc2626;
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
             display: none;
+            font-weight: 500;
         }
 
         .success-message {
-            background: #f0fdf4;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border: 1px solid #bbf7d0;
             color: #16a34a;
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
             display: none;
+            font-weight: 500;
         }
 
-        .security-note {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+        /* Features Table Section */
+        .features-table-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
+            padding: 80px 0;
+            margin-top: 60px;
+        }
+
+        .features-table-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-table-header h2 {
+            font-size: 3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .features-table-header p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .features-table {
+            display: grid;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-category {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .feature-category h3 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #64748b;
+            background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .feature-value {
+            font-weight: 600;
+            color: #ff6b35;
+            white-space: nowrap;
+        }
+
+        /* Overage Pricing */
+        .overage-pricing {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(247, 147, 30, 0.05) 100%);
+            border: 1px solid rgba(255, 107, 53, 0.15);
+            border-radius: 20px;
+            padding: 2.5rem;
             text-align: center;
         }
 
-        .language-toggle {
+        .overage-pricing h3 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .overage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .overage-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .overage-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .overage-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #3b4a59 100%);
+            color: white;
+            padding: 60px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #e5e7eb;
-            border-radius: 20px;
-            padding: 0.25rem;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
         }
 
-        .lang-btn {
-            padding: 0.25rem 0.75rem;
-            border: none;
-            background: transparent;
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .footer-logo .logo-icon {
+            font-size: 2rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .lang-btn.active {
-            background: #ea580c;
+        .footer-section h4 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
             color: white;
         }
 
-        .lang-btn:hover:not(.active) {
-            background: #f3f4f6;
-            color: #374151;
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+        }
+
+        .footer-bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+
+        .footer .language-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer .lang-btn {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer .lang-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .register-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-side {
+                order: 2;
+            }
+
+            .register-card {
+                order: 1;
+            }
         }
 
         @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 15px;
+            }
+
             .register-card {
                 padding: 2rem;
-                margin: 1rem;
             }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .hero-side {
+                display: none;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+
+            .features-table-header h2 {
+                font-size: 2rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-category {
+                padding: 1.5rem;
+            }
+
+            .overage-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .overage-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="register-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <a href="/index.html" class="logo" style="margin-bottom: 0;">
-                    <span class="logo-icon">👨‍🍳</span>
-                    ChefSocial Voice
-                </a>
-                <div class="language-toggle">
-                    <button class="lang-btn active" data-lang="en">EN</button>
-                    <button class="lang-btn" data-lang="fr">FR</button>
+    <div class="header">
+        <div class="nav">
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+            <div class="language-toggle">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="register-container">
+            <!-- Hero Side -->
+            <div class="hero-side">
+                <h1 class="hero-title" data-i18n="register.hero.title">Start Creating Viral Food Content Today</h1>
+                <p class="hero-subtitle" data-i18n="register.hero.subtitle">Join thousands of restaurants using AI to create engaging content that drives real results.</p>
+                
+                <div class="feature-highlights">
+                    <div class="feature-highlight">
+                        <div class="feature-icon">🎤</div>
+                        <div class="feature-text">
+                            <div class="feature-title" data-i18n="register.features.voice.title">Voice-to-Content AI</div>
+                            <div class="feature-desc" data-i18n="register.features.voice.desc">Speak and get viral content instantly</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-highlight">
+                        <div class="feature-icon">🌍</div>
+                        <div class="feature-text">
+                            <div class="feature-title" data-i18n="register.features.multilingual.title">Bilingual Support</div>
+                            <div class="feature-desc" data-i18n="register.features.multilingual.desc">English & French with cultural nuances</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-highlight">
+                        <div class="feature-icon">🚀</div>
+                        <div class="feature-text">
+                            <div class="feature-title" data-i18n="register.features.trial.title">14-Day Free Trial</div>
+                            <div class="feature-desc" data-i18n="register.features.trial.desc">Full access, cancel anytime</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="register-header">
-                <h1 data-i18n="register.title">Get Started</h1>
-                <p data-i18n="register.subtitle">Choose your plan and start creating viral food content</p>
+            <!-- Register Form -->
+            <div class="register-card">
+                <div class="register-header">
+                    <h2 class="register-title" data-i18n="register.title">Get Started</h2>
+                    <p class="register-subtitle" data-i18n="register.subtitle">Start your free trial today</p>
+                </div>
+
+                <div class="pricing-preview">
+                    <div class="trial-info">
+                        <span class="trial-badge" data-i18n="register.trial.badge">14-Day Free Trial</span>
+                        <span class="then-text" data-i18n="register.trial.then">then</span>
+                        <span class="plan-price">$79<span class="plan-period" data-i18n="register.plan.period">/mo</span></span>
+                    </div>
+                    <p class="trial-description" data-i18n="register.trial.description">Full access • Cancel anytime</p>
+                </div>
+
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <form id="registrationForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name" data-i18n="register.form.name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" data-i18n="register.form.email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="restaurantName" data-i18n="register.form.restaurant">Restaurant Name</label>
+                            <input type="text" id="restaurantName" name="restaurantName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" data-i18n="register.form.password">Password</label>
+                            <input type="password" id="password" name="password" required minlength="8">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-element" data-i18n="register.form.payment">Payment Information</label>
+                        <div id="card-element" class="card-element"></div>
+                    </div>
+
+                    <div class="security-note" data-i18n="register.form.security">
+                        🔒 Secure checkout • Start free, pay after 14 days • Cancel anytime
+                    </div>
+
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms" data-i18n="register.form.terms">
+                            I agree to the <a href="/terms.html" target="_blank">Terms</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submitButton" class="btn-primary" data-i18n="register.form.submit">
+                        Start My Free Trial
+                    </button>
+                </form>
+
+                <div class="login-link">
+                    <span data-i18n="register.form.have-account">Already have an account?</span> 
+                    <a href="/login.html" data-i18n="register.form.sign-in">Sign in</a>
+                </div>
             </div>
+        </div>
 
-            <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
+        <!-- Features Table -->
+        <div class="features-table-section">
+            <div class="container">
+                <div class="features-table-header">
+                    <h2 data-i18n="features.table.title">Everything Included in Your Plan</h2>
+                    <p data-i18n="features.table.subtitle">Comprehensive features to transform your food content strategy</p>
+                </div>
 
-            <form id="registrationForm">
-                <div class="pricing-section">
-                    <div class="single-plan-card selected" data-plan="complete" data-price="7900">
-                        <div class="plan-header">
-                            <div class="plan-name" data-i18n="register.complete.name">ChefSocial Complete</div>
-                            <div class="plan-price">$79<span class="period" data-i18n="register.period">/month</span></div>
-                            <div class="plan-description" data-i18n="register.complete.description">Every feature we've built, in one package</div>
-                        </div>
-                        
-                        <div class="features-grid">
-                            <div class="feature-column">
-                                <h4 data-i18n="register.complete.voice.title">🎤 Voice AI & Content Creation</h4>
-                                <ul class="plan-features">
-                                    <li data-i18n="register.complete.voice.feature1">Voice content creation - 300 minutes/month</li>
-                                    <li data-i18n="register.complete.voice.feature2">AI image generation - 30 images/month</li>
-                                    <li data-i18n="register.complete.voice.feature3">Smart video creation - 10 videos/month</li>
-                                    <li data-i18n="register.complete.voice.feature4">Multi-language content - All languages</li>
-                                </ul>
+                <div class="features-table">
+                    <div class="feature-category">
+                        <h3 data-i18n="features.voice.title">🎤 Voice AI & Content Generation</h3>
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.voice.minutes">Voice Content Processing</div>
+                                <div class="feature-value" data-i18n="features.voice.minutes.value">300 minutes/month</div>
                             </div>
-                            
-                            <div class="feature-column">
-                                <h4 data-i18n="register.complete.social.title">📱 Social Media Management</h4>
-                                <ul class="plan-features">
-                                    <li data-i18n="register.complete.social.feature1">All platform posting - Unlimited posts</li>
-                                    <li data-i18n="register.complete.social.feature2">Smart scheduling & optimization</li>
-                                    <li data-i18n="register.complete.social.feature3">Bulk content planning</li>
-                                    <li data-i18n="register.complete.social.feature4">Cross-platform optimization</li>
-                                </ul>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.voice.languages">Supported Languages</div>
+                                <div class="feature-value" data-i18n="features.voice.languages.value">English & French</div>
                             </div>
-                            
-                            <div class="feature-column">
-                                <h4 data-i18n="register.complete.team.title">👥 Team & Analytics</h4>
-                                <ul class="plan-features">
-                                    <li data-i18n="register.complete.team.feature1">Team collaboration - 2 users included</li>
-                                    <li data-i18n="register.complete.team.feature2">Multi-location - 1 location included</li>
-                                    <li data-i18n="register.complete.team.feature3">Advanced analytics & insights</li>
-                                    <li data-i18n="register.complete.team.feature4">Email & chat support</li>
-                                </ul>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.voice.transcription">Real-time Transcription</div>
+                                <div class="feature-value" data-i18n="features.voice.transcription.value">✓ Included</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.voice.quality">Audio Quality</div>
+                                <div class="feature-value" data-i18n="features.voice.quality.value">HD Processing</div>
                             </div>
                         </div>
-                        
-                        <div class="overage-info">
-                            <h4 data-i18n="register.complete.overage.title">⚡ Usage-Based Add-Ons</h4>
-                            <p data-i18n="register.complete.overage.description">Generous limits included, cheap overages when you need more:</p>
-                            <div class="overage-grid">
-                                <span data-i18n="register.complete.overage.voice">Extra voice: $0.15/min</span>
-                                <span data-i18n="register.complete.overage.images">Extra images: $0.50/image</span>
-                                <span data-i18n="register.complete.overage.videos">Extra videos: $1.50/video</span>
-                                <span data-i18n="register.complete.overage.locations">Extra locations: $25/month</span>
+                    </div>
+
+                    <div class="feature-category">
+                        <h3 data-i18n="features.content.title">📝 Content Creation & Optimization</h3>
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.content.posts">Social Media Posts</div>
+                                <div class="feature-value" data-i18n="features.content.posts.value">Unlimited</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.content.platforms">Platform Optimization</div>
+                                <div class="feature-value" data-i18n="features.content.platforms.value">All major platforms</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.content.hashtags">Smart Hashtags</div>
+                                <div class="feature-value" data-i18n="features.content.hashtags.value">AI-generated</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.content.viral">Viral Score Prediction</div>
+                                <div class="feature-value" data-i18n="features.content.viral.value">✓ Included</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-category">
+                        <h3 data-i18n="features.media.title">🎨 Visual Content & Media</h3>
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.media.images">AI Images</div>
+                                <div class="feature-value" data-i18n="features.media.images.value">30 images/month</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.media.videos">Smart Videos</div>
+                                <div class="feature-value" data-i18n="features.media.videos.value">10 videos/month</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.media.editing">Auto Image Enhancement</div>
+                                <div class="feature-value" data-i18n="features.media.editing.value">✓ Included</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.media.formats">Export Formats</div>
+                                <div class="feature-value" data-i18n="features.media.formats.value">All formats</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-category">
+                        <h3 data-i18n="features.business.title">🚀 Business & Analytics</h3>
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.business.locations">Restaurant Locations</div>
+                                <div class="feature-value" data-i18n="features.business.locations.value">1 location</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.business.scheduling">Content Scheduling</div>
+                                <div class="feature-value" data-i18n="features.business.scheduling.value">✓ Included</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.business.analytics">Performance Analytics</div>
+                                <div class="feature-value" data-i18n="features.business.analytics.value">Detailed reports</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name" data-i18n="features.business.support">Priority Support</div>
+                                <div class="feature-value" data-i18n="features.business.support.value">Email & Chat</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="email" data-i18n="register.email">Email Address</label>
-                    <input type="email" id="email" name="email" required>
+                <div class="overage-pricing">
+                    <h3 data-i18n="features.overage.title">💡 Need More? Pay-as-you-grow Pricing</h3>
+                    <div class="overage-grid">
+                        <div class="overage-item">
+                            <div class="overage-name" data-i18n="features.overage.voice">Extra Voice Minutes</div>
+                            <div class="overage-price" data-i18n="features.overage.voice.price">$0.15/minute</div>
+                        </div>
+                        <div class="overage-item">
+                            <div class="overage-name" data-i18n="features.overage.images">Extra AI Images</div>
+                            <div class="overage-price" data-i18n="features.overage.images.price">$0.50/image</div>
+                        </div>
+                        <div class="overage-item">
+                            <div class="overage-name" data-i18n="features.overage.videos">Extra Smart Videos</div>
+                            <div class="overage-price" data-i18n="features.overage.videos.price">$1.50/video</div>
+                        </div>
+                        <div class="overage-item">
+                            <div class="overage-name" data-i18n="features.overage.locations">Additional Locations</div>
+                            <div class="overage-price" data-i18n="features.overage.locations.price">$25/month</div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="name" data-i18n="register.name">Full Name</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="restaurantName" data-i18n="register.restaurant">Restaurant Name</label>
-                    <input type="text" id="restaurantName" name="restaurantName" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password" data-i18n="register.password">Password</label>
-                    <input type="password" id="password" name="password" required minlength="8">
-                </div>
-
-                <div class="form-group">
-                    <label for="card-element" data-i18n="register.payment">Payment Information</label>
-                    <div id="card-element"></div>
-                </div>
-
-                <div class="form-group">
-                    <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-weight: normal; cursor: pointer;">
-                        <input type="checkbox" id="terms" name="terms" required style="margin-top: 0.2rem;">
-                        <span data-i18n="register.terms" style="font-size: 0.9rem; color: #6b7280;">
-                            I agree to the <a href="/terms.html" target="_blank" style="color: #ea580c; text-decoration: none;">Terms and Conditions</a> and <a href="/privacy.html" target="_blank" style="color: #ea580c; text-decoration: none;">Privacy Policy</a>
-                        </span>
-                    </label>
-                </div>
-
-                <button type="submit" id="submitButton" class="btn-primary" data-i18n="register.submit">
-                    Start My Subscription
-                </button>
-
-                <div class="security-note" data-i18n="register.security">
-                    🔒 Your payment information is secure and encrypted. Cancel anytime.
-                </div>
-            </form>
-
-            <div class="login-link">
-                <span data-i18n="register.haveAccount">Already have an account?</span> <a href="/login.html" data-i18n="register.signIn">Sign in</a>
             </div>
         </div>
+        </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">👨‍🍳</span>
+                        <span>ChefSocial Voice</span>
+                    </div>
+                    <p data-i18n="footer.description">AI-powered voice-to-content platform for restaurants and food creators.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.product.title">Product</h4>
+                    <ul>
+                        <li><a href="/demo.html" data-i18n="footer.product.demo">Demo</a></li>
+                        <li><a href="/register.html" data-i18n="footer.product.pricing">Pricing</a></li>
+                        <li><a href="/#features" data-i18n="footer.product.features">Features</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.company.title">Company</h4>
+                    <ul>
+                        <li><a href="/about.html" data-i18n="footer.company.about">About</a></li>
+                        <li><a href="/contact.html" data-i18n="footer.company.contact">Contact</a></li>
+                        <li><a href="/blog.html" data-i18n="footer.company.blog">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.legal.title">Legal</h4>
+                    <ul>
+                        <li><a href="/privacy.html" data-i18n="footer.legal.privacy">Privacy Policy</a></li>
+                        <li><a href="/terms.html" data-i18n="footer.legal.terms">Terms of Service</a></li>
+                        <li><a href="/cookies.html" data-i18n="footer.legal.cookies">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p data-i18n="footer.copyright">&copy; 2024 ChefSocial Voice. All rights reserved.</p>
+                    <div class="language-toggle">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         // Translation data
         const translations = {
             en: {
+                'register.hero.title': 'Start Creating Viral Food Content Today',
+                'register.hero.subtitle': 'Join thousands of restaurants using AI to create engaging content that drives real results.',
+                'register.features.voice.title': 'Voice-to-Content AI',
+                'register.features.voice.desc': 'Speak and get viral content instantly',
+                'register.features.multilingual.title': 'Bilingual Support',
+                'register.features.multilingual.desc': 'English & French with cultural nuances',
+                'register.features.trial.title': '14-Day Free Trial',
+                'register.features.trial.desc': 'Full access, cancel anytime',
                 'register.title': 'Get Started',
-                'register.subtitle': 'One bundle, everything included, fair usage limits',
-                'register.period': '/month',
-                'register.complete.name': 'ChefSocial Complete',
-                'register.complete.description': 'Every feature we\'ve built, in one package',
-                'register.complete.voice.title': '🎤 Voice AI & Content Creation',
-                'register.complete.voice.feature1': 'Voice content creation - 300 minutes/month',
-                'register.complete.voice.feature2': 'AI image generation - 30 images/month',
-                'register.complete.voice.feature3': 'Smart video creation - 10 videos/month',
-                'register.complete.voice.feature4': 'Multi-language content - All languages',
-                'register.complete.social.title': '📱 Social Media Management',
-                'register.complete.social.feature1': 'All platform posting - Unlimited posts',
-                'register.complete.social.feature2': 'Smart scheduling & optimization',
-                'register.complete.social.feature3': 'Bulk content planning',
-                'register.complete.social.feature4': 'Cross-platform optimization',
-                'register.complete.team.title': '👥 Team & Analytics',
-                'register.complete.team.feature1': 'Team collaboration - 2 users included',
-                'register.complete.team.feature2': 'Multi-location - 1 location included',
-                'register.complete.team.feature3': 'Advanced analytics & insights',
-                'register.complete.team.feature4': 'Email & chat support',
-                'register.complete.overage.title': '⚡ Usage-Based Add-Ons',
-                'register.complete.overage.description': 'Generous limits included, cheap overages when you need more:',
-                'register.complete.overage.voice': 'Extra voice: $0.15/min',
-                'register.complete.overage.images': 'Extra images: $0.50/image',
-                'register.complete.overage.videos': 'Extra videos: $1.50/video',
-                'register.complete.overage.locations': 'Extra locations: $25/month',
-                'register.email': 'Email Address',
-                'register.name': 'Full Name',
-                'register.restaurant': 'Restaurant Name',
-                'register.password': 'Password',
-                'register.payment': 'Payment Information',
-                'register.submit': 'Start My Subscription',
-                'register.security': '🔒 Your payment information is secure and encrypted. Cancel anytime.',
-                'register.terms': 'I agree to the <a href="/terms.html" target="_blank" style="color: #ea580c; text-decoration: none;">Terms and Conditions</a> and <a href="/privacy.html" target="_blank" style="color: #ea580c; text-decoration: none;">Privacy Policy</a>',
-                'register.haveAccount': 'Already have an account?',
-                'register.signIn': 'Sign in'
+                'register.subtitle': 'Start your free trial today',
+                'register.trial.badge': '14-Day Free Trial',
+                'register.trial.then': 'then',
+                'register.plan.period': '/mo',
+                'register.trial.description': 'Full access • Cancel anytime',
+                'register.form.name': 'Full Name',
+                'register.form.email': 'Email Address',
+                'register.form.restaurant': 'Restaurant Name',
+                'register.form.password': 'Password',
+                'register.form.payment': 'Payment Information',
+                'register.form.security': '🔒 Secure checkout • Start free, pay after 14 days • Cancel anytime',
+                'register.form.terms': 'I agree to the <a href="/terms.html" target="_blank">Terms</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>',
+                'register.form.submit': 'Start My Free Trial',
+                'register.form.have-account': 'Already have an account?',
+                'register.form.sign-in': 'Sign in',
+                'features.table.title': 'Everything Included in Your Plan',
+                'features.table.subtitle': 'Comprehensive features to transform your food content strategy',
+                'features.voice.title': '🎤 Voice AI & Content Generation',
+                'features.voice.minutes': 'Voice Content Processing',
+                'features.voice.minutes.value': '300 minutes/month',
+                'features.voice.languages': 'Supported Languages',
+                'features.voice.languages.value': 'English & French',
+                'features.voice.transcription': 'Real-time Transcription',
+                'features.voice.transcription.value': '✓ Included',
+                'features.voice.quality': 'Audio Quality',
+                'features.voice.quality.value': 'HD Processing',
+                'features.content.title': '📝 Content Creation & Optimization',
+                'features.content.posts': 'Social Media Posts',
+                'features.content.posts.value': 'Unlimited',
+                'features.content.platforms': 'Platform Optimization',
+                'features.content.platforms.value': 'All major platforms',
+                'features.content.hashtags': 'Smart Hashtags',
+                'features.content.hashtags.value': 'AI-generated',
+                'features.content.viral': 'Viral Score Prediction',
+                'features.content.viral.value': '✓ Included',
+                'features.media.title': '🎨 Visual Content & Media',
+                'features.media.images': 'AI Images',
+                'features.media.images.value': '30 images/month',
+                'features.media.videos': 'Smart Videos',
+                'features.media.videos.value': '10 videos/month',
+                'features.media.editing': 'Auto Image Enhancement',
+                'features.media.editing.value': '✓ Included',
+                'features.media.formats': 'Export Formats',
+                'features.media.formats.value': 'All formats',
+                'features.business.title': '🚀 Business & Analytics',
+                'features.business.locations': 'Restaurant Locations',
+                'features.business.locations.value': '1 location',
+                'features.business.scheduling': 'Content Scheduling',
+                'features.business.scheduling.value': '✓ Included',
+                'features.business.analytics': 'Performance Analytics',
+                'features.business.analytics.value': 'Detailed reports',
+                'features.business.support': 'Priority Support',
+                'features.business.support.value': 'Email & Chat',
+                'features.overage.title': '💡 Need More? Pay-as-you-grow Pricing',
+                'features.overage.voice': 'Extra Voice Minutes',
+                'features.overage.voice.price': '$0.15/minute',
+                'features.overage.images': 'Extra AI Images',
+                'features.overage.images.price': '$0.50/image',
+                'features.overage.videos': 'Extra Smart Videos',
+                'features.overage.videos.price': '$1.50/video',
+                'features.overage.locations': 'Additional Locations',
+                'features.overage.locations.price': '$25/month',
+                'footer.description': 'AI-powered voice-to-content platform for restaurants and food creators.',
+                'footer.product.title': 'Product',
+                'footer.product.demo': 'Demo',
+                'footer.product.pricing': 'Pricing',
+                'footer.product.features': 'Features',
+                'footer.company.title': 'Company',
+                'footer.company.about': 'About',
+                'footer.company.contact': 'Contact',
+                'footer.company.blog': 'Blog',
+                'footer.legal.title': 'Legal',
+                'footer.legal.privacy': 'Privacy Policy',
+                'footer.legal.terms': 'Terms of Service',
+                'footer.legal.cookies': 'Cookie Policy',
+                'footer.copyright': '© 2024 ChefSocial Voice. All rights reserved.'
             },
             fr: {
+                'register.hero.title': 'Commencez à Créer du Contenu Viral Aujourd\'hui',
+                'register.hero.subtitle': 'Rejoignez des milliers de restaurants utilisant l\'IA pour créer du contenu engageant qui produit de vrais résultats.',
+                'register.features.voice.title': 'IA Voix vers Contenu',
+                'register.features.voice.desc': 'Parlez et obtenez du contenu viral instantanément',
+                'register.features.multilingual.title': 'Support Bilingue',
+                'register.features.multilingual.desc': 'Français et anglais avec nuances culturelles',
+                'register.features.trial.title': 'Essai Gratuit 14 Jours',
+                'register.features.trial.desc': 'Accès complet, annulez à tout moment',
                 'register.title': 'Commencer',
-                'register.subtitle': 'Un seul bundle, tout inclus, limites d\'utilisation équitables',
-                'register.period': '/mois',
-                'register.complete.name': 'ChefSocial Complet',
-                'register.complete.description': 'Toutes les fonctionnalités que nous avons créées, dans un seul package',
-                'register.complete.voice.title': '🎤 IA Vocale & Création de Contenu',
-                'register.complete.voice.feature1': 'Création de contenu vocal - 300 minutes/mois',
-                'register.complete.voice.feature2': 'Génération d\'images IA - 30 images/mois',
-                'register.complete.voice.feature3': 'Création de vidéos intelligentes - 10 vidéos/mois',
-                'register.complete.voice.feature4': 'Contenu multilingue - Toutes les langues',
-                'register.complete.social.title': '📱 Gestion des Réseaux Sociaux',
-                'register.complete.social.feature1': 'Publication sur toutes plateformes - Publications illimitées',
-                'register.complete.social.feature2': 'Planification et optimisation intelligentes',
-                'register.complete.social.feature3': 'Planification de contenu en masse',
-                'register.complete.social.feature4': 'Optimisation inter-plateformes',
-                'register.complete.team.title': '👥 Équipe & Analytiques',
-                'register.complete.team.feature1': 'Collaboration d\'équipe - 2 utilisateurs inclus',
-                'register.complete.team.feature2': 'Multi-localisation - 1 emplacement inclus',
-                'register.complete.team.feature3': 'Analytiques et insights avancés',
-                'register.complete.team.feature4': 'Support email et chat',
-                'register.complete.overage.title': '⚡ Modules Basés sur l\'Utilisation',
-                'register.complete.overage.description': 'Limites généreuses incluses, dépassements bon marché quand vous en avez besoin:',
-                'register.complete.overage.voice': 'Voix supplémentaire: 0,15$/min',
-                'register.complete.overage.images': 'Images supplémentaires: 0,50$/image',
-                'register.complete.overage.videos': 'Vidéos supplémentaires: 1,50$/vidéo',
-                'register.complete.overage.locations': 'Emplacements supplémentaires: 25$/mois',
-                'register.email': 'Adresse Email',
-                'register.name': 'Nom Complet',
-                'register.restaurant': 'Nom du Restaurant',
-                'register.password': 'Mot de Passe',
-                'register.payment': 'Informations de Paiement',
-                'register.submit': 'Commencer Mon Abonnement',
-                'register.security': '🔒 Vos informations de paiement sont sécurisées et cryptées. Annulez à tout moment.',
-                'register.terms': 'J\'accepte les <a href="/terms.html" target="_blank" style="color: #ea580c; text-decoration: none;">Conditions d\'Utilisation</a> et la <a href="/privacy.html" target="_blank" style="color: #ea580c; text-decoration: none;">Politique de Confidentialité</a>',
-                'register.haveAccount': 'Vous avez déjà un compte ?',
-                'register.signIn': 'Se connecter'
+                'register.subtitle': 'Commencez votre essai gratuit aujourd\'hui',
+                'register.trial.badge': 'Essai Gratuit 14 Jours',
+                'register.trial.then': 'puis',
+                'register.plan.period': '/mois',
+                'register.trial.description': 'Accès complet • Annulez à tout moment',
+                'register.form.name': 'Nom Complet',
+                'register.form.email': 'Adresse Email',
+                'register.form.restaurant': 'Nom du Restaurant',
+                'register.form.password': 'Mot de Passe',
+                'register.form.payment': 'Informations de Paiement',
+                'register.form.security': '🔒 Paiement sécurisé • Commencez gratuitement, payez après 14 jours • Annulez à tout moment',
+                'register.form.terms': 'J\'accepte les <a href="/terms.html" target="_blank">Conditions</a> et la <a href="/privacy.html" target="_blank">Politique de Confidentialité</a>',
+                'register.form.submit': 'Commencer Mon Essai Gratuit',
+                'register.form.have-account': 'Vous avez déjà un compte ?',
+                'register.form.sign-in': 'Se connecter',
+                'features.table.title': 'Tout Inclus dans Votre Plan',
+                'features.table.subtitle': 'Fonctionnalités complètes pour transformer votre stratégie de contenu alimentaire',
+                'features.voice.title': '🎤 IA Vocale & Génération de Contenu',
+                'features.voice.minutes': 'Traitement Contenu Vocal',
+                'features.voice.minutes.value': '300 minutes/mois',
+                'features.voice.languages': 'Langues Supportées',
+                'features.voice.languages.value': 'Français et Anglais',
+                'features.voice.transcription': 'Transcription Temps Réel',
+                'features.voice.transcription.value': '✓ Inclus',
+                'features.voice.quality': 'Qualité Audio',
+                'features.voice.quality.value': 'Traitement HD',
+                'features.content.title': '📝 Création & Optimisation de Contenu',
+                'features.content.posts': 'Publications Médias Sociaux',
+                'features.content.posts.value': 'Illimité',
+                'features.content.platforms': 'Optimisation Plateformes',
+                'features.content.platforms.value': 'Toutes plateformes principales',
+                'features.content.hashtags': 'Hashtags Intelligents',
+                'features.content.hashtags.value': 'Générés par IA',
+                'features.content.viral': 'Prédiction Score Viral',
+                'features.content.viral.value': '✓ Inclus',
+                'features.media.title': '🎨 Contenu Visuel & Médias',
+                'features.media.images': 'Images IA',
+                'features.media.images.value': '30 images/mois',
+                'features.media.videos': 'Vidéos Intelligentes',
+                'features.media.videos.value': '10 vidéos/mois',
+                'features.media.editing': 'Amélioration Auto Images',
+                'features.media.editing.value': '✓ Inclus',
+                'features.media.formats': 'Formats d\'Export',
+                'features.media.formats.value': 'Tous formats',
+                'features.business.title': '🚀 Business & Analytiques',
+                'features.business.locations': 'Emplacements Restaurant',
+                'features.business.locations.value': '1 emplacement',
+                'features.business.scheduling': 'Planification Contenu',
+                'features.business.scheduling.value': '✓ Inclus',
+                'features.business.analytics': 'Analytiques Performance',
+                'features.business.analytics.value': 'Rapports détaillés',
+                'features.business.support': 'Support Prioritaire',
+                'features.business.support.value': 'Email & Chat',
+                'features.overage.title': '💡 Besoin de Plus ? Tarification Évolutive',
+                'features.overage.voice': 'Minutes Vocales Supplémentaires',
+                'features.overage.voice.price': '0,15$/minute',
+                'features.overage.images': 'Images IA Supplémentaires',
+                'features.overage.images.price': '0,50$/image',
+                'features.overage.videos': 'Vidéos Intelligentes Supplémentaires',
+                'features.overage.videos.price': '1,50$/vidéo',
+                'features.overage.locations': 'Emplacements Additionnels',
+                'features.overage.locations.price': '25$/mois',
+                'footer.description': 'Plateforme vocale-vers-contenu alimentée par l\'IA pour restaurants et créateurs culinaires.',
+                'footer.product.title': 'Produit',
+                'footer.product.demo': 'Démo',
+                'footer.product.pricing': 'Tarification',
+                'footer.product.features': 'Fonctionnalités',
+                'footer.company.title': 'Entreprise',
+                'footer.company.about': 'À Propos',
+                'footer.company.contact': 'Contact',
+                'footer.company.blog': 'Blog',
+                'footer.legal.title': 'Légal',
+                'footer.legal.privacy': 'Politique de Confidentialité',
+                'footer.legal.terms': 'Conditions d\'Utilisation',
+                'footer.legal.cookies': 'Politique des Cookies',
+                'footer.copyright': '© 2024 ChefSocial Voice. Tous droits réservés.'
             }
         };
 
@@ -569,10 +1279,7 @@
                     const key = element.dataset.i18n;
                     const translation = translations[this.currentLang]?.[key];
                     if (translation) {
-                        if (element.tagName === 'INPUT' && element.type === 'button') {
-                            element.value = translation;
-                        } else if (key === 'register.terms') {
-                            // Handle HTML content for terms and conditions
+                        if (key === 'register.form.terms') {
                             element.innerHTML = translation;
                         } else {
                             element.textContent = translation;
@@ -610,21 +1317,28 @@
                     style: {
                         base: {
                             fontSize: '16px',
-                            color: '#374151',
+                            color: '#2d3748',
+                            fontFamily: 'Inter, sans-serif',
                             '::placeholder': {
-                                color: '#9ca3af',
+                                color: '#a0aec0',
                             },
                         },
                     },
                 });
                 
                 this.cardElement.mount('#card-element');
+                
+                this.cardElement.on('change', ({error}) => {
+                    const cardElement = document.getElementById('card-element');
+                    if (error) {
+                        cardElement.classList.add('error');
+                    } else {
+                        cardElement.classList.remove('error');
+                    }
+                });
             }
 
             setupEventListeners() {
-                // Plan is pre-selected as 'complete' - no plan selection needed
-
-                // Form submission
                 document.getElementById('registrationForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.handleRegistration();
@@ -640,15 +1354,15 @@
                 const termsCheckbox = document.getElementById('terms');
                 if (!termsCheckbox.checked) {
                     errorMessage.textContent = lang.getCurrentLanguage() === 'fr' 
-                        ? 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité.'
-                        : 'You must accept the terms and conditions and privacy policy.';
+                        ? 'Vous devez accepter les conditions d\'utilisation.'
+                        : 'You must accept the terms and conditions.';
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
                     return;
                 }
                 
                 submitButton.disabled = true;
-                submitButton.textContent = lang.getCurrentLanguage() === 'fr' ? 'Traitement...' : 'Processing...';
+                submitButton.innerHTML = `<span class="loading"></span> ${lang.getCurrentLanguage() === 'fr' ? 'Traitement...' : 'Processing...'}`;
                 
                 try {
                     // Get form data
@@ -657,8 +1371,7 @@
                         name: document.getElementById('name').value,
                         password: document.getElementById('password').value,
                         restaurantName: document.getElementById('restaurantName')?.value || '',
-                        planName: this.selectedPlan,
-                        paymentMethodId: paymentMethod.id
+                        planName: this.selectedPlan
                     };
 
                     // Create payment method
@@ -676,7 +1389,7 @@
                     }
 
                     // Send registration data to backend
-                    const response = await fetch('/api/register', {
+                    const response = await fetch('/api/auth/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -690,13 +1403,13 @@
                     const result = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(result.message || 'Registration failed');
+                        throw new Error(result.error || 'Registration failed');
                     }
 
                     // Handle successful registration
                     successMessage.textContent = lang.getCurrentLanguage() === 'fr'
-                        ? 'Inscription réussie ! Redirection vers votre tableau de bord...'
-                        : 'Registration successful! Redirecting to your dashboard...';
+                        ? '✅ Inscription réussie ! Redirection vers votre tableau de bord...'
+                        : '✅ Registration successful! Redirecting to your dashboard...';
                     successMessage.style.display = 'block';
                     errorMessage.style.display = 'none';
 
@@ -710,12 +1423,12 @@
                     }, 2000);
 
                 } catch (error) {
-                    errorMessage.textContent = error.message;
+                    errorMessage.textContent = `❌ ${error.message}`;
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
                     
                     submitButton.disabled = false;
-                    submitButton.textContent = lang.t('register.submit');
+                    submitButton.textContent = lang.t('register.form.submit');
                 }
             }
         }

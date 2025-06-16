@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChefSocial Voice - AI-Powered Food Content Creation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #ff4757 75%, #ff3742 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #3b4a59 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-light: #fafafa;
+            --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 25px 50px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,255 +28,422 @@
         }
 
         body {
-            font-family: 'Source Sans Pro', sans-serif;
-            line-height: 1.6;
-            color: #374151;
-            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef2f2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1.2;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
 
+        /* Glass morphism effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+        }
+
         /* Header */
         header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(234, 88, 12, 0.1);
+            padding: 1rem 0;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-soft);
         }
 
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #374151;
+            gap: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
             text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled .logo {
+            color: var(--text-primary);
         }
 
         .logo-icon {
-            font-size: 2rem;
-            color: #ea580c;
-            transition: transform 0.3s ease;
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite alternate;
         }
 
-        .logo:hover .logo-icon {
-            transform: scale(1.1);
-            color: #dc2626;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
         }
 
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 2.5rem;
             align-items: center;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
-            transition: color 0.3s ease;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        header.scrolled .nav-links a {
+            color: var(--text-secondary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
         .nav-links a:hover {
-            color: #ea580c;
+            color: white;
+        }
+
+        header.scrolled .nav-links a:hover {
+            color: #ff6b35;
         }
 
         .cta-button {
-            background: linear-gradient(to right, #ea580c, #dc2626);
+            background: var(--primary-gradient);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
+            padding: 1rem 2rem;
+            border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 0.25rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
         }
 
         /* Hero Section */
         .hero {
-            padding: 120px 0 80px;
+            padding: 150px 0 100px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"50\" cy=\"10\" r=\"0.5\" fill=\"%23ffffff\" opacity=\"0.15\"/><circle cx=\"90\" cy=\"40\" r=\"0.5\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>') repeat;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: clamp(3rem, 8vw, 6rem);
             font-weight: 700;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.25rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1.25rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hero-demo {
+            margin-top: 4rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 0;
+            background: rgba(255, 255, 255, 0.95);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .hero p {
+        .section-subtitle {
             font-size: 1.25rem;
-            color: #6b7280;
-            margin-bottom: 2rem;
+            color: var(--text-secondary);
             max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 3rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, #ea580c, #dc2626);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #ea580c;
-            border: 2px solid #ea580c;
-            padding: 1rem 2rem;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            background: #ea580c;
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        .hero-demo {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 500px;
             margin: 0 auto;
-            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.1);
-            border: 1px solid rgba(234, 88, 12, 0.2);
-        }
-
-        .demo-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 80px 0;
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .features h2 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #ea580c;
+            line-height: 1.6;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
         }
 
         .feature-card {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
-            border-radius: 20px;
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(234, 88, 12, 0.1);
-            border: 1px solid rgba(234, 88, 12, 0.1);
-            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0.05;
+            transition: left 0.5s ease;
+        }
+
+        .feature-card:hover::before {
+            left: 0;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-strong);
+            border-color: #ff6b35;
         }
 
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #ea580c;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 2;
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             margin-bottom: 1rem;
-            color: #374151;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 2;
         }
 
         .feature-card p {
-            color: #6b7280;
+            color: var(--text-secondary);
             line-height: 1.6;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 2;
         }
 
         /* How It Works */
         .how-it-works {
-            padding: 80px 0;
-        }
-
-        .how-it-works h2 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #ea580c;
+            padding: 120px 0;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
         }
 
         .steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
         }
 
         .step {
@@ -270,93 +452,162 @@
         }
 
         .step-number {
-            background: linear-gradient(to right, #ea580c, #dc2626);
+            background: var(--primary-gradient);
             color: white;
-            width: 50px;
-            height: 50px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.25rem;
-            margin: 0 auto 1rem;
+            font-size: 2rem;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            position: relative;
+        }
+
+        .step-number::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid rgba(255, 107, 53, 0.2);
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
         }
 
         .step h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-            color: #374151;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
         }
 
         .step p {
-            color: #6b7280;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1.1rem;
         }
 
         /* CTA Section */
         .cta-section {
-            padding: 80px 0;
-            background: rgba(255, 255, 255, 0.8);
+            padding: 120px 0;
+            background: var(--primary-gradient);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"dots\" width=\"20\" height=\"20\" patternUnits=\"userSpaceOnUse\"><circle cx=\"10\" cy=\"10\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23dots)\"/></svg>') repeat;
         }
 
         .cta-section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #ea580c;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: white;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
         }
 
         .cta-section p {
             font-size: 1.25rem;
-            color: #6b7280;
-            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-button-large {
+            background: white;
+            color: #ff6b35;
+            padding: 1.5rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-button-large:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         }
 
         /* Footer */
         footer {
-            background: #374151;
+            background: var(--dark-gradient);
             color: white;
-            padding: 3rem 0 1rem;
+            padding: 60px 0 30px;
         }
 
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 3rem;
+            margin-bottom: 3rem;
         }
 
         .footer-section h3 {
-            margin-bottom: 1rem;
-            color: #ea580c;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
         }
 
-        .footer-section p, .footer-section a {
-            color: #d1d5db;
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
-            margin-bottom: 0.5rem;
             display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
         }
 
         .footer-section a:hover {
-            color: #ea580c;
+            color: #ff6b35;
         }
 
         .footer-bottom {
-            border-top: 1px solid #4b5563;
-            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
             text-align: center;
-            color: #9ca3af;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Responsive Design */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
 
-            .hero h1 {
-                font-size: 2.5rem;
+            .hero {
+                padding: 120px 0 80px;
             }
 
             .hero-buttons {
@@ -364,101 +615,132 @@
                 align-items: center;
             }
 
-            .btn-primary, .btn-secondary {
-                width: 100%;
-                max-width: 300px;
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+                gap: 2rem;
             }
         }
 
-        /* Badge Styling */
-        .badge {
-            background: #fff7ed;
-            color: #ea580c;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1rem;
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff4757;
         }
     </style>
 </head>
 <body>
-    <header>
+    <header id="header">
         <nav class="container">
-            <a href="/index.html" class="logo">
+            <a href="/" class="logo">
                 <span class="logo-icon">👨‍🍳</span>
                 ChefSocial Voice
             </a>
             <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="/demo.html">Demo</a></li>
-                <li><a href="/natural.html">Natural Conversation</a></li>
-                <li><a href="/login.html">Login</a></li>
-                <li><a href="/register.html" class="cta-button">Get Started</a></li>
+                <li><a href="#features" data-i18n="nav.features">Features</a></li>
+                <li><a href="#how-it-works" data-i18n="nav.how-it-works">How It Works</a></li>
+                <li><a href="/demo.html" data-i18n="nav.demo">Demo</a></li>
+                <li><a href="/register.html" data-i18n="nav.pricing">Pricing</a></li>
+                <li>
+                    <div class="language-toggle">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </li>
+                <li><a href="/login.html" data-i18n="nav.login">Login</a></li>
             </ul>
+            <a href="/register.html" class="cta-button" data-i18n="nav.get-started">Get Started</a>
         </nav>
     </header>
 
     <main>
         <section class="hero">
             <div class="container">
-                <div class="badge">🚀 AI-Powered Content Creation</div>
-                <h1>Turn Your Food Photos Into Viral Content</h1>
-                <p>Upload a photo, describe your dish with your voice, and instantly generate engaging social media content for Instagram, TikTok, and more.</p>
-                
-                <div class="hero-buttons">
-                    <a href="/register.html" class="btn-primary">🚀 Get Started</a>
-                    <a href="/demo.html" class="btn-secondary">🎤 Try Demo</a>
-                </div>
+                <div class="hero-content">
+                    <h1 data-i18n="hero.title">Transform Your Voice Into Viral Food Content</h1>
+                    <p class="subtitle" data-i18n="hero.subtitle">AI-powered platform that turns your food descriptions into engaging social media content for Instagram, TikTok, and more. Just speak, and watch your content go viral.</p>
+                    
+                    <div class="hero-buttons">
+                        <a href="/demo.html" class="btn-primary" data-i18n="hero.try-demo">Try Free Demo</a>
+                        <a href="/register.html" class="btn-secondary" data-i18n="hero.start-free">Start Free Trial</a>
+                    </div>
 
-                <div class="hero-demo">
-                    <div class="demo-image">🍽️</div>
-                    <p><strong>Simply:</strong> Upload → Speak → Share</p>
+                    <div class="hero-demo">
+                        <div class="demo-card glass">
+                            <p data-i18n="hero.demo-text">🎤 "Just made the most incredible pasta with truffle oil..." → 🔥 Viral Instagram post with perfect hashtags!</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="features" class="features">
             <div class="container">
-                <h2>Why ChefSocial Voice?</h2>
-                
+                <div class="section-header">
+                    <h2 class="section-title" data-i18n="features.title">Powerful Features for Food Creators</h2>
+                    <p class="section-subtitle" data-i18n="features.subtitle">Everything you need to create engaging content that drives engagement and grows your audience</p>
+                </div>
+
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon">🎤</div>
-                        <h3>Voice-Powered Creation</h3>
-                        <p>Describe your dish naturally with your voice - no typing required. Our AI understands your passion and translates it into engaging content.</p>
+                        <h3 data-i18n="features.voice.title">Voice to Content AI</h3>
+                        <p data-i18n="features.voice.description">Simply describe your dish and our AI creates engaging captions, hashtags, and posting strategies optimized for each platform.</p>
                     </div>
-                    
+
                     <div class="feature-card">
-                        <div class="feature-icon">🚀</div>
-                        <h3>Instant Content Generation</h3>
-                        <p>Generate captions, hashtags, and viral-ready content for multiple platforms in seconds, not hours.</p>
+                        <div class="feature-icon">🌍</div>
+                        <h3 data-i18n="features.multilingual.title">Multilingual Support</h3>
+                        <p data-i18n="features.multilingual.description">Create content in French and English with perfect grammar, cultural nuances, and region-specific hashtags.</p>
                     </div>
-                    
+
                     <div class="feature-card">
                         <div class="feature-icon">📱</div>
-                        <h3>Multi-Platform Ready</h3>
-                        <p>Optimized content for Instagram, TikTok, and other social platforms with platform-specific formats and trending hashtags.</p>
+                        <h3 data-i18n="features.platforms.title">Multi-Platform Ready</h3>
+                        <p data-i18n="features.platforms.description">Optimized content for Instagram, TikTok, Facebook, Twitter, and LinkedIn with platform-specific formatting and trends.</p>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
-                        <h3>Viral Potential Scoring</h3>
-                        <p>Get AI-powered insights on your content's viral potential and best posting times to maximize engagement.</p>
-                    </div>
-                    
+
                     <div class="feature-card">
                         <div class="feature-icon">🧠</div>
-                        <h3>Natural Conversation</h3>
-                        <p>Have natural back-and-forth conversations with our AI to refine your content until it's perfect.</p>
+                        <h3 data-i18n="features.smart.title">Smart Brand Learning</h3>
+                        <p data-i18n="features.smart.description">AI learns your restaurant's unique voice, style, and audience preferences to create consistently on-brand content.</p>
                     </div>
-                    
+
                     <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Lightning Fast</h3>
-                        <p>From photo to polished post in under 30 seconds. Perfect for busy content creators and food enthusiasts.</p>
+                        <div class="feature-icon">📸</div>
+                        <h3 data-i18n="features.visual.title">Visual AI Analysis</h3>
+                        <p data-i18n="features.visual.description">Upload food photos and get AI-powered descriptions that highlight the most appetizing and shareable aspects.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3 data-i18n="features.analytics.title">Viral Prediction</h3>
+                        <p data-i18n="features.analytics.description">Get viral potential scores and optimal posting times based on current trends and your audience behavior.</p>
                     </div>
                 </div>
             </div>
@@ -466,31 +748,28 @@
 
         <section id="how-it-works" class="how-it-works">
             <div class="container">
-                <h2>How It Works</h2>
-                
+                <div class="section-header">
+                    <h2 class="section-title" data-i18n="how-it-works.title">How It Works</h2>
+                    <p class="section-subtitle" data-i18n="how-it-works.subtitle">From voice to viral content in three simple steps</p>
+                </div>
+
                 <div class="steps">
                     <div class="step">
                         <div class="step-number">1</div>
-                        <h3>📸 Upload Your Food Photo</h3>
-                        <p>Take a picture of your delicious creation or upload an existing photo from your gallery.</p>
+                        <h3 data-i18n="how-it-works.step1.title">Speak Your Story</h3>
+                        <p data-i18n="how-it-works.step1.description">Describe your dish, cooking process, or restaurant experience using your voice. Our AI understands context, emotions, and culinary details.</p>
                     </div>
-                    
+
                     <div class="step">
                         <div class="step-number">2</div>
-                        <h3>🎤 Describe With Voice</h3>
-                        <p>Hold the button and naturally describe your dish, ingredients, cooking process, or story behind it.</p>
+                        <h3 data-i18n="how-it-works.step2.title">AI Magic Happens</h3>
+                        <p data-i18n="how-it-works.step2.description">Our advanced AI analyzes your voice, understands the cuisine, and creates platform-optimized content with perfect hashtags and timing.</p>
                     </div>
-                    
+
                     <div class="step">
                         <div class="step-number">3</div>
-                        <h3>🤖 AI Magic Happens</h3>
-                        <p>Our advanced AI analyzes your photo and voice description to understand your dish perfectly.</p>
-                    </div>
-                    
-                    <div class="step">
-                        <div class="step-number">4</div>
-                        <h3>📱 Get Viral Content</h3>
-                        <p>Receive platform-optimized captions, hashtags, and content ready to share across all your social media.</p>
+                        <h3 data-i18n="how-it-works.step3.title">Share & Go Viral</h3>
+                        <p data-i18n="how-it-works.step3.description">Get ready-to-post content for all major platforms. One-click sharing or schedule for optimal engagement times. Watch your reach grow!</p>
                     </div>
                 </div>
             </div>
@@ -498,12 +777,9 @@
 
         <section class="cta-section">
             <div class="container">
-                <h2>Ready to Go Viral?</h2>
-                <p>Join thousands of food creators who are already using ChefSocial Voice to create engaging content.</p>
-                <div class="hero-buttons">
-                    <a href="/register.html" class="btn-primary">🚀 Start Creating Now</a>
-                    <a href="/demo.html" class="btn-secondary">🎤 Try Demo</a>
-                </div>
+                <h2 data-i18n="cta.title">Ready to Transform Your Content?</h2>
+                <p data-i18n="cta.description">Join thousands of restaurants and food creators who are already creating viral content with ChefSocial Voice.</p>
+                <a href="/register.html" class="cta-button-large" data-i18n="cta.button">Start Your Free Trial Today</a>
             </div>
         </section>
     </main>
@@ -512,41 +788,245 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>ChefSocial Voice</h3>
-                    <p>AI-powered food content creation platform that helps food enthusiasts and creators generate viral social media content effortlessly.</p>
+                    <h3 data-i18n="footer.product">Product</h3>
+                    <a href="/demo.html" data-i18n="footer.demo">Demo</a>
+                    <a href="#features" data-i18n="footer.features">Features</a>
+                    <a href="/register.html" data-i18n="footer.pricing">Pricing</a>
                 </div>
-                
                 <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <a href="/demo.html">Voice Demo</a>
-                    <a href="/natural.html">Natural Conversation</a>
-                    <a href="/conversation.html">Basic Chat</a>
-                    <a href="/login.html">Login</a>
-                    <a href="/register.html">Get Started</a>
+                    <h3 data-i18n="footer.company">Company</h3>
+                    <a href="#" data-i18n="footer.about">About</a>
+                    <a href="#" data-i18n="footer.contact">Contact</a>
+                    <a href="#" data-i18n="footer.blog">Blog</a>
                 </div>
-                
                 <div class="footer-section">
-                    <h3>Features</h3>
-                    <a href="#features">Voice Recognition</a>
-                    <a href="#features">AI Content Generation</a>
-                    <a href="#features">Multi-Platform Support</a>
-                    <a href="#features">Viral Scoring</a>
+                    <h3 data-i18n="footer.support">Support</h3>
+                    <a href="#" data-i18n="footer.help">Help Center</a>
+                    <a href="#" data-i18n="footer.docs">Documentation</a>
+                    <a href="#" data-i18n="footer.api">API</a>
                 </div>
-                
                 <div class="footer-section">
-                    <h3>Support</h3>
-                    <a href="#how-it-works">How It Works</a>
-                    <a href="#demo">Demo</a>
-                    <p>Email: hello@chefsocial.voice</p>
+                    <h3 data-i18n="footer.legal">Legal</h3>
+                    <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+                    <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
                 </div>
             </div>
-            
             <div class="footer-bottom">
-                <p>&copy; 2024 ChefSocial Voice. All rights reserved. Made with ❤️ for food creators.</p>
+                <p data-i18n="footer.copyright">© 2024 ChefSocial Voice. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
+    <script>
+        // Translation data
+        const translations = {
+            en: {
+                'nav.features': 'Features',
+                'nav.how-it-works': 'How It Works',
+                'nav.demo': 'Demo',
+                'nav.pricing': 'Pricing',
+                'nav.login': 'Login',
+                'nav.get-started': 'Get Started',
+                'hero.title': 'Transform Your Voice Into Viral Food Content',
+                'hero.subtitle': 'AI-powered platform that turns your food descriptions into engaging social media content for Instagram, TikTok, and more. Just speak, and watch your content go viral.',
+                'hero.try-demo': 'Try Free Demo',
+                'hero.start-free': 'Start Free Trial',
+                'hero.demo-text': '🎤 "Just made the most incredible pasta with truffle oil..." → 🔥 Viral Instagram post with perfect hashtags!',
+                'features.title': 'Powerful Features for Food Creators',
+                'features.subtitle': 'Everything you need to create engaging content that drives engagement and grows your audience',
+                'features.voice.title': 'Voice to Content AI',
+                'features.voice.description': 'Simply describe your dish and our AI creates engaging captions, hashtags, and posting strategies optimized for each platform.',
+                'features.multilingual.title': 'Multilingual Support',
+                'features.multilingual.description': 'Create content in French and English with perfect grammar, cultural nuances, and region-specific hashtags.',
+                'features.platforms.title': 'Multi-Platform Ready',
+                'features.platforms.description': 'Optimized content for Instagram, TikTok, Facebook, Twitter, and LinkedIn with platform-specific formatting and trends.',
+                'features.smart.title': 'Smart Brand Learning',
+                'features.smart.description': 'AI learns your restaurant\'s unique voice, style, and audience preferences to create consistently on-brand content.',
+                'features.visual.title': 'Visual AI Analysis',
+                'features.visual.description': 'Upload food photos and get AI-powered descriptions that highlight the most appetizing and shareable aspects.',
+                'features.analytics.title': 'Viral Prediction',
+                'features.analytics.description': 'Get viral potential scores and optimal posting times based on current trends and your audience behavior.',
+                'how-it-works.title': 'How It Works',
+                'how-it-works.subtitle': 'From voice to viral content in three simple steps',
+                'how-it-works.step1.title': 'Speak Your Story',
+                'how-it-works.step1.description': 'Describe your dish, cooking process, or restaurant experience using your voice. Our AI understands context, emotions, and culinary details.',
+                'how-it-works.step2.title': 'AI Magic Happens',
+                'how-it-works.step2.description': 'Our advanced AI analyzes your voice, understands the cuisine, and creates platform-optimized content with perfect hashtags and timing.',
+                'how-it-works.step3.title': 'Share & Go Viral',
+                'how-it-works.step3.description': 'Get ready-to-post content for all major platforms. One-click sharing or schedule for optimal engagement times. Watch your reach grow!',
+                'cta.title': 'Ready to Transform Your Content?',
+                'cta.description': 'Join thousands of restaurants and food creators who are already creating viral content with ChefSocial Voice.',
+                'cta.button': 'Start Your Free Trial Today',
+                'footer.product': 'Product',
+                'footer.demo': 'Demo',
+                'footer.features': 'Features',
+                'footer.pricing': 'Pricing',
+                'footer.company': 'Company',
+                'footer.about': 'About',
+                'footer.contact': 'Contact',
+                'footer.blog': 'Blog',
+                'footer.support': 'Support',
+                'footer.help': 'Help Center',
+                'footer.docs': 'Documentation',
+                'footer.api': 'API',
+                'footer.legal': 'Legal',
+                'footer.privacy': 'Privacy Policy',
+                'footer.terms': 'Terms of Service',
+                'footer.copyright': '© 2024 ChefSocial Voice. All rights reserved.'
+            },
+            fr: {
+                'nav.features': 'Fonctionnalités',
+                'nav.how-it-works': 'Comment ça marche',
+                'nav.demo': 'Démo',
+                'nav.pricing': 'Tarifs',
+                'nav.login': 'Connexion',
+                'nav.get-started': 'Commencer',
+                'hero.title': 'Transformez Votre Voix en Contenu Viral',
+                'hero.subtitle': 'Plateforme IA qui transforme vos descriptions culinaires en contenu engageant pour Instagram, TikTok et plus. Parlez simplement, et regardez votre contenu devenir viral.',
+                'hero.try-demo': 'Essai Gratuit',
+                'hero.start-free': 'Essai Gratuit',
+                'hero.demo-text': '🎤 "Je viens de faire les pâtes les plus incroyables à l\'huile de truffe..." → 🔥 Post Instagram viral avec les hashtags parfaits!',
+                'features.title': 'Fonctionnalités Puissantes pour Créateurs',
+                'features.subtitle': 'Tout ce dont vous avez besoin pour créer du contenu engageant qui stimule l\'engagement et fait grandir votre audience',
+                'features.voice.title': 'IA Voix vers Contenu',
+                'features.voice.description': 'Décrivez simplement votre plat et notre IA crée des légendes engageantes, hashtags et stratégies optimisées pour chaque plateforme.',
+                'features.multilingual.title': 'Support Multilingue',
+                'features.multilingual.description': 'Créez du contenu en français et anglais avec une grammaire parfaite, des nuances culturelles et des hashtags spécifiques à la région.',
+                'features.platforms.title': 'Multi-Plateformes',
+                'features.platforms.description': 'Contenu optimisé pour Instagram, TikTok, Facebook, Twitter et LinkedIn avec formatage et tendances spécifiques.',
+                'features.smart.title': 'Apprentissage de Marque',
+                'features.smart.description': 'L\'IA apprend la voix unique, le style et les préférences d\'audience de votre restaurant pour créer du contenu cohérent.',
+                'features.visual.title': 'Analyse Visuelle IA',
+                'features.visual.description': 'Uploadez des photos de nourriture et obtenez des descriptions IA qui mettent en valeur les aspects les plus appétissants.',
+                'features.analytics.title': 'Prédiction Virale',
+                'features.analytics.description': 'Obtenez des scores de potentiel viral et des heures de publication optimales basées sur les tendances actuelles.',
+                'how-it-works.title': 'Comment Ça Marche',
+                'how-it-works.subtitle': 'De la voix au contenu viral en trois étapes simples',
+                'how-it-works.step1.title': 'Racontez Votre Histoire',
+                'how-it-works.step1.description': 'Décrivez votre plat, processus de cuisson ou expérience restaurant avec votre voix. Notre IA comprend le contexte et les détails culinaires.',
+                'how-it-works.step2.title': 'La Magie IA Opère',
+                'how-it-works.step2.description': 'Notre IA avancée analyse votre voix, comprend la cuisine et crée du contenu optimisé avec hashtags et timing parfaits.',
+                'how-it-works.step3.title': 'Partagez et Devenez Viral',
+                'how-it-works.step3.description': 'Obtenez du contenu prêt à publier pour toutes les plateformes. Partage en un clic ou programmation pour un engagement optimal!',
+                'cta.title': 'Prêt à Transformer Votre Contenu?',
+                'cta.description': 'Rejoignez des milliers de restaurants et créateurs qui créent déjà du contenu viral avec ChefSocial Voice.',
+                'cta.button': 'Commencez Votre Essai Gratuit',
+                'footer.product': 'Produit',
+                'footer.demo': 'Démo',
+                'footer.features': 'Fonctionnalités',
+                'footer.pricing': 'Tarifs',
+                'footer.company': 'Entreprise',
+                'footer.about': 'À propos',
+                'footer.contact': 'Contact',
+                'footer.blog': 'Blog',
+                'footer.support': 'Support',
+                'footer.help': 'Centre d\'aide',
+                'footer.docs': 'Documentation',
+                'footer.api': 'API',
+                'footer.legal': 'Légal',
+                'footer.privacy': 'Politique de Confidentialité',
+                'footer.terms': 'Conditions d\'Utilisation',
+                'footer.copyright': '© 2024 ChefSocial Voice. Tous droits réservés.'
+            }
+        };
+
+        // Language manager
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('chefsocial-lang') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.updateLanguageButtons();
+                this.translatePage();
+                this.setupLanguageToggle();
+            }
+
+            setupLanguageToggle() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const lang = btn.dataset.lang;
+                        this.setLanguage(lang);
+                    });
+                });
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('chefsocial-lang', lang);
+                this.updateLanguageButtons();
+                this.translatePage();
+            }
+
+            updateLanguageButtons() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+                });
+            }
+
+            translatePage() {
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.dataset.i18n;
+                    const translation = translations[this.currentLang]?.[key];
+                    if (translation) {
+                        element.textContent = translation;
+                    }
+                });
+            }
+        }
+
+        // Initialize language manager
+        const lang = new LanguageManager();
+
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card, .step').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+    
     <!-- Cleanup script for service workers -->
     <script src="/cleanup-sw.js"></script>
 </body>

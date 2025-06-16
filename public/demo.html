@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefSocial Voice Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Source Sans Pro', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef2f2 100%);
+            color: #374151;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(234, 88, 12, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #ea580c;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover .logo-icon {
+            transform: scale(1.1);
+            color: #dc2626;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ea580c;
+        }
+
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 0.25rem;
+        }
+
+        .lang-btn {
+            padding: 0.25rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background: #ea580c;
+            color: white;
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .cta-button {
+            background: linear-gradient(to right, #ea580c, #dc2626);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+        }
+        
+        .main-content {
+            max-width: 800px;
+            margin: 80px auto 0;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.1);
+            border: 1px solid rgba(234, 88, 12, 0.1);
+        }
+        
+        .voice-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .voice-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .voice-button.recording {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .status {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+        
+        .transcript {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 100px;
+            display: none;
+        }
+        
+        .results {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        #imagePreview {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .main-content {
+                margin-top: 60px;
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+            <ul class="nav-links">
+                <li><a href="/index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="/demo.html" data-i18n="nav.demo">Demo</a></li>
+                <li><a href="/natural.html" data-i18n="nav.natural">Natural Conversation</a></li>
+                <li><a href="/conversation.html" data-i18n="nav.chat">Basic Chat</a></li>
+                <li><a href="/login.html" data-i18n="nav.login">Login</a></li>
+                <li>
+                    <div class="language-toggle">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </li>
+                <li><a href="/register.html" class="cta-button" data-i18n="nav.getStarted">Get Started</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+        <h1 style="text-align: center;" data-i18n="demo.title">🍽️ ChefSocial Voice Demo</h1>
+        <p style="text-align: center;" data-i18n="demo.subtitle">Upload a food photo, then describe it with your voice!</p>
+        
+        <div id="authSection" style="text-align: center; margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border-radius: 15px; border: 2px solid #fed7aa;">
+            <p style="margin: 10px 0; color: #ea580c; font-size: 1.2em; font-weight: bold;">🎯 Demo Mode</p>
+            <p style="margin: 10px 0; color: #374151; font-size: 1em;">Try our AI voice-to-content technology!</p>
+            <div style="margin: 15px 0; padding: 12px; background: white; border-radius: 8px; border-left: 4px solid #ea580c;">
+                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;"><strong>Demo includes:</strong> Basic voice transcription + simple captions</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;"><strong>Full version adds:</strong> Advanced AI, viral scoring, brand voice, SMS workflows</p>
+            </div>
+            <a href="/register.html" style="display: inline-block; background: linear-gradient(to right, #ea580c, #dc2626); color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);">
+                🚀 Unlock Full Features
+            </a>
+        </div>
+        
+        <div id="userSection" style="text-align: center; margin: 20px 0; padding: 15px; background: #f0fdf4; border-radius: 10px; border: 1px solid #bbf7d0; display: none;">
+            <p style="margin: 10px 0; color: #374151;"><strong>🚀 Welcome back!</strong></p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="/natural.html" style="display: inline-block; background: linear-gradient(to right, #ea580c, #dc2626); color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);">
+                    🧠 Natural Conversation
+                </a>
+                <a href="/conversation.html" style="display: inline-block; background: #ffffff; color: #ea580c; border: 2px solid #ea580c; padding: 10px 22px; border-radius: 25px; text-decoration: none; font-weight: bold;">
+                    💬 Basic Chat Mode
+                </a>
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #6b7280;">Choose Natural Conversation for the most fluid experience!</p>
+        </div>
+        
+        <!-- Photo Upload -->
+        <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+            <p>📸 Click to upload your food photo</p>
+            <input type="file" id="photoInput" accept="image/*" style="display: none;">
+        </div>
+        <img id="imagePreview" style="display: none;">
+        
+        <!-- Voice Interface -->
+        <button id="voiceButton" class="voice-button">
+            🎤<br>Hold to Talk
+        </button>
+        
+        <div id="status" class="status">Upload a photo first, then hold the button and describe your dish!</div>
+        
+        <!-- Transcript Display -->
+        <div id="transcript" class="transcript">
+            <h3>What you said:</h3>
+            <p id="transcriptText"></p>
+        </div>
+        
+        <!-- Generated Content -->
+        <div id="results" class="results">
+            <h3>Your Generated Content:</h3>
+            <div id="generatedContent"></div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Translation data
+        const translations = {
+            en: {
+                'nav.home': 'Home',
+                'nav.demo': 'Demo',
+                'nav.natural': 'Natural Conversation',
+                'nav.chat': 'Basic Chat',
+                'nav.login': 'Login',
+                'nav.getStarted': 'Get Started',
+                'demo.title': '🍽️ ChefSocial Voice Demo',
+                'demo.subtitle': 'Upload a food photo, then describe it with your voice!',
+                'demo.modeTitle': '🎯 Demo Mode',
+                'demo.modeDesc': 'Try our AI voice-to-content technology!',
+                'demo.includes': 'Demo includes:',
+                'demo.includesDesc': 'Basic voice transcription + simple captions',
+                'demo.fullVersion': 'Full version adds:',
+                'demo.fullVersionDesc': 'Advanced AI, viral scoring, brand voice, SMS workflows',
+                'demo.unlock': '🚀 Unlock Full Features',
+                'demo.uploadPhoto': '📸 Click to upload your food photo',
+                'demo.holdToTalk': '🎤\nHold to Talk',
+                'demo.status': 'Upload a photo first, then hold the button and describe your dish!',
+                'demo.transcriptTitle': 'What you said:',
+                'demo.generatedTitle': 'Your Generated Content:',
+                'demo.recording': '🔴\nRecording...',
+                'demo.listening': 'Listening... tell me about your dish!',
+                'demo.processing': 'Processing your voice...',
+                'demo.understanding': 'Understanding what you said...',
+                'demo.contentReady': 'Your viral content is ready! 🚀',
+                'demo.instagram': '📱 Instagram Post',
+                'demo.tiktok': '🎵 TikTok Post',
+                'demo.analytics': '📊 Analytics',
+                'demo.caption': 'Caption:',
+                'demo.hashtags': 'Hashtags:',
+                'demo.viralPotential': 'Viral Potential:',
+                'demo.bestTime': 'Best Posting Time:',
+                'demo.error': '❌ Something went wrong. Let\'s try again!',
+                'demo.errorTitle': '🔧 Demo Temporary Issue',
+                'demo.errorDesc': 'Don\'t worry! This happens sometimes in demo mode. Try speaking more clearly or check your microphone.',
+                'demo.tips': 'Tips:',
+                'demo.tip1': '• Speak clearly and close to your microphone',
+                'demo.tip2': '• Make sure you uploaded a food photo first',
+                'demo.tip3': '• Try describing your dish in simple terms',
+                'demo.getReliable': '🚀 Get Reliable Full Version'
+            },
+            fr: {
+                'nav.home': 'Accueil',
+                'nav.demo': 'Démo',
+                'nav.natural': 'Conversation Naturelle',
+                'nav.chat': 'Chat Basic',
+                'nav.login': 'Connexion',
+                'nav.getStarted': 'Commencer',
+                'demo.title': '🍽️ Démo ChefSocial Voice',
+                'demo.subtitle': 'Téléchargez une photo de nourriture, puis décrivez-la avec votre voix !',
+                'demo.modeTitle': '🎯 Mode Démo',
+                'demo.modeDesc': 'Essayez notre technologie IA voix-vers-contenu !',
+                'demo.includes': 'La démo inclut :',
+                'demo.includesDesc': 'Transcription vocale de base + légendes simples',
+                'demo.fullVersion': 'La version complète ajoute :',
+                'demo.fullVersionDesc': 'IA avancée, scoring viral, voix de marque, workflows SMS',
+                'demo.unlock': '🚀 Débloquer Toutes les Fonctionnalités',
+                'demo.uploadPhoto': '📸 Cliquez pour télécharger votre photo de nourriture',
+                'demo.holdToTalk': '🎤\nMaintenez pour Parler',
+                'demo.status': 'Téléchargez d\'abord une photo, puis maintenez le bouton et décrivez votre plat !',
+                'demo.transcriptTitle': 'Ce que vous avez dit :',
+                'demo.generatedTitle': 'Votre Contenu Généré :',
+                'demo.recording': '🔴\nEnregistrement...',
+                'demo.listening': 'Écoute... parlez-moi de votre plat !',
+                'demo.processing': 'Traitement de votre voix...',
+                'demo.understanding': 'Compréhension de ce que vous avez dit...',
+                'demo.contentReady': 'Votre contenu viral est prêt ! 🚀',
+                'demo.instagram': '📱 Post Instagram',
+                'demo.tiktok': '🎵 Post TikTok',
+                'demo.analytics': '📊 Analytiques',
+                'demo.caption': 'Légende :',
+                'demo.hashtags': 'Hashtags :',
+                'demo.viralPotential': 'Potentiel Viral :',
+                'demo.bestTime': 'Meilleur Moment de Publication :',
+                'demo.error': '❌ Quelque chose s\'est mal passé. Essayons encore !',
+                'demo.errorTitle': '🔧 Problème Temporaire de Démo',
+                'demo.errorDesc': 'Ne vous inquiétez pas ! Cela arrive parfois en mode démo. Essayez de parler plus clairement ou vérifiez votre microphone.',
+                'demo.tips': 'Conseils :',
+                'demo.tip1': '• Parlez clairement et près de votre microphone',
+                'demo.tip2': '• Assurez-vous d\'avoir d\'abord téléchargé une photo de nourriture',
+                'demo.tip3': '• Essayez de décrire votre plat en termes simples',
+                'demo.getReliable': '🚀 Obtenir la Version Complète Fiable'
+            }
+        };
+
+        // Language manager
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('chefsocial-lang') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.updateLanguageButtons();
+                this.translatePage();
+                this.setupLanguageToggle();
+            }
+
+            setupLanguageToggle() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const lang = btn.dataset.lang;
+                        this.setLanguage(lang);
+                    });
+                });
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('chefsocial-lang', lang);
+                this.updateLanguageButtons();
+                this.translatePage();
+            }
+
+            updateLanguageButtons() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+                });
+            }
+
+            translatePage() {
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.dataset.i18n;
+                    const translation = translations[this.currentLang]?.[key];
+                    if (translation) {
+                        if (element.tagName === 'INPUT' && element.type === 'button') {
+                            element.value = translation;
+                        } else {
+                            element.textContent = translation;
+                        }
+                    }
+                });
+            }
+
+            t(key) {
+                return translations[this.currentLang]?.[key] || translations.en[key] || key;
+            }
+
+            getCurrentLanguage() {
+                return this.currentLang;
+            }
+        }
+
+        // Initialize language manager
+        const lang = new LanguageManager();
+
+        class ChefSocialVoice {
+            constructor() {
+                this.isRecording = false;
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.currentPhotoData = null;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+            }
+            
+            initializeElements() {
+                this.voiceButton = document.getElementById('voiceButton');
+                this.status = document.getElementById('status');
+                this.transcript = document.getElementById('transcript');
+                this.transcriptText = document.getElementById('transcriptText');
+                this.results = document.getElementById('results');
+                this.generatedContent = document.getElementById('generatedContent');
+                this.photoInput = document.getElementById('photoInput');
+                this.imagePreview = document.getElementById('imagePreview');
+            }
+            
+            setupEventListeners() {
+                // Photo upload
+                this.photoInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
+                
+                // Voice button events
+                this.voiceButton.addEventListener('mousedown', () => this.startRecording());
+                this.voiceButton.addEventListener('mouseup', () => this.stopRecording());
+                this.voiceButton.addEventListener('mouseleave', () => this.stopRecording());
+                
+                // Touch events for mobile
+                this.voiceButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startRecording();
+                });
+                this.voiceButton.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.stopRecording();
+                });
+            }
+            
+            handlePhotoUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.currentPhotoData = e.target.result;
+                        this.imagePreview.src = e.target.result;
+                        this.imagePreview.style.display = 'block';
+                        this.status.textContent = 'Great! Now hold the button and describe your dish!';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            async startRecording() {
+                if (!this.currentPhotoData) {
+                    this.status.textContent = lang.getCurrentLanguage() === 'fr' 
+                        ? 'Veuillez d\'abord télécharger une photo !' 
+                        : 'Please upload a photo first!';
+                    return;
+                }
+                
+                if (this.isRecording) return;
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        this.processRecording();
+                    };
+                    
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    this.voiceButton.classList.add('recording');
+                    this.voiceButton.innerHTML = lang.t('demo.recording');
+                    this.status.textContent = lang.t('demo.listening');
+                    
+                } catch (error) {
+                    this.status.textContent = 'Microphone access denied. Please allow microphone access.';
+                    console.error('Error accessing microphone:', error);
+                }
+            }
+            
+            stopRecording() {
+                if (!this.isRecording) return;
+                
+                this.mediaRecorder.stop();
+                this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                this.isRecording = false;
+                
+                this.voiceButton.classList.remove('recording');
+                this.voiceButton.innerHTML = lang.t('demo.holdToTalk');
+                this.status.textContent = lang.t('demo.processing');
+            }
+            
+            async processRecording() {
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                
+                try {
+                    // Convert audio to base64
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                    
+                    this.status.textContent = lang.t('demo.understanding');
+                    
+                    // Send to your backend for processing
+                    const token = localStorage.getItem('authToken');
+                    const headers = {
+                        'Content-Type': 'application/json',
+                    };
+                    
+                    let endpoint = '/api/process-voice-demo'; // Default to demo
+                    
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                        endpoint = '/api/process-voice'; // Use full version if authenticated
+                    }
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            audio: base64Audio,
+                            image: this.currentPhotoData,
+                            language: lang.getCurrentLanguage() // Send current language
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayResults(result);
+                    } else {
+                        this.status.textContent = 'Sorry, something went wrong. Please try again.';
+                    }
+                    
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    
+                    // Show user-friendly error message
+                    this.status.textContent = '❌ Something went wrong. Let\'s try again!';
+                    
+                    // Show error details in results area
+                    this.generatedContent.innerHTML = `
+                        <div style="margin-bottom: 20px; padding: 20px; background: #fef2f2; border: 2px solid #fecaca; border-radius: 15px; text-align: center;">
+                            <p style="color: #dc2626; font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">🔧 Demo Temporary Issue</p>
+                            <p style="color: #6b7280; font-size: 0.95rem; margin-bottom: 15px;">Don't worry! This happens sometimes in demo mode. Try speaking more clearly or check your microphone.</p>
+                            <div style="margin: 15px 0; padding: 12px; background: white; border-radius: 8px;">
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;"><strong>Tips:</strong></p>
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;">• Speak clearly and close to your microphone</p>
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;">• Make sure you uploaded a food photo first</p>
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6b7280;">• Try describing your dish in simple terms</p>
+                            </div>
+                            <a href="/register.html" style="background: linear-gradient(to right, #ea580c, #dc2626); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+                                🚀 Get Reliable Full Version
+                            </a>
+                        </div>
+                    `;
+                    
+                    this.results.style.display = 'block';
+                }
+            }
+            
+            displayResults(result) {
+                // Show transcript
+                this.transcriptText.textContent = result.transcript;
+                this.transcript.style.display = 'block';
+                
+                // Show generated content
+                let demoNotice = '';
+                if (result.demo) {
+                    demoNotice = `
+                        <div style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #fed7aa; border-radius: 15px; text-align: center;">
+                            <p style="color: #ea580c; font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">✨ Demo Results</p>
+                            <p style="color: #6b7280; font-size: 0.95rem; margin-bottom: 15px;">${result.content.demoNote || 'This is basic demo content. Upgrade for AI-powered viral content!'}</p>
+                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                <a href="/register.html" style="background: linear-gradient(to right, #ea580c, #dc2626); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+                                    🚀 Get Advanced AI
+                                </a>
+                                <a href="/natural.html" style="background: white; color: #ea580c; border: 2px solid #ea580c; padding: 8px 18px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+                                    🧠 Try Natural Mode
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                this.generatedContent.innerHTML = `
+                    ${demoNotice}
+                    <div style="margin-bottom: 20px; padding: 15px; border-left: 4px solid #ff6b6b; background: rgba(255, 107, 107, 0.05); border-radius: 8px;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0;">📱 Instagram Post</h4>
+                            ${result.demo ? '<span style="background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">DEMO</span>' : ''}
+                        </div>
+                        <p><strong>Caption:</strong> ${result.content.instagram.caption}</p>
+                        <p><strong>Hashtags:</strong> ${result.content.instagram.hashtags}</p>
+                        ${result.demo ? '<p style="font-size: 0.8em; color: #6b7280; font-style: italic;">💡 Full version includes brand voice, trending hashtags, and viral optimization</p>' : ''}
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 15px; border-left: 4px solid #333; background: rgba(51, 51, 51, 0.05); border-radius: 8px;">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0;">🎵 TikTok Post</h4>
+                            ${result.demo ? '<span style="background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">DEMO</span>' : ''}
+                        </div>
+                        <p><strong>Caption:</strong> ${result.content.tiktok.caption}</p>
+                        <p><strong>Hashtags:</strong> ${result.content.tiktok.hashtags}</p>
+                        ${result.demo ? '<p style="font-size: 0.8em; color: #6b7280; font-style: italic;">💡 Full version includes trend analysis and platform-specific optimization</p>' : ''}
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-radius: 8px; border: 1px solid #d1d5db;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0;">📊 Analytics</h4>
+                            ${result.demo ? '<span style="background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">LIMITED</span>' : ''}
+                        </div>
+                        <p><strong>✨ Viral Potential:</strong> ${result.content.viralPotential}/10 ${result.demo ? '(Demo scoring)' : ''}</p>
+                        <p><strong>🎯 Best Posting Time:</strong> ${result.content.bestTime} ${result.demo ? '(Basic suggestion)' : ''}</p>
+                        ${result.demo ? '<p style="font-size: 0.8em; color: #6b7280; font-style: italic;">💡 Full version includes AI-powered viral prediction, optimal timing, and engagement forecasting</p>' : ''}
+                    </div>
+                `;
+                
+                this.results.style.display = 'block';
+                this.status.textContent = lang.t('demo.contentReady');
+            }
+        }
+        
+        // Clear any existing service workers (from previous projects)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('Unregistered old service worker');
+                }
+            });
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication status
+            const token = localStorage.getItem('authToken');
+            const userEmail = localStorage.getItem('userEmail');
+            
+            if (token && userEmail) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('userSection').style.display = 'block';
+                console.log('User authenticated:', userEmail);
+            } else {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('userSection').style.display = 'none';
+                console.log('Demo mode - no authentication');
+            }
+            
+            new ChefSocialVoice();
+        });
+    </script>
+</body>
+</html>

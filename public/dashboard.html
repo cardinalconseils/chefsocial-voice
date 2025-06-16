@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ChefSocial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange-500: #ea580c;
+            --orange-600: #dc2626;
+            --orange-50: #fff7ed;
+            --gray-900: #111827;
+            --gray-600: #4b5563;
+            --gray-100: #f3f4f6;
+            --white: #ffffff;
+            --green-500: #10b981;
+            --red-500: #ef4444;
+            --blue-500: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--orange-50) 0%, var(--white) 100%);
+            min-height: 100vh;
+            color: var(--gray-900);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--orange-500);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: var(--gray-600);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--orange-50);
+            color: var(--orange-500);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .header-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .user-info {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .welcome-message {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .plan-badge {
+            display: inline-block;
+            background: var(--orange-500);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .trial-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--orange-50);
+            border-radius: 8px;
+            border-left: 4px solid var(--orange-500);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card.available {
+            border-color: var(--green-500);
+        }
+
+        .feature-card.unavailable {
+            border-color: var(--gray-100);
+            opacity: 0.6;
+        }
+
+        .feature-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .feature-status {
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .feature-status.available {
+            background: #dcfce7;
+            color: var(--green-500);
+        }
+
+        .feature-status.unavailable {
+            background: #fef2f2;
+            color: var(--red-500);
+        }
+
+        .feature-description {
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .feature-action {
+            background: var(--orange-500);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .feature-action:hover {
+            background: var(--orange-600);
+            transform: translateY(-1px);
+        }
+
+        .feature-action:disabled {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background: #f87171;
+            color: var(--white);
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="logo">
+                🍽️ ChefSocial
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="overview">
+                        📊 Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="voice-content">
+                        🎙️ Voice Content
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="conversation">
+                        💬 AI Conversation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="content-library">
+                        📚 Content Library
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="analytics">
+                        📈 Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="profile">
+                        👤 Profile
+                    </a>
+                </li>
+            </ul>
+            
+            <button class="logout-btn" onclick="logout()">
+                Logout
+            </button>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1 class="header-title">Dashboard</h1>
+            </div>
+
+            <div class="user-info">
+                <div class="welcome-message">Welcome back, <span id="user-name">Chef!</span></div>
+                <div>
+                    <span class="plan-badge" id="user-plan">Loading...</span>
+                </div>
+                <div class="trial-info" id="trial-info" style="display: none;">
+                    🎉 You're currently on a 14-day free trial. Your trial ends on <span id="trial-end-date"></span>
+                </div>
+            </div>
+
+            <div class="features-grid" id="features-grid">
+                <!-- Features will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Dashboard {
+            constructor() {
+                this.token = localStorage.getItem('auth_token');
+                this.user = null;
+                this.features = [];
+                
+                if (!this.token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                this.loadUserData();
+                this.loadFeatures();
+                this.setupNavigation();
+            }
+
+            async loadUserData() {
+                try {
+                    const response = await fetch('/api/auth/verify', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Authentication failed');
+                    }
+
+                    const result = await response.json();
+                    this.user = result.user;
+                    
+                    // Update UI with user info
+                    document.getElementById('user-name').textContent = this.user.name;
+                    document.getElementById('user-plan').textContent = this.user.plan || 'trial';
+                    
+                    // Show trial info if applicable
+                    if (this.user.plan === 'trial') {
+                        const trialInfo = document.getElementById('trial-info');
+                        trialInfo.style.display = 'block';
+                        // You could calculate and show actual trial end date here
+                    }
+
+                } catch (error) {
+                    console.error('Failed to load user data:', error);
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login.html';
+                }
+            }
+
+            async loadFeatures() {
+                try {
+                    const response = await fetch('/api/features', {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load features');
+                    }
+
+                    const result = await response.json();
+                    this.features = result.features;
+                    this.renderFeatures();
+
+                } catch (error) {
+                    console.error('Failed to load features:', error);
+                }
+            }
+
+            renderFeatures() {
+                const grid = document.getElementById('features-grid');
+                grid.innerHTML = '';
+
+                this.features.forEach(feature => {
+                    const featureCard = document.createElement('div');
+                    featureCard.className = `feature-card ${feature.has_access ? 'available' : 'unavailable'}`;
+                    
+                    featureCard.innerHTML = `
+                        <div class="feature-header">
+                            <h3 class="feature-title">${feature.feature_name}</h3>
+                            <span class="feature-status ${feature.has_access ? 'available' : 'unavailable'}">
+                                ${feature.has_access ? 'Available' : 'Upgrade Required'}
+                            </span>
+                        </div>
+                        <p class="feature-description">${feature.description}</p>
+                        ${this.getFeatureAction(feature)}
+                    `;
+
+                    grid.appendChild(featureCard);
+                });
+            }
+
+            getFeatureAction(feature) {
+                if (!feature.has_access) {
+                    return `<button class="feature-action" onclick="dashboard.upgradeAccount()">Upgrade Plan</button>`;
+                }
+
+                switch (feature.feature_key) {
+                    case 'voice_content_creation':
+                        return `<a href="/index.html" class="feature-action">Create Content</a>`;
+                    case 'natural_conversation':
+                        return `<a href="/natural.html" class="feature-action">Start Conversation</a>`;
+                    case 'analytics_insights':
+                        return `<button class="feature-action" onclick="dashboard.showAnalytics()">View Analytics</button>`;
+                    default:
+                        return `<button class="feature-action" disabled>Coming Soon</button>`;
+                }
+            }
+
+            setupNavigation() {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Update active state
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        
+                        const section = link.dataset.section;
+                        this.navigateToSection(section);
+                    });
+                });
+            }
+
+            navigateToSection(section) {
+                switch (section) {
+                    case 'voice-content':
+                        window.location.href = '/index.html';
+                        break;
+                    case 'conversation':
+                        window.location.href = '/natural.html';
+                        break;
+                    case 'overview':
+                    default:
+                        // Stay on dashboard
+                        break;
+                }
+            }
+
+            upgradeAccount() {
+                // Redirect to pricing/upgrade page
+                window.location.href = '/register.html';
+            }
+
+            showAnalytics() {
+                alert('Analytics feature coming soon!');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '/';
+        }
+
+        // Initialize dashboard when page loads
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new Dashboard();
+        });
+    </script>
+</body>
+</html>

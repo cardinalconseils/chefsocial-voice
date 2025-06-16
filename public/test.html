@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefSocial Connection Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef2f2 100%);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(234, 88, 12, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #ea580c;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover .logo-icon {
+            transform: scale(1.1);
+            color: #dc2626;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ea580c;
+        }
+
+        .cta-button {
+            background: linear-gradient(to right, #ea580c, #dc2626);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 100px auto 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.1);
+            border: 1px solid rgba(234, 88, 12, 0.1);
+        }
+
+        h1 {
+            color: #ea580c;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        #status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #fff7ed;
+            border-radius: 10px;
+            border: 1px solid #fed7aa;
+        }
+
+        #log {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        #log p {
+            margin: 0.5rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .container {
+                margin: 80px 1rem 0;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+            <ul class="nav-links">
+                <li><a href="/index.html">Home</a></li>
+                <li><a href="/demo.html">Demo</a></li>
+                <li><a href="/natural.html">Natural Conversation</a></li>
+                <li><a href="/conversation.html">Basic Chat</a></li>
+                <li><a href="/login.html">Login</a></li>
+                <li><a href="/register.html" class="cta-button">Get Started</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>ChefSocial Connection Test</h1>
+        <div id="status">Testing connection...</div>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        const status = document.getElementById('status');
+        const log = document.getElementById('log');
+        
+        function addLog(message) {
+            log.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
+        }
+        
+        addLog('Starting connection test...');
+        
+        // Test REST API first
+        fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+                addLog('✅ REST API working: ' + JSON.stringify(data));
+                testWebSocket();
+            })
+            .catch(error => {
+                addLog('❌ REST API failed: ' + error);
+            });
+        
+        function testWebSocket() {
+            addLog('Testing WebSocket connection...');
+            
+            const ws = new WebSocket('ws://localhost:4000/ws/conversation');
+            
+            ws.onopen = function() {
+                addLog('✅ WebSocket connected');
+                status.textContent = 'Connection successful!';
+                
+                // Test sending a message
+                ws.send(JSON.stringify({
+                    type: 'start_session'
+                }));
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                addLog('📨 Received: ' + JSON.stringify(data));
+            };
+            
+            ws.onerror = function(error) {
+                addLog('❌ WebSocket error: ' + error);
+                status.textContent = 'Connection failed!';
+            };
+            
+            ws.onclose = function() {
+                addLog('🔌 WebSocket closed');
+            };
+        }
+    </script>
+</body>
+</html>

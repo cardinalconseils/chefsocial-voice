@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ChefSocial Voice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef2f2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.1);
+            border: 1px solid rgba(234, 88, 12, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #374151;
+            text-decoration: none;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #ea580c;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .register-header h1 {
+            font-size: 2rem;
+            color: #ea580c;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .pricing-options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        .pricing-card.selected {
+            border-color: #ea580c;
+            background: #fff7ed;
+        }
+
+        .pricing-card.popular {
+            border-color: #ea580c;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: linear-gradient(to right, #ea580c, #dc2626);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .plan-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ea580c;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price .period {
+            font-size: 1rem;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .plan-description {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .plan-features {
+            list-style: none;
+        }
+
+        .plan-features li {
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features li::before {
+            content: "✓";
+            color: #ea580c;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ea580c;
+        }
+
+        .card-element {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .card-element.StripeElement--focus {
+            border-color: #ea580c;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(to right, #ea580c, #dc2626);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6b7280;
+        }
+
+        .login-link a {
+            color: #ea580c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .security-note {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .register-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-card">
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+
+            <div class="register-header">
+                <h1>Get Started</h1>
+                <p>Choose your plan and start creating viral food content</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <form id="registrationForm">
+                <div class="pricing-options">
+                    <div class="pricing-card" data-plan="starter" data-price="997">
+                        <div class="plan-name">Starter Plan</div>
+                        <div class="plan-price">$9.97<span class="period">/month</span></div>
+                        <div class="plan-description">Perfect for individual creators</div>
+                        <ul class="plan-features">
+                            <li>100 AI-generated posts per month</li>
+                            <li>Voice-to-content creation</li>
+                            <li>Multi-platform optimization</li>
+                            <li>Basic analytics</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card popular selected" data-plan="pro" data-price="1997">
+                        <div class="popular-badge">Most Popular</div>
+                        <div class="plan-name">Pro Plan</div>
+                        <div class="plan-price">$19.97<span class="period">/month</span></div>
+                        <div class="plan-description">For serious content creators</div>
+                        <ul class="plan-features">
+                            <li>500 AI-generated posts per month</li>
+                            <li>Advanced voice recognition</li>
+                            <li>Natural conversation mode</li>
+                            <li>Viral potential scoring</li>
+                            <li>Priority support</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card" data-plan="business" data-price="4997">
+                        <div class="plan-name">Business Plan</div>
+                        <div class="plan-price">$49.97<span class="period">/month</span></div>
+                        <div class="plan-description">For restaurants and agencies</div>
+                        <ul class="plan-features">
+                            <li>Unlimited AI-generated posts</li>
+                            <li>Team collaboration</li>
+                            <li>Custom brand voice</li>
+                            <li>White-label options</li>
+                            <li>Dedicated account manager</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="8">
+                </div>
+
+                <div class="form-group">
+                    <label for="card-element">Payment Information</label>
+                    <div id="card-element"></div>
+                </div>
+
+                <button type="submit" id="submitButton" class="btn-primary">
+                    Start My Subscription
+                </button>
+
+                <div class="security-note">
+                    🔒 Your payment information is secure and encrypted. Cancel anytime.
+                </div>
+            </form>
+
+            <div class="login-link">
+                Already have an account? <a href="/login.html">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RegistrationHandler {
+            constructor() {
+                this.stripe = Stripe('pk_test_51PK7nDAiHGcsYFXNhd6Sj8LN7GoujjQbWRDhCaoQr0HvtnEB0TCPYlDMO1j0tO4PKkA5lQUnED9eUVVxCmJ1VO8v00JBqiuVA5');
+                this.elements = this.stripe.elements();
+                this.cardElement = null;
+                this.selectedPlan = 'pro';
+                this.selectedPrice = 1997;
+                
+                this.initializeStripe();
+                this.setupEventListeners();
+            }
+
+            initializeStripe() {
+                this.cardElement = this.elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#374151',
+                            '::placeholder': {
+                                color: '#9ca3af',
+                            },
+                        },
+                    },
+                });
+                
+                this.cardElement.mount('#card-element');
+            }
+
+            setupEventListeners() {
+                // Plan selection
+                document.querySelectorAll('.pricing-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        this.selectedPlan = card.dataset.plan;
+                        this.selectedPrice = parseInt(card.dataset.price);
+                    });
+                });
+
+                // Form submission
+                document.getElementById('registrationForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegistration();
+                });
+            }
+
+            async handleRegistration() {
+                const submitButton = document.getElementById('submitButton');
+                const errorMessage = document.getElementById('errorMessage');
+                const successMessage = document.getElementById('successMessage');
+                
+                submitButton.disabled = true;
+                submitButton.textContent = 'Processing...';
+                
+                try {
+                    // Get form data
+                    const formData = {
+                        email: document.getElementById('email').value,
+                        name: document.getElementById('name').value,
+                        password: document.getElementById('password').value,
+                        plan: this.selectedPlan,
+                        price: this.selectedPrice
+                    };
+
+                    // Create payment method
+                    const {error, paymentMethod} = await this.stripe.createPaymentMethod({
+                        type: 'card',
+                        card: this.cardElement,
+                        billing_details: {
+                            name: formData.name,
+                            email: formData.email,
+                        },
+                    });
+
+                    if (error) {
+                        throw new Error(error.message);
+                    }
+
+                    // Send registration data to backend
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            paymentMethodId: paymentMethod.id
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Registration failed');
+                    }
+
+                    // Handle successful registration
+                    successMessage.textContent = 'Registration successful! Redirecting to your dashboard...';
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+
+                    // Store user token
+                    localStorage.setItem('authToken', result.token);
+                    localStorage.setItem('userEmail', formData.email);
+
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 2000);
+
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                    
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Start My Subscription';
+                }
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RegistrationHandler();
+        });
+    </script>
+</body>
+</html>

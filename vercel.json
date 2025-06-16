@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "simple_voice_backend.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "simple_voice_backend.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

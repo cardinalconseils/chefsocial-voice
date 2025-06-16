@@ -1,0 +1,209 @@
+{
+  "languages": {
+    "en": "English",
+    "fr": "French"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In to ChefSocial",
+      "email": "Email Address",
+      "password": "Password",
+      "button": "Sign In",
+      "forgot": "Forgot Password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up"
+    },
+    "register": {
+      "title": "Create Your ChefSocial Account",
+      "name": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "restaurantName": "Restaurant Name",
+      "selectPlan": "Select Plan",
+      "button": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "Email already registered",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "invalidEmail": "Please enter a valid email address",
+      "nameRequired": "Full name is required",
+      "restaurantRequired": "Restaurant name is required"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "voice": "Voice Creator",
+    "content": "Content Library",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "help": "Help"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}!",
+    "stats": {
+      "totalContent": "Total Content",
+      "thisMonth": "This Month",
+      "viralScore": "Avg Viral Score",
+      "engagement": "Engagement Rate"
+    },
+    "recentContent": "Recent Content",
+    "quickActions": "Quick Actions",
+    "createContent": "Create Content",
+    "viewLibrary": "View Library"
+  },
+  "voice": {
+    "title": "Voice Content Creator",
+    "subtitle": "Speak naturally about your dish and we'll create viral social media content",
+    "recordButton": "Hold to Record",
+    "recording": "Recording...",
+    "processing": "Processing your voice...",
+    "uploadImage": "Upload Food Image (Optional)",
+    "dragDrop": "Drag & drop an image or click to browse",
+    "generateDemo": "Try Demo Mode",
+    "results": {
+      "title": "Your Content is Ready!",
+      "transcript": "What you said:",
+      "viralPotential": "Viral Potential",
+      "bestTime": "Best Time to Post",
+      "instagram": "Instagram Post",
+      "tiktok": "TikTok Caption",
+      "saveToLibrary": "Save to Library",
+      "approveViaSMS": "Send for SMS Approval"
+    }
+  },
+  "content": {
+    "title": "Content Library",
+    "filterAll": "All Content",
+    "filterInstagram": "Instagram",
+    "filterTikTok": "TikTok",
+    "sortNewest": "Newest First",
+    "sortOldest": "Oldest First",
+    "sortViral": "Viral Score",
+    "noContent": "No content found",
+    "createFirst": "Create your first piece of content!",
+    "published": "Published",
+    "draft": "Draft",
+    "viralScore": "Viral Score: {{score}}/10",
+    "createdAt": "Created {{date}}"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "personal": "Personal Information",
+    "restaurant": "Restaurant Information",
+    "preferences": "Preferences",
+    "language": "Language",
+    "languageDesc": "Choose your preferred language",
+    "plan": "Current Plan",
+    "billing": "Billing",
+    "account": "Account Settings"
+  },
+  "sms": {
+    "approval": {
+      "title": "ChefSocial Content Ready!",
+      "platform": "Platform: {{platform}}",
+      "caption": "Caption:",
+      "hashtags": "Hashtags: {{hashtags}}",
+      "actions": "Reply:",
+      "approve": "✅ APPROVE to publish",
+      "edit": "✏️ EDIT to modify",
+      "reject": "❌ REJECT to discard",
+      "view": "📱 VIEW to see in app",
+      "id": "ID: {{id}}"
+    },
+    "suggestions": {
+      "greeting": "Good morning, {{name}}!",
+      "title": "Today's content ideas for {{restaurant}}:",
+      "instructions": "Reply with the number to create content, or \"CUSTOM\" for voice input!",
+      "tip": "💡 Tip: {{tip}}"
+    },
+    "commands": {
+      "help": "ChefSocial Commands:\n\nSUGGESTIONS - Get daily content ideas\nVOICE - Start voice content creation\nSTATUS - Check your account status\nHELP - Show this menu\n\nOr visit: app.chef-social.com",
+      "voice": "🎤 Ready for voice input!\n\nCall: {{phone}}\nOr visit: app.chef-social.com/voice\n\nDescribe your dish and we'll create amazing content!",
+      "status": "📊 Account Status:\n\nRestaurant: {{restaurant}}\nPlan: {{plan}}\nStatus: Active ✅\n\nManage at: app.chef-social.com/dashboard"
+    },
+    "responses": {
+      "approved": "✅ Content approved and scheduled for publishing! 🚀",
+      "editing": "✏️ What would you like to change? Reply with your edits or call us for voice editing!",
+      "rejected": "❌ Content rejected and discarded. We'll create better options next time!",
+      "view": "📱 View your content at: {{url}}",
+      "suggestionSelected": "🎯 Great choice! Creating content for suggestion #{{number}}...\n\nWe'll have your content ready in a few minutes and send it for approval!",
+      "notRegistered": "❌ Phone number not registered. Please register at chef-social.com first!",
+      "error": "❌ Sorry, something went wrong. Please try again or contact support.",
+      "commandNotRecognized": "❓ Command not recognized. Reply \"HELP\" for available commands."
+    }
+  },
+  "ai": {
+    "prompts": {
+      "contentGeneration": "Create viral social media content for a restaurant/chef based on:\n\nCHEF'S DESCRIPTION: \"{{transcript}}\"\nIMAGE ANALYSIS: \"{{imageAnalysis}}\"\n\nGenerate content in this exact JSON format:\n{\n  \"instagram\": {\n    \"caption\": \"Engaging Instagram caption with emojis, storytelling, and call-to-action\",\n    \"hashtags\": \"#chef #foodie #restaurant #delicious #instafood\"\n  },\n  \"tiktok\": {\n    \"caption\": \"Short, catchy TikTok caption with trending language\",\n    \"hashtags\": \"#foodtok #recipe #chef #viral #fyp\"\n  },\n  \"viralPotential\": \"8\",\n  \"bestTime\": \"7:00 PM (dinner rush)\"\n}\n\nMake it authentic, engaging, and platform-optimized. Use emojis, trending language, and focus on the sensory experience of the food.",
+      "imageAnalysis": "Analyze this food image. What dish is this? What ingredients can you see? What's the cooking style? What mood does it convey? Keep it brief and focus on details that would help create engaging social media content."
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "notFound": "The requested resource was not found.",
+    "unauthorized": "You are not authorized to access this resource.",
+    "forbidden": "Access to this resource is forbidden.",
+    "validation": "Please check your input and try again.",
+    "server": "Server error. Please try again later."
+  },
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "price": "$29/month",
+      "features": [
+        "50 voice content generations per month",
+        "Basic social media templates",
+        "Content library",
+        "Email support"
+      ]
+    },
+    "professional": {
+      "name": "Professional", 
+      "price": "$79/month",
+      "features": [
+        "200 voice content generations per month",
+        "Advanced AI content optimization",
+        "SMS human-in-the-loop workflows",
+        "Brand voice learning",
+        "Priority support"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "$199/month", 
+      "features": [
+        "Unlimited voice content generations",
+        "Multi-location support",
+        "Advanced analytics",
+        "Custom integrations",
+        "Dedicated account manager"
+      ]
+    }
+  }
+}

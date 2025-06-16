@@ -144,8 +144,8 @@ class ChefSocialDatabase {
         // Run schema migrations
         this.runMigrations();
         
-        // Create usage tracking table
-        this.createUsageTrackingTable();
+        // Create additional tables
+        this.createAdditionalTables();
     }
 
     initializeFeatures() {
@@ -253,26 +253,88 @@ class ChefSocialDatabase {
         });
     }
 
-    createUsageTrackingTable() {
+    createAdditionalTables() {
+        // Enable foreign key constraints
+        this.db.run(`PRAGMA foreign_keys = ON`);
+        
+        // Create essential indexes for performance
+        this.createIndexes();
+        
+        // Create admin panel tables
+        this.createAdminTables();
+        
+        console.log('✅ Additional tables and indexes created');
+    }
+
+    createIndexes() {
+        const indexes = [
+            'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
+            'CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id)',
+            'CREATE INDEX IF NOT EXISTS idx_users_status ON users(status)',
+            'CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id)',
+            'CREATE INDEX IF NOT EXISTS idx_content_user_id ON content(user_id)',
+            'CREATE INDEX IF NOT EXISTS idx_content_user_platform ON content(user_id, platform)',
+            'CREATE INDEX IF NOT EXISTS idx_usage_user_month ON usage_tracking(user_id, month_year)',
+            'CREATE INDEX IF NOT EXISTS idx_user_features_lookup ON user_features(user_id, feature_key)'
+        ];
+
+        indexes.forEach(indexSql => {
+            this.db.run(indexSql, (err) => {
+                if (err && !err.message.includes('already exists')) {
+                    console.error('❌ Index creation error:', err);
+                }
+            });
+        });
+        
+        console.log('✅ Database indexes created');
+    }
+
+    createAdminTables() {
+        // Admin users table
         this.db.run(`
-            CREATE TABLE IF NOT EXISTS usage_tracking (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                month_year TEXT NOT NULL,
-                voice_minutes_used INTEGER DEFAULT 0,
-                images_generated INTEGER DEFAULT 0,
-                videos_created INTEGER DEFAULT 0,
-                api_calls_made INTEGER DEFAULT 0,
-                extra_locations INTEGER DEFAULT 0,
-                extra_users INTEGER DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id),
-                UNIQUE(user_id, month_year)
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                name TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'admin',
+                permissions TEXT,
+                last_login DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        
-        console.log('✅ Usage tracking table created');
+
+        // Audit logs table
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                admin_id TEXT,
+                action TEXT NOT NULL,
+                entity_type TEXT,
+                entity_id TEXT,
+                details TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // User sessions table
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS user_sessions (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                jwt_token TEXT NOT NULL,
+                expires_at DATETIME NOT NULL,
+                ip_address TEXT,
+                user_agent TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        `);
+
+        console.log('✅ Admin tables created');
     }
 
     // User methods
@@ -508,6 +570,111 @@ class ChefSocialDatabase {
                     reject(err);
                 } else {
                     resolve(rows);
+                }
+            });
+        });
+    }
+
+    // Admin methods
+    async createAdminUser(adminData) {
+        return new Promise((resolve, reject) => {
+            const { id, email, passwordHash, name, role, permissions } = adminData;
+            this.db.run(`
+                INSERT INTO admin_users (id, email, password_hash, name, role, permissions)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [id, email, passwordHash, name, role, JSON.stringify(permissions || [])], function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ id, email, name, role });
+                }
+            });
+        });
+    }
+
+    async getAdminByEmail(email) {
+        return new Promise((resolve, reject) => {
+            this.db.get(`
+                SELECT * FROM admin_users WHERE email = ?
+            `, [email], (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row);
+                }
+            });
+        });
+    }
+
+    async updateAdminLastLogin(adminId) {
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                UPDATE admin_users SET last_login = datetime('now') WHERE id = ?
+            `, [adminId], function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ changes: this.changes });
+                }
+            });
+        });
+    }
+
+    async logAuditEvent(eventData) {
+        return new Promise((resolve, reject) => {
+            const { userId, adminId, action, entityType, entityId, details, ipAddress, userAgent } = eventData;
+            this.db.run(`
+                INSERT INTO audit_logs (user_id, admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `, [userId, adminId, action, entityType, entityId, JSON.stringify(details), ipAddress, userAgent], function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ id: this.lastID });
+                }
+            });
+        });
+    }
+
+    async getAllUsers(limit = 50, offset = 0) {
+        return new Promise((resolve, reject) => {
+            this.db.all(`
+                SELECT id, email, name, restaurant_name, status, preferred_language, 
+                       created_at, last_login, trial_ends_at
+                FROM users 
+                ORDER BY created_at DESC 
+                LIMIT ? OFFSET ?
+            `, [limit, offset], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    }
+
+    async getUsersCount() {
+        return new Promise((resolve, reject) => {
+            this.db.get(`SELECT COUNT(*) as count FROM users`, (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row.count);
+                }
+            });
+        });
+    }
+
+    async updateUserStatus(userId, status) {
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                UPDATE users SET status = ?, updated_at = datetime('now') WHERE id = ?
+            `, [status, userId], function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ changes: this.changes });
                 }
             });
         });

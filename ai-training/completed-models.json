@@ -1,5 +1,5 @@
 {
-  "completedAt": "2025-06-16T02:44:42.241Z",
+  "completedAt": "2025-06-16T02:51:56.241Z",
   "models": {
     "fr-CA": "ft:gpt-4o-2024-08-06:personal:chefsocial-fr-ca-v1:BitoZaGh",
     "fr-FR": "ft:gpt-4o-2024-08-06:personal:chefsocial-fr-fr-v1:BitoVPJK",
@@ -10,7 +10,9 @@
     "jobs": {
       "fr-CA": "ftjob-vksx3DA6KuvIvfFBou8fyAyg",
       "fr-FR": "ftjob-deOUeO4rl1JlK1APBCourAJk",
-      "en-US": "ftjob-YTpk7sd3rCOJSEWtqoosqtcs"
+      "en-US": "ftjob-YTpk7sd3rCOJSEWtqoosqtcs",
+      "en-CA": "ftjob-fkPMPhFBVc4Da5gQdk5VnobQ",
+      "en-UK": "ftjob-9AdXg7gUPhJjOhx878XmHImv"
     },
     "config": {
       "model": "gpt-4o-2024-08-06",

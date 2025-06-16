@@ -228,33 +228,86 @@ class RegionalModelRouter {
         
         console.log(`🌍 Using ${region} model: ${model}`);
         
+        // Check if this is a fine-tuned model
+        const isFineTuned = model.startsWith('ft:');
+        if (isFineTuned) {
+            console.log(`🧠 Using fine-tuned regional model for ${region}`);
+        }
+        
         // Create region-specific prompt
         const prompt = this.createRegionalPrompt(content, imageAnalysis, region, userContext);
         
         try {
-            const response = await this.openai.chat.completions.create({
-                model: model,
-                messages: [
-                    {
-                        role: "system",
-                        content: systemPrompt
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
-                ],
-                response_format: { type: "json_object" },
-                max_tokens: 800,
-                temperature: 0.8
-            });
+            const messages = [
+                {
+                    role: "system",
+                    content: systemPrompt
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ];
+
+            // For fine-tuned models, we need to adapt the approach
+            let response;
+            if (isFineTuned) {
+                // Fine-tuned models work better with simpler prompts
+                const simplePrompt = language === 'fr' ?
+                    `Crée du contenu viral Instagram et TikTok pour: "${content}". Image: "${imageAnalysis}". Réponds en JSON avec "instagram" (caption, hashtags) et "tiktok" (caption, hashtags).` :
+                    `Create viral Instagram and TikTok content for: "${content}". Image: "${imageAnalysis}". Respond in JSON with "instagram" (caption, hashtags) and "tiktok" (caption, hashtags).`;
+                
+                response = await this.openai.chat.completions.create({
+                    model: model,
+                    messages: [
+                        {
+                            role: "user",
+                            content: simplePrompt
+                        }
+                    ],
+                    max_tokens: 600,
+                    temperature: 0.7
+                });
+            } else {
+                // Base models work well with structured prompts
+                response = await this.openai.chat.completions.create({
+                    model: model,
+                    messages: messages,
+                    response_format: { type: "json_object" },
+                    max_tokens: 800,
+                    temperature: 0.8
+                });
+            }
             
-            const generatedContent = JSON.parse(response.choices[0].message.content);
+            let generatedContent;
+            try {
+                generatedContent = JSON.parse(response.choices[0].message.content);
+            } catch (parseError) {
+                // If JSON parsing fails, try to extract JSON from the content
+                console.log('⚠️ JSON parsing failed, trying to extract...');
+                const rawContent = response.choices[0].message.content;
+                
+                // Try to extract JSON from code blocks or clean up the response
+                let jsonContent = rawContent;
+                
+                // Remove markdown code blocks
+                jsonContent = jsonContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+                
+                // Try parsing again
+                try {
+                    generatedContent = JSON.parse(jsonContent);
+                } catch (secondParseError) {
+                    // Create a structured response from the raw content
+                    console.log('⚠️ Second JSON parse failed, creating structured response...');
+                    generatedContent = this.createStructuredResponse(rawContent, region);
+                }
+            }
             
             // Add region metadata
             generatedContent.metadata = {
                 region: region,
                 model: model,
+                modelType: isFineTuned ? 'fine-tuned' : 'base',
                 detectedFrom: 'content_analysis',
                 generatedAt: new Date().toISOString()
             };
@@ -263,8 +316,73 @@ class RegionalModelRouter {
             
         } catch (error) {
             console.error(`❌ Error generating content for ${region}:`, error);
+            
+            // Fallback to base model if fine-tuned model fails
+            if (model.startsWith('ft:')) {
+                console.log(`🔄 Falling back to base model for ${region}...`);
+                const fallbackModel = this.fallbackModels[region];
+                
+                const fallbackResponse = await this.openai.chat.completions.create({
+                    model: fallbackModel,
+                    messages: [
+                        {
+                            role: "system",
+                            content: systemPrompt
+                        },
+                        {
+                            role: "user",
+                            content: prompt
+                        }
+                    ],
+                    response_format: { type: "json_object" },
+                    max_tokens: 800,
+                    temperature: 0.8
+                });
+                
+                const fallbackContent = JSON.parse(fallbackResponse.choices[0].message.content);
+                fallbackContent.metadata = {
+                    region: region,
+                    model: fallbackModel,
+                    modelType: 'base-fallback',
+                    detectedFrom: 'content_analysis',
+                    generatedAt: new Date().toISOString()
+                };
+                
+                return fallbackContent;
+            }
+            
             throw error;
         }
+    }
+
+    // Create structured response from raw content
+    createStructuredResponse(rawContent, region) {
+        const language = region.split('-')[0];
+        
+        // Extract content and create structure
+        const content = rawContent.substring(0, 200);
+        
+        // Create region-appropriate hashtags
+        const hashtags = {
+            'fr-CA': '#RestaurantQuébec #CuisineQuébécoise #MontrealFood #FoodieQuebec',
+            'fr-FR': '#CuisineFrançaise #GastronomieParisienne #ChefFrançais #RestaurantFrançais',
+            'en-US': '#AmericanCuisine #ComfortFood #FarmToTable #FoodieLife',
+            'en-CA': '#CanadianCuisine #MapleInfused #ProudlyCanadian #EhFood',
+            'en-UK': '#BritishCuisine #ProperFood #BritishTradition #UKEats'
+        };
+
+        return {
+            instagram: {
+                caption: content + (language === 'fr' ? ' ✨ #Délicieux' : ' ✨ #Delicious'),
+                hashtags: hashtags[region] || hashtags['en-US']
+            },
+            tiktok: {
+                caption: content.substring(0, 100) + (language === 'fr' ? ' 🔥 #FoodTok' : ' 🔥 #FoodTok'),
+                hashtags: hashtags[region] || hashtags['en-US']
+            },
+            viralPotential: "7",
+            bestTime: language === 'fr' ? '19h00' : '7:00 PM'
+        };
     }
 
     createRegionalPrompt(content, imageAnalysis, region, userContext) {

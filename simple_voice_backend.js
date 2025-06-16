@@ -1164,8 +1164,12 @@ app.post('/api/process-voice-demo', async (req, res) => {
         
         // Step 1: Convert voice to text using Whisper (with error handling)
         try {
-            transcript = await transcribeAudio(audio, userLanguage);
+            const transcriptionResult = await transcribeAudio(audio, userLanguage);
+            transcript = transcriptionResult.text || transcriptionResult;
+            const detectedLang = transcriptionResult.detectedLanguage || userLanguage;
+            
             console.log('✅ Demo transcript:', transcript);
+            console.log('🌐 Detected language:', detectedLang);
         } catch (transcriptError) {
             console.error('⚠️ Demo transcription failed:', transcriptError.message);
             // Provide fallback transcript based on language
@@ -1241,16 +1245,20 @@ app.post('/api/process-voice',
         
         console.log(`Processing voice request in ${userLanguage}...`);
         
-        // Step 1: Convert voice to text using Whisper with language detection
-        const transcript = await transcribeAudio(audio, userLanguage);
+        // Step 1: Convert voice to text using Whisper with enhanced language detection
+        const transcriptionResult = await transcribeAudio(audio, userLanguage);
+        const transcript = transcriptionResult.text || transcriptionResult;
+        const detectedLanguage = transcriptionResult.detectedLanguage || userLanguage;
+        
         console.log('Transcript:', transcript);
+        console.log('🌐 Detected language:', detectedLanguage);
         
         // Step 2: Analyze the image (optional but adds value)
         const imageAnalysis = await analyzeImage(image);
         console.log('Image analysis:', imageAnalysis);
         
-        // Step 3: Generate social media content in user's language
-        const content = await generateContent(transcript, imageAnalysis, userLanguage);
+        // Step 3: Generate social media content using detected language and regional AI
+        const content = await generateContent(transcript, imageAnalysis, detectedLanguage);
         
         // Step 4: Auto-save generated content for user
         try {
@@ -1351,15 +1359,37 @@ async function transcribeAudio(base64Audio, language = null) {
         
         console.log('📝 Transcribing audio with Whisper...');
         
-        // Determine language for Whisper
-        const whisperLanguage = language === 'fr' ? 'fr' : 'en';
-        console.log(`🌐 Using language: ${whisperLanguage}`);
+        // Enhanced language detection strategy
+        let whisperLanguage = null;
+        let detectedLanguage = language;
         
-        // Transcribe with Whisper using ReadStream (Node.js v18 compatible)
+        if (!language) {
+            // First pass: Let Whisper auto-detect language
+            console.log('🔍 Auto-detecting language with Whisper...');
+            
+            const autoDetection = await openai.audio.transcriptions.create({
+                file: fs.createReadStream(tempPath),
+                model: "whisper-1",
+                // No language parameter for auto-detection
+            });
+            
+            const autoText = autoDetection.text || autoDetection;
+            
+            // Simple language detection based on common words
+            detectedLanguage = detectLanguageFromText(autoText);
+            whisperLanguage = detectedLanguage === 'fr' ? 'fr' : 'en';
+            
+            console.log(`🌐 Auto-detected language: ${detectedLanguage} (${autoText.substring(0, 50)}...)`);
+        } else {
+            whisperLanguage = language === 'fr' ? 'fr' : 'en';
+            console.log(`🌐 Using provided language: ${whisperLanguage}`);
+        }
+        
+        // Second pass: Transcribe with detected language for better accuracy
         const transcription = await openai.audio.transcriptions.create({
             file: fs.createReadStream(tempPath),
             model: "whisper-1",
-            language: whisperLanguage, // Dynamic language selection
+            language: whisperLanguage,
         });
         
         const transcriptText = transcription.text || transcription;
@@ -1368,7 +1398,12 @@ async function transcribeAudio(base64Audio, language = null) {
         }
         
         console.log('✅ Transcription successful:', transcriptText.substring(0, 100) + '...');
-        return transcriptText;
+        
+        // Return both transcript and detected language
+        return {
+            text: transcriptText,
+            detectedLanguage: detectedLanguage || language || 'en'
+        };
         
     } catch (error) {
         console.error('❌ Transcription error:', error.message);
@@ -1382,7 +1417,10 @@ async function transcribeAudio(base64Audio, language = null) {
             return "OpenAI service is temporarily unavailable. Please try again.";
         }
         
-        return "Could not transcribe audio. Please try speaking more clearly and ensure your microphone is working.";
+        return {
+            text: "Could not transcribe audio. Please try speaking more clearly and ensure your microphone is working.",
+            detectedLanguage: language || 'en'
+        };
     } finally {
         // Always clean up temp file
         if (tempPath && fs.existsSync(tempPath)) {
@@ -1392,6 +1430,52 @@ async function transcribeAudio(base64Audio, language = null) {
                 console.error('⚠️ Failed to cleanup temp file:', cleanupError.message);
             }
         }
+    }
+}
+
+// Simple language detection based on common words
+function detectLanguageFromText(text) {
+    if (!text || text.length < 3) return 'en';
+    
+    const textLower = text.toLowerCase();
+    
+    // French indicators
+    const frenchWords = [
+        'le', 'la', 'les', 'de', 'du', 'des', 'et', 'avec', 'pour', 'dans', 'sur', 'par',
+        'ce', 'cette', 'ces', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles',
+        'est', 'sont', 'avoir', 'être', 'faire', 'aller', 'voir', 'savoir', 'pouvoir',
+        'notre', 'votre', 'leur', 'mon', 'ton', 'son', 'ma', 'ta', 'sa', 'mes', 'tes', 'ses',
+        'un', 'une', 'deux', 'trois', 'quatre', 'cinq', 'bonjour', 'salut', 'merci',
+        'restaurant', 'plat', 'menu', 'cuisine', 'délicieux', 'bon', 'très', 'bien',
+        'c\'est', 'qu\'est', 'que', 'qui', 'quoi', 'comment', 'pourquoi', 'où', 'quand'
+    ];
+    
+    // English indicators  
+    const englishWords = [
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+        'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'we', 'they', 'it',
+        'is', 'are', 'was', 'were', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+        'my', 'your', 'his', 'her', 'our', 'their', 'one', 'two', 'three', 'four', 'five',
+        'hello', 'hi', 'thank', 'thanks', 'please', 'restaurant', 'dish', 'menu', 'food',
+        'delicious', 'good', 'great', 'very', 'what', 'how', 'why', 'where', 'when', 'who'
+    ];
+    
+    const words = textLower.split(/\s+/);
+    let frenchScore = 0;
+    let englishScore = 0;
+    
+    words.forEach(word => {
+        if (frenchWords.includes(word)) frenchScore++;
+        if (englishWords.includes(word)) englishScore++;
+    });
+    
+    // Bias towards French if it's close (helps with Quebec detection)
+    const threshold = 0.8;
+    
+    if (frenchScore > englishScore * threshold) {
+        return 'fr';
+    } else {
+        return 'en';
     }
 }
 

@@ -42,6 +42,7 @@ class ChefSocialDatabase {
                 brand_personality TEXT,
                 content_tone TEXT,
                 key_messages TEXT,
+                preferred_language TEXT DEFAULT 'en',
                 stripe_customer_id TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -139,6 +140,9 @@ class ChefSocialDatabase {
 
         // Initialize default features
         this.initializeFeatures();
+        
+        // Run schema migrations
+        this.runMigrations();
     }
 
     initializeFeatures() {
@@ -230,6 +234,19 @@ class ChefSocialDatabase {
                 feature.professional,
                 feature.enterprise
             ]);
+        });
+    }
+
+    runMigrations() {
+        // Add preferred_language column if it doesn't exist
+        this.db.run(`
+            ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'en'
+        `, (err) => {
+            if (err && !err.message.includes('duplicate column name')) {
+                console.error('❌ Migration error:', err);
+            } else if (!err) {
+                console.log('✅ Added preferred_language column to users table');
+            }
         });
     }
 

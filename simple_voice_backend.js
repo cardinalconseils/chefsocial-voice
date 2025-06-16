@@ -1311,34 +1311,46 @@ async function analyzeImage(base64Image) {
 }
 
 // Generate limited demo content
-async function generateDemoContent(transcript, imageAnalysis) {
+async function generateDemoContent(transcript, imageAnalysis, language = 'en') {
     try {
         console.log('✨ Generating demo social media content...');
         
         // Ensure we have valid transcript
         if (!transcript || transcript.trim().length < 5) {
-            transcript = "This delicious dish looks amazing";
+            transcript = language === 'fr' 
+                ? "Ce délicieux plat a l'air incroyable"
+                : "This delicious dish looks amazing";
         }
         
         // Clean transcript for social media
         const cleanTranscript = transcript.trim().substring(0, 120);
         
         // Generate basic but personalized content using the transcript
-        const instagramCaption = generateInstagramCaption(cleanTranscript, imageAnalysis);
-        const tiktokCaption = generateTiktokCaption(cleanTranscript);
+        const instagramCaption = generateInstagramCaption(cleanTranscript, imageAnalysis, language);
+        const tiktokCaption = generateTiktokCaption(cleanTranscript, language);
+        
+        const hashtags = language === 'fr' ? {
+            instagram: "#chef #restaurantfr #gastronomie #delicieux #nourriture #cuisine",
+            tiktok: "#foodtok #chef #cuisine #delicieux #nourriture #fyp"
+        } : {
+            instagram: "#chef #foodie #delicious #instafood #cooking #yummy",
+            tiktok: "#foodtok #chef #cooking #yummy #food #fyp"
+        };
         
         return {
             instagram: {
                 caption: instagramCaption,
-                hashtags: "#chef #foodie #delicious #instafood #cooking #yummy"
+                hashtags: hashtags.instagram
             },
             tiktok: {
                 caption: tiktokCaption,
-                hashtags: "#foodtok #chef #cooking #yummy #food #fyp"
+                hashtags: hashtags.tiktok
             },
             viralPotential: "6",
-            bestTime: "7:00 PM",
-            demoNote: "Demo version - Upgrade for AI-powered viral content!"
+            bestTime: language === 'fr' ? "19h00" : "7:00 PM",
+            demoNote: language === 'fr' 
+                ? "Version démo - Améliorez pour du contenu IA viral !"
+                : "Demo version - Upgrade for AI-powered viral content!"
         };
         
     } catch (error) {
@@ -1362,7 +1374,7 @@ async function generateDemoContent(transcript, imageAnalysis) {
 }
 
 // Helper function to generate Instagram caption
-function generateInstagramCaption(transcript, imageAnalysis) {
+function generateInstagramCaption(transcript, imageAnalysis, language = 'en') {
     // Extract key food words from transcript
     const foodKeywords = extractFoodKeywords(transcript);
     const emotion = extractEmotion(transcript);
@@ -1376,17 +1388,25 @@ function generateInstagramCaption(transcript, imageAnalysis) {
             caption += "!";
         }
     } else {
-        caption += "Check out this amazing dish!";
+        caption += language === 'fr' 
+            ? "Découvrez ce plat incroyable !"
+            : "Check out this amazing dish!";
     }
     
     // Add engagement question
     if (foodKeywords.length > 0) {
-        caption += ` Have you tried ${foodKeywords[0]} before? `;
+        caption += language === 'fr'
+            ? ` Avez-vous déjà goûté ${foodKeywords[0]} ? `
+            : ` Have you tried ${foodKeywords[0]} before? `;
     } else {
-        caption += " What's your favorite dish to cook? ";
+        caption += language === 'fr'
+            ? " Quel est votre plat préféré à cuisiner ? "
+            : " What's your favorite dish to cook? ";
     }
     
-    caption += "Let us know in the comments! 👇✨";
+    caption += language === 'fr' 
+        ? "Dites-nous en commentaires ! 👇✨"
+        : "Let us know in the comments! 👇✨";
     
     return caption;
 }

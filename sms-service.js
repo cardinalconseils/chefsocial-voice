@@ -309,9 +309,17 @@ class SMSService {
         return suggestions;
     }
 
-    // Get daily marketing tip
-    getDailyTip() {
-        const tips = [
+    // Get daily marketing tip with language support
+    getDailyTip(language = 'en') {
+        const tips = language === 'fr' ? [
+            "Publiez quand vos clients sont les plus actifs (18h-20h fonctionne généralement bien)",
+            "Utilisez des hashtags locaux pour atteindre les clients de votre région",
+            "Montrez le processus de cuisson - les gens adorent le contenu des coulisses",
+            "Posez des questions dans vos légendes pour stimuler l'engagement",
+            "Partagez les témoignages et avis des clients",
+            "Mettez en valeur les ingrédients de saison et les spéciaux",
+            "Utilisez des audios tendance sur les vidéos pour une meilleure portée"
+        ] : [
             "Post when your customers are most active (6-8 PM typically works best)",
             "Use local hashtags to reach customers in your area",
             "Show the cooking process - people love behind-the-scenes content",

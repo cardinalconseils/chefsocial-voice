@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChefSocial Simple Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        button { padding: 12px 24px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .french { border-left-color: #dc3545; }
+        .error { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ ChefSocial API Test</h1>
+        <p>Direct API testing - no service workers, no cache issues</p>
+        
+        <button onclick="testHealth()">Test Health API</button>
+        <button onclick="testLanguages()">Test Languages API</button>
+        <button onclick="testEnglishVoice()">Test English Voice</button>
+        <button onclick="testFrenchVoice()">Test French Voice</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function addResult(title, data, isFrench = false) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${isFrench ? 'french' : ''}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            results.appendChild(div);
+        }
+
+        function addError(title, error) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'result error';
+            div.innerHTML = `<h3>${title}</h3><p>${error}</p>`;
+            results.appendChild(div);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('/api/health', { 
+                    method: 'GET',
+                    cache: 'no-store'  // Bypass all caching
+                });
+                const data = await response.json();
+                addResult('✅ Health Check', data);
+            } catch (error) {
+                addError('❌ Health Check Failed', error.message);
+            }
+        }
+
+        async function testLanguages() {
+            try {
+                const response = await fetch('/api/languages', { 
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                const data = await response.json();
+                addResult('🌐 Languages API', data);
+            } catch (error) {
+                addError('❌ Languages API Failed', error.message);
+            }
+        }
+
+        async function testEnglishVoice() {
+            try {
+                const response = await fetch('/api/process-voice-demo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        audio: 'dGVzdA==',
+                        language: 'en'
+                    })
+                });
+                const data = await response.json();
+                addResult('🇺🇸 English Voice Processing', data);
+            } catch (error) {
+                addError('❌ English Voice Failed', error.message);
+            }
+        }
+
+        async function testFrenchVoice() {
+            try {
+                const response = await fetch('/api/process-voice-demo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        audio: 'dGVzdA==',
+                        language: 'fr'
+                    })
+                });
+                const data = await response.json();
+                addResult('🇫🇷 French Voice Processing', data, true);
+            } catch (error) {
+                addError('❌ French Voice Failed', error.message);
+            }
+        }
+
+        // Clear any existing results on load
+        document.getElementById('results').innerHTML = '';
+    </script>
+</body>
+</html>

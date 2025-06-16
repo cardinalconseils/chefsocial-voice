@@ -1,0 +1,134 @@
+[
+  {
+    "id": "en-US_menuDescriptions_0",
+    "region": "en-US",
+    "category": "menuDescriptions",
+    "content": "Slow-smoked BBQ ribs with our signature bourbon glaze",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_menuDescriptions_1",
+    "region": "en-US",
+    "category": "menuDescriptions",
+    "content": "Farm-to-table organic salad with locally sourced vegetables",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_menuDescriptions_2",
+    "region": "en-US",
+    "category": "menuDescriptions",
+    "content": "Classic American cheeseburger with hand-cut fries",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_menuDescriptions_3",
+    "region": "en-US",
+    "category": "menuDescriptions",
+    "content": "New York style cheesecake with fresh berry compote",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_socialCaptions_0",
+    "region": "en-US",
+    "category": "socialCaptions",
+    "content": "Comfort food at its finest! 🍔 Come taste what America's all about #AmericanCuisine",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_socialCaptions_1",
+    "region": "en-US",
+    "category": "socialCaptions",
+    "content": "Farm-fresh ingredients, bold flavors, unforgettable meals! 🌾 #FarmToTable",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_socialCaptions_2",
+    "region": "en-US",
+    "category": "socialCaptions",
+    "content": "Bringing you the authentic taste of home, one bite at a time #ComfortFood",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_socialCaptions_3",
+    "region": "en-US",
+    "category": "socialCaptions",
+    "content": "Where tradition meets innovation on every plate! ✨ #FoodieLife",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_customerEngagement_0",
+    "region": "en-US",
+    "category": "customerEngagement",
+    "content": "Thank you so much for the amazing review!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_customerEngagement_1",
+    "region": "en-US",
+    "category": "customerEngagement",
+    "content": "We're thrilled you loved your dining experience with us!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  },
+  {
+    "id": "en-US_customerEngagement_2",
+    "region": "en-US",
+    "category": "customerEngagement",
+    "content": "Can't wait to welcome you back for more delicious meals!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-US",
+      "createdAt": "2025-06-16T02:19:48.598Z"
+    }
+  }
+]

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "en-CA_menuDescriptions_0",
+    "region": "en-CA",
+    "category": "menuDescriptions",
+    "content": "Canadian bacon and eggs with real maple syrup",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_menuDescriptions_1",
+    "region": "en-CA",
+    "category": "menuDescriptions",
+    "content": "Fresh Atlantic salmon with Maritime seasoning",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_menuDescriptions_2",
+    "region": "en-CA",
+    "category": "menuDescriptions",
+    "content": "Butter tarts made with pure Canadian maple syrup",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_menuDescriptions_3",
+    "region": "en-CA",
+    "category": "menuDescriptions",
+    "content": "Tourtière with a Canadian twist and local ingredients",
+    "metadata": {
+      "contentType": "menuDescriptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_socialCaptions_0",
+    "region": "en-CA",
+    "category": "socialCaptions",
+    "content": "True Canadian flavors, eh! 🇨🇦 Come try our maple-infused specialties #CanadianCuisine",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_socialCaptions_1",
+    "region": "en-CA",
+    "category": "socialCaptions",
+    "content": "From coast to coast to coast - authentic Canadian dining! 🍁 #MapleInfused",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_socialCaptions_2",
+    "region": "en-CA",
+    "category": "socialCaptions",
+    "content": "Bringing you the best of Canadian hospitality and cuisine! #EhFood",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_socialCaptions_3",
+    "region": "en-CA",
+    "category": "socialCaptions",
+    "content": "Proudly Canadian, deliciously satisfying! ✨ #GreatWhiteNorth",
+    "metadata": {
+      "contentType": "socialCaptions",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_customerEngagement_0",
+    "region": "en-CA",
+    "category": "customerEngagement",
+    "content": "Thanks a bunch for the great review, eh!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_customerEngagement_1",
+    "region": "en-CA",
+    "category": "customerEngagement",
+    "content": "We're so happy you enjoyed your Canadian dining experience!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  },
+  {
+    "id": "en-CA_customerEngagement_2",
+    "region": "en-CA",
+    "category": "customerEngagement",
+    "content": "Hope to see you again soon for more maple goodness!",
+    "metadata": {
+      "contentType": "customerEngagement",
+      "language": "en",
+      "culturalContext": "en-CA",
+      "createdAt": "2025-06-16T02:19:48.599Z"
+    }
+  }
+]

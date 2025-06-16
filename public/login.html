@@ -215,6 +215,38 @@
             color: white;
         }
 
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 0.25rem;
+        }
+
+        .lang-btn {
+            padding: 0.25rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background: #ea580c;
+            color: white;
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
         @media (max-width: 768px) {
             .login-card {
                 padding: 2rem;
@@ -226,20 +258,26 @@
 <body>
     <div class="container">
         <div class="login-card">
-            <a href="/index.html" class="logo">
-                <span class="logo-icon">👨‍🍳</span>
-                ChefSocial Voice
-            </a>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <a href="/index.html" class="logo" style="margin-bottom: 0;">
+                    <span class="logo-icon">👨‍🍳</span>
+                    ChefSocial Voice
+                </a>
+                <div class="language-toggle">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="fr">FR</button>
+                </div>
+            </div>
 
             <div class="login-header">
-                <h1>Welcome Back</h1>
-                <p>Sign in to your account</p>
+                <h1 data-i18n="login.title">Welcome Back</h1>
+                <p data-i18n="login.subtitle">Sign in to your account</p>
             </div>
 
             <div class="demo-section">
-                <h3>🎯 Want to try before you buy?</h3>
-                <p>Test our AI-powered food content creation with our free demo</p>
-                <a href="/demo.html" class="btn-demo">🎤 Try Demo</a>
+                <h3 data-i18n="login.demo.title">🎯 Want to try before you buy?</h3>
+                <p data-i18n="login.demo.description">Test our AI-powered food content creation with our free demo</p>
+                <a href="/demo.html" class="btn-demo" data-i18n="login.demo.button">🎤 Try Demo</a>
             </div>
 
             <div id="errorMessage" class="error-message"></div>
@@ -247,31 +285,122 @@
 
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email" data-i18n="login.email">Email Address</label>
                     <input type="email" id="email" name="email" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password" data-i18n="login.password">Password</label>
                     <input type="password" id="password" name="password" required>
                 </div>
 
                 <div class="forgot-password">
-                    <a href="/forgot-password.html">Forgot your password?</a>
+                    <a href="/forgot-password.html" data-i18n="login.forgot">Forgot your password?</a>
                 </div>
 
-                <button type="submit" id="submitButton" class="btn-primary">
+                <button type="submit" id="submitButton" class="btn-primary" data-i18n="login.submit">
                     Sign In
                 </button>
             </form>
 
             <div class="register-link">
-                Don't have an account? <a href="/register.html">Get started</a>
+                <span data-i18n="login.noAccount">Don't have an account?</span> <a href="/register.html" data-i18n="login.getStarted">Get started</a>
             </div>
         </div>
     </div>
 
     <script>
+        // Translation data
+        const translations = {
+            en: {
+                'login.title': 'Welcome Back',
+                'login.subtitle': 'Sign in to your account',
+                'login.demo.title': '🎯 Want to try before you buy?',
+                'login.demo.description': 'Test our AI-powered food content creation with our free demo',
+                'login.demo.button': '🎤 Try Demo',
+                'login.email': 'Email Address',
+                'login.password': 'Password',
+                'login.forgot': 'Forgot your password?',
+                'login.submit': 'Sign In',
+                'login.noAccount': 'Don\'t have an account?',
+                'login.getStarted': 'Get started'
+            },
+            fr: {
+                'login.title': 'Bon Retour',
+                'login.subtitle': 'Connectez-vous à votre compte',
+                'login.demo.title': '🎯 Vous voulez essayer avant d\'acheter ?',
+                'login.demo.description': 'Testez notre création de contenu alimentaire alimentée par l\'IA avec notre démo gratuite',
+                'login.demo.button': '🎤 Essayer la Démo',
+                'login.email': 'Adresse Email',
+                'login.password': 'Mot de Passe',
+                'login.forgot': 'Mot de passe oublié ?',
+                'login.submit': 'Se Connecter',
+                'login.noAccount': 'Vous n\'avez pas de compte ?',
+                'login.getStarted': 'Commencer'
+            }
+        };
+
+        // Language manager
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('chefsocial-lang') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.updateLanguageButtons();
+                this.translatePage();
+                this.setupLanguageToggle();
+            }
+
+            setupLanguageToggle() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const lang = btn.dataset.lang;
+                        this.setLanguage(lang);
+                    });
+                });
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('chefsocial-lang', lang);
+                this.updateLanguageButtons();
+                this.translatePage();
+            }
+
+            updateLanguageButtons() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+                });
+            }
+
+            translatePage() {
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.dataset.i18n;
+                    const translation = translations[this.currentLang]?.[key];
+                    if (translation) {
+                        if (element.tagName === 'INPUT' && element.type === 'button') {
+                            element.value = translation;
+                        } else {
+                            element.textContent = translation;
+                        }
+                    }
+                });
+            }
+
+            t(key) {
+                return translations[this.currentLang]?.[key] || translations.en[key] || key;
+            }
+
+            getCurrentLanguage() {
+                return this.currentLang;
+            }
+        }
+
+        // Initialize language manager
+        const lang = new LanguageManager();
+
         class LoginHandler {
             constructor() {
                 this.setupEventListeners();
@@ -322,7 +451,7 @@
                 const successMessage = document.getElementById('successMessage');
                 
                 submitButton.disabled = true;
-                submitButton.textContent = 'Signing In...';
+                submitButton.textContent = lang.getCurrentLanguage() === 'fr' ? 'Connexion...' : 'Signing In...';
                 
                 try {
                     const formData = {
@@ -345,7 +474,9 @@
                     }
 
                     // Handle successful login
-                    successMessage.textContent = 'Login successful! Redirecting...';
+                    successMessage.textContent = lang.getCurrentLanguage() === 'fr'
+                        ? 'Connexion réussie ! Redirection...'
+                        : 'Login successful! Redirecting...';
                     successMessage.style.display = 'block';
                     errorMessage.style.display = 'none';
 
@@ -364,7 +495,7 @@
                     successMessage.style.display = 'none';
                     
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Sign In';
+                    submitButton.textContent = lang.t('login.submit');
                 }
             }
         }
@@ -374,5 +505,8 @@
             new LoginHandler();
         });
     </script>
+    
+    <!-- Cleanup script for service workers -->
+    <script src="/cleanup-sw.js"></script>
 </body>
 </html>

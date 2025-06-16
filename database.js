@@ -143,6 +143,9 @@ class ChefSocialDatabase {
         
         // Run schema migrations
         this.runMigrations();
+        
+        // Create usage tracking table
+        this.createUsageTrackingTable();
     }
 
     initializeFeatures() {
@@ -248,6 +251,28 @@ class ChefSocialDatabase {
                 console.log('✅ Added preferred_language column to users table');
             }
         });
+    }
+
+    createUsageTrackingTable() {
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS usage_tracking (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                month_year TEXT NOT NULL,
+                voice_minutes_used INTEGER DEFAULT 0,
+                images_generated INTEGER DEFAULT 0,
+                videos_created INTEGER DEFAULT 0,
+                api_calls_made INTEGER DEFAULT 0,
+                extra_locations INTEGER DEFAULT 0,
+                extra_users INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, month_year)
+            )
+        `);
+        
+        console.log('✅ Usage tracking table created');
     }
 
     // User methods
@@ -420,6 +445,70 @@ class ChefSocialDatabase {
             `, [userId, limit], (err, rows) => {
                 if (err) reject(err);
                 else resolve(rows);
+            });
+        });
+    }
+
+    // Usage tracking methods
+    async getCurrentUsage(userId) {
+        return new Promise((resolve, reject) => {
+            const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM format
+            this.db.get(`
+                SELECT * FROM usage_tracking 
+                WHERE user_id = ? AND month_year = ?
+            `, [userId, currentMonth], (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row || {
+                        voice_minutes_used: 0,
+                        images_generated: 0,
+                        videos_created: 0,
+                        api_calls_made: 0,
+                        extra_locations: 0,
+                        extra_users: 0
+                    });
+                }
+            });
+        });
+    }
+
+    async trackUsage(userId, usageType, amount = 1) {
+        return new Promise((resolve, reject) => {
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            
+            this.db.run(`
+                INSERT OR REPLACE INTO usage_tracking 
+                (user_id, month_year, ${usageType}, updated_at)
+                VALUES (
+                    ?,
+                    ?,
+                    COALESCE((SELECT ${usageType} FROM usage_tracking WHERE user_id = ? AND month_year = ?), 0) + ?,
+                    datetime('now')
+                )
+            `, [userId, currentMonth, userId, currentMonth, amount], function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ success: true, changes: this.changes });
+                }
+            });
+        });
+    }
+
+    async getUsageStats(userId, months = 12) {
+        return new Promise((resolve, reject) => {
+            this.db.all(`
+                SELECT * FROM usage_tracking 
+                WHERE user_id = ? 
+                ORDER BY month_year DESC 
+                LIMIT ?
+            `, [userId, months], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
             });
         });
     }

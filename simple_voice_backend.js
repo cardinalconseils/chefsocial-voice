@@ -71,7 +71,7 @@ app.use(helmet({
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
         ? ['https://chef-social.com', 'https://app.chef-social.com'] 
-        : ['http://localhost:3000', 'http://localhost:4000'],
+        : ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:4000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -265,7 +265,7 @@ app.post('/api/auth/register',
         body('name').isLength({ min: 2, max: 50 }).trim(),
         body('password').isLength({ min: 8, max: 128 }),
         body('restaurantName').isLength({ min: 2, max: 100 }).trim(),
-        body('planName').isIn(['starter', 'professional', 'enterprise']),
+        body('planName').isIn(['complete']),
         body('paymentMethodId').isLength({ min: 10, max: 100 })
     ]),
     async (req, res) => {
@@ -354,10 +354,157 @@ app.get('/api/features', authSystem.authMiddleware(), async (req, res) => {
     }
 });
 
-// Get pricing plans
+// Get pricing plan and overages
 app.get('/api/pricing', (req, res) => {
-    const plans = authSystem.getPricingPlans();
-    res.json({ success: true, plans });
+    try {
+        const pricing = authSystem.getPricingPlan();
+        res.json({ success: true, pricing });
+    } catch (error) {
+        console.error('❌ Pricing error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to get pricing information' 
+        });
+    }
+});
+
+// Get Stripe products with live pricing
+app.get('/api/pricing/stripe', async (req, res) => {
+    try {
+        const products = await authSystem.getStripeProducts();
+        res.json({ success: true, products });
+    } catch (error) {
+        console.error('❌ Error fetching Stripe products:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch pricing from Stripe' 
+        });
+    }
+});
+
+// Sync pricing plans with Stripe (admin endpoint)
+app.post('/api/admin/sync-stripe-products', async (req, res) => {
+    try {
+        // Add basic auth check or admin token validation here
+        const adminToken = req.headers['x-admin-token'];
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        await authSystem.syncStripeProducts();
+        res.json({ 
+            success: true, 
+            message: 'Stripe products synced successfully' 
+        });
+    } catch (error) {
+        console.error('❌ Error syncing Stripe products:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to sync Stripe products' 
+        });
+    }
+});
+
+// Usage tracking endpoints
+app.get('/api/usage', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const usage = await db.getCurrentUsage(req.user.id);
+        const limits = {
+            voice_minutes_per_month: 300,
+            images_per_month: 30,
+            videos_per_month: 10,
+            api_calls_per_month: 1000
+        };
+        
+        res.json({ 
+            success: true, 
+            usage,
+            limits,
+            remaining: {
+                voice_minutes: Math.max(0, limits.voice_minutes_per_month - usage.voice_minutes_used),
+                images: Math.max(0, limits.images_per_month - usage.images_generated),
+                videos: Math.max(0, limits.videos_per_month - usage.videos_created),
+                api_calls: Math.max(0, limits.api_calls_per_month - usage.api_calls_made)
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error getting usage:', error);
+        res.status(500).json({ success: false, error: 'Failed to get usage data' });
+    }
+});
+
+// Track usage (internal endpoint)
+app.post('/api/usage/track', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const { type, amount } = req.body;
+        const validTypes = ['voice_minutes_used', 'images_generated', 'videos_created', 'api_calls_made'];
+        
+        if (!validTypes.includes(type)) {
+            return res.status(400).json({ error: 'Invalid usage type' });
+        }
+        
+        await db.trackUsage(req.user.id, type, amount || 1);
+        res.json({ success: true, message: 'Usage tracked successfully' });
+    } catch (error) {
+        console.error('❌ Error tracking usage:', error);
+        res.status(500).json({ success: false, error: 'Failed to track usage' });
+    }
+});
+
+// Get usage statistics
+app.get('/api/usage/stats', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const months = parseInt(req.query.months) || 12;
+        const stats = await db.getUsageStats(req.user.id, months);
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('❌ Error getting usage stats:', error);
+        res.status(500).json({ success: false, error: 'Failed to get usage statistics' });
+    }
+});
+
+// Estimate next bill based on current usage
+app.post('/api/billing/estimate', authSystem.authMiddleware(), async (req, res) => {
+    try {
+        const usage = await db.getCurrentUsage(req.user.id);
+        const basePlan = 7900; // $79.00 in cents
+        
+        let overages = 0;
+        
+        // Calculate voice overages
+        if (usage.voice_minutes_used > 300) {
+            overages += (usage.voice_minutes_used - 300) * 15; // $0.15 per minute
+        }
+        
+        // Calculate image overages
+        if (usage.images_generated > 30) {
+            overages += (usage.images_generated - 30) * 50; // $0.50 per image
+        }
+        
+        // Calculate video overages
+        if (usage.videos_created > 10) {
+            overages += (usage.videos_created - 10) * 150; // $1.50 per video
+        }
+        
+        // Add extra locations and users (if any)
+        overages += usage.extra_locations * 2500; // $25 per location
+        overages += usage.extra_users * 1500; // $15 per user
+        
+        const total = basePlan + overages;
+        
+        res.json({ 
+            success: true, 
+            estimate: {
+                base_plan: basePlan,
+                overages: overages,
+                total: total,
+                currency: 'usd'
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error estimating bill:', error);
+        res.status(500).json({ success: false, error: 'Failed to estimate bill' });
+    }
 });
 
 // Language Management Endpoints
@@ -1412,15 +1559,28 @@ function generateInstagramCaption(transcript, imageAnalysis, language = 'en') {
 }
 
 // Helper function to generate TikTok caption
-function generateTiktokCaption(transcript) {
+function generateTiktokCaption(transcript, language = 'en') {
     const shortTranscript = transcript.substring(0, 40);
     
-    if (transcript.toLowerCase().includes('delicious') || transcript.toLowerCase().includes('amazing')) {
-        return `${shortTranscript}... 😍🔥 #foodlover`;
-    } else if (transcript.toLowerCase().includes('recipe') || transcript.toLowerCase().includes('cook')) {
-        return `Cooking magic happening! ${shortTranscript} ✨👨‍🍳`;
+    const keywords = language === 'fr' 
+        ? { delicious: ['délicieux', 'savoureux'], recipe: ['recette', 'cuisiner'], amazing: ['incroyable', 'fantastique'] }
+        : { delicious: ['delicious', 'amazing'], recipe: ['recipe', 'cook'], amazing: ['amazing', 'fantastic'] };
+    
+    const lowerTranscript = transcript.toLowerCase();
+    
+    if (keywords.delicious.some(word => lowerTranscript.includes(word)) || 
+        keywords.amazing.some(word => lowerTranscript.includes(word))) {
+        return language === 'fr'
+            ? `${shortTranscript}... 😍🔥 #amournourriture`
+            : `${shortTranscript}... 😍🔥 #foodlover`;
+    } else if (keywords.recipe.some(word => lowerTranscript.includes(word))) {
+        return language === 'fr'
+            ? `Magie culinaire en cours ! ${shortTranscript} ✨👨‍🍳`
+            : `Cooking magic happening! ${shortTranscript} ✨👨‍🍳`;
     } else {
-        return `${shortTranscript}... This hits different! 🔥😋`;
+        return language === 'fr'
+            ? `${shortTranscript}... Ça change tout ! 🔥😋`
+            : `${shortTranscript}... This hits different! 🔥😋`;
     }
 }
 
@@ -1438,6 +1598,10 @@ function extractEmotion(transcript) {
     return words.some(word => positiveWords.includes(word)) ? 'positive' : 'neutral';
 }
 
+// Import regional model router for advanced AI
+const RegionalModelRouter = require('./ai-training/regional-model-router');
+const regionalRouter = new RegionalModelRouter();
+
 // Generate social media content with language support
 async function generateContent(transcript, imageAnalysis, language = 'en') {
     try {
@@ -1450,6 +1614,30 @@ async function generateContent(transcript, imageAnalysis, language = 'en') {
         }
         
         console.log(`✨ Generating social media content in ${language}...`);
+        
+        // Try using the advanced regional AI model router first
+        try {
+            console.log('🧠 Attempting to use regional AI models...');
+            const regionalContent = await regionalRouter.generateRegionalContent(
+                transcript, 
+                imageAnalysis, 
+                { 
+                    language: language,
+                    restaurantType: 'restaurant',
+                    brandVoice: 'friendly'
+                }
+            );
+            
+            if (regionalContent && regionalContent.instagram && regionalContent.tiktok) {
+                console.log('✅ Regional AI model content generated successfully');
+                return regionalContent;
+            }
+        } catch (regionalError) {
+            console.log('⚠️ Regional models not ready yet, falling back to base model:', regionalError.message);
+        }
+        
+        // Fallback to base GPT-4o model with enhanced regional prompting
+        console.log('🔄 Using enhanced base model with regional awareness...');
         
         // Create language-specific prompts
         const languageInstruction = language === 'fr' 
@@ -1598,7 +1786,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
     console.log(`🍽️ ChefSocial AI Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to test the conversational assistant`);

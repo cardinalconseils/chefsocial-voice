@@ -12,42 +12,77 @@ class ChefSocialAuth {
         this.db = new ChefSocialDatabase();
         this.jwtSecret = process.env.JWT_SECRET || 'chefsocial-super-secret-key-change-in-production';
         
-        // Stripe price IDs - replace with your actual Stripe price IDs
-        this.pricingPlans = {
-            starter: {
-                priceId: process.env.STRIPE_PRICE_STARTER || 'price_starter_test',
-                name: 'Starter',
-                price: 2900, // $29/month
-                features: ['voice_content_creation', 'multi_platform_optimization']
-            },
-            professional: {
-                priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_test',
-                name: 'Professional', 
-                price: 7900, // $79/month
+        // ChefSocial Complete Plan - Single pricing model with usage-based overages
+        this.pricingPlan = {
+            complete: {
+                priceId: process.env.STRIPE_PRICE_COMPLETE || 'price_complete_test',
+                name: 'ChefSocial Complete',
+                price: 7900, // $79.00/month
+                displayPrice: '$79',
+                description: 'Every feature we\'ve built, in one package',
                 features: [
-                    'voice_content_creation', 
-                    'natural_conversation',
-                    'unlimited_content',
-                    'multi_platform_optimization',
-                    'brand_voice_learning',
-                    'analytics_insights'
-                ]
+                    'Voice content creation - 300 minutes/month included',
+                    'AI image generation - 30 images/month included',
+                    'Smart video creation - 10 videos/month included',
+                    'All platform posting - Unlimited posts',
+                    'Review monitoring - All major platforms',
+                    'Team collaboration - 2 users included',
+                    'Multi-location - 1 location included',
+                    'Advanced analytics & insights',
+                    'POS & reservation integrations',
+                    'White-label options available',
+                    'Email & chat support'
+                ],
+                limits: {
+                    voice_minutes_per_month: 300,
+                    images_per_month: 30,
+                    videos_per_month: 10,
+                    posts_per_month: -1, // unlimited
+                    team_users: 2,
+                    locations: 1,
+                    api_calls_per_month: 1000,
+                    all_features: true
+                }
+            }
+        };
+
+        // Usage-based overage pricing
+        this.overagePricing = {
+            voice_minutes: {
+                priceId: process.env.STRIPE_PRICE_VOICE_OVERAGE || 'price_voice_overage_test',
+                price: 15, // $0.15 per minute in cents
+                displayPrice: '$0.15/minute',
+                description: 'Voice content creation overages'
             },
-            enterprise: {
-                priceId: process.env.STRIPE_PRICE_ENTERPRISE || 'price_enterprise_test',
-                name: 'Enterprise',
-                price: 19900, // $199/month
-                features: [
-                    'voice_content_creation',
-                    'natural_conversation', 
-                    'unlimited_content',
-                    'multi_platform_optimization',
-                    'brand_voice_learning',
-                    'analytics_insights',
-                    'bulk_content_creation',
-                    'priority_support',
-                    'custom_integrations'
-                ]
+            images: {
+                priceId: process.env.STRIPE_PRICE_IMAGE_OVERAGE || 'price_image_overage_test',
+                price: 50, // $0.50 per image in cents
+                displayPrice: '$0.50/image',
+                description: 'AI image generation overages'
+            },
+            videos: {
+                priceId: process.env.STRIPE_PRICE_VIDEO_OVERAGE || 'price_video_overage_test',
+                price: 150, // $1.50 per video in cents
+                displayPrice: '$1.50/video',
+                description: 'Smart video creation overages'
+            },
+            extra_locations: {
+                priceId: process.env.STRIPE_PRICE_EXTRA_LOCATION || 'price_extra_location_test',
+                price: 2500, // $25.00 per location per month in cents
+                displayPrice: '$25/location/month',
+                description: 'Additional locations'
+            },
+            extra_users: {
+                priceId: process.env.STRIPE_PRICE_EXTRA_USER || 'price_extra_user_test',
+                price: 1500, // $15.00 per user per month in cents
+                displayPrice: '$15/user/month',
+                description: 'Additional team members'
+            },
+            api_calls: {
+                priceId: process.env.STRIPE_PRICE_API_OVERAGE || 'price_api_overage_test',
+                price: 5, // $0.05 per 100 calls in cents
+                displayPrice: '$0.05/100 calls',
+                description: 'Extra API calls'
             }
         };
     }
@@ -55,7 +90,8 @@ class ChefSocialAuth {
     // Registration with Stripe
     async registerUser(userData) {
         try {
-            const { email, password, name, restaurantName, planName, paymentMethodId } = userData;
+            const { email, password, name, restaurantName, paymentMethodId } = userData;
+            const planName = 'complete'; // Only one plan available
 
             // Check if user already exists
             const existingUser = await this.db.getUserByEmail(email);
@@ -64,7 +100,7 @@ class ChefSocialAuth {
             }
 
             // Get plan details
-            const plan = this.pricingPlans[planName];
+            const plan = this.pricingPlan[planName];
             if (!plan) {
                 throw new Error('Invalid plan selected');
             }
@@ -374,14 +410,156 @@ class ChefSocialAuth {
         }
     }
 
-    // Get pricing plans
-    getPricingPlans() {
-        return Object.entries(this.pricingPlans).map(([key, plan]) => ({
-            id: key,
-            name: plan.name,
-            price: plan.price,
-            features: plan.features
-        }));
+    // Get pricing plan and overage structure
+    getPricingPlan() {
+        const plan = this.pricingPlan.complete;
+        return {
+            plan: {
+                id: 'complete',
+                name: plan.name,
+                price: plan.price,
+                displayPrice: plan.displayPrice,
+                description: plan.description,
+                features: plan.features,
+                limits: plan.limits
+            },
+            overages: Object.entries(this.overagePricing).map(([key, overage]) => ({
+                id: key,
+                price: overage.price,
+                displayPrice: overage.displayPrice,
+                description: overage.description
+            }))
+        };
+    }
+
+    // Get Stripe products with live pricing
+    async getStripeProducts() {
+        try {
+            const products = await this.stripe.products.list({
+                active: true
+            });
+
+            // Get prices for products with our plan_key metadata
+            const productsWithPrices = await Promise.all(
+                products.data.map(async (product) => {
+                    let price = null;
+                    
+                    if (product.metadata.plan_key) {
+                        // Get prices for this product
+                        const prices = await this.stripe.prices.list({
+                            product: product.id,
+                            active: true
+                        });
+                        
+                        if (prices.data.length > 0) {
+                            const mainPrice = prices.data[0];
+                            price = {
+                                id: mainPrice.id,
+                                amount: mainPrice.unit_amount,
+                                currency: mainPrice.currency,
+                                interval: mainPrice.recurring?.interval,
+                                interval_count: mainPrice.recurring?.interval_count
+                            };
+                        }
+                    }
+
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: price,
+                        metadata: product.metadata,
+                        features: product.metadata?.features ? JSON.parse(product.metadata.features) : []
+                    };
+                })
+            );
+
+            return productsWithPrices;
+        } catch (error) {
+            console.error('❌ Error fetching Stripe products:', error);
+            throw error;
+        }
+    }
+
+    // Create or update Stripe products to match our pricing plan
+    async syncStripeProducts() {
+        try {
+            // Sync main plan
+            const plan = this.pricingPlan.complete;
+            await this.createOrUpdateStripeProduct('complete', plan);
+
+            // Sync overage pricing
+            for (const [overageKey, overage] of Object.entries(this.overagePricing)) {
+                await this.createOrUpdateStripeProduct(overageKey, overage, true);
+            }
+        } catch (error) {
+            console.error('❌ Error syncing Stripe products:', error);
+            throw error;
+        }
+    }
+
+    async createOrUpdateStripeProduct(key, productData, isOverage = false) {
+        try {
+            // Check if product exists
+            let product;
+            try {
+                const products = await this.stripe.products.search({
+                    query: `metadata['product_key']:'${key}'`
+                });
+                product = products.data[0];
+            } catch (error) {
+                // Product doesn't exist, will create new one
+            }
+
+            if (!product) {
+                // Create new product
+                const productMetadata = {
+                    product_key: key,
+                    is_overage: isOverage ? 'true' : 'false'
+                };
+
+                if (!isOverage) {
+                    productMetadata.features = JSON.stringify(productData.features);
+                }
+
+                product = await this.stripe.products.create({
+                    name: productName,
+                    description: productData.description,
+                    metadata: productMetadata
+                });
+
+                // Create price for the product
+                const priceData = {
+                    product: product.id,
+                    unit_amount: productData.price,
+                    currency: 'usd',
+                    metadata: {
+                        product_key: key
+                    }
+                };
+
+                // For main plan, add recurring billing
+                if (!isOverage) {
+                    priceData.recurring = {
+                        interval: 'month'
+                    };
+                }
+
+                const price = await this.stripe.prices.create(priceData);
+
+                // Update pricing structure with actual Stripe price ID
+                if (isOverage) {
+                    this.overagePricing[key].priceId = price.id;
+                } else {
+                    this.pricingPlan[key].priceId = price.id;
+                }
+                
+                console.log(`✅ Created Stripe product ${productName} with price ${price.id}`);
+            }
+        } catch (error) {
+            console.error(`❌ Error creating Stripe product for ${key}:`, error);
+            throw error;
+        }
     }
 }
 

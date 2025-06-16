@@ -1,0 +1,28 @@
+{
+  "completedAt": "2025-06-16T02:44:42.241Z",
+  "models": {
+    "fr-CA": "ft:gpt-4o-2024-08-06:personal:chefsocial-fr-ca-v1:BitoZaGh",
+    "fr-FR": "ft:gpt-4o-2024-08-06:personal:chefsocial-fr-fr-v1:BitoVPJK",
+    "en-US": "ft:gpt-4o-2024-08-06:personal:chefsocial-en-us-v1:BitoWoKA"
+  },
+  "originalJobs": {
+    "startTime": "2025-06-16T02:19:57.499Z",
+    "jobs": {
+      "fr-CA": "ftjob-vksx3DA6KuvIvfFBou8fyAyg",
+      "fr-FR": "ftjob-deOUeO4rl1JlK1APBCourAJk",
+      "en-US": "ftjob-YTpk7sd3rCOJSEWtqoosqtcs"
+    },
+    "config": {
+      "model": "gpt-4o-2024-08-06",
+      "regions": [
+        "fr-CA",
+        "fr-FR",
+        "en-US",
+        "en-CA"
+      ],
+      "batchSize": 100,
+      "epochs": 3,
+      "learningRate": 0.0001
+    }
+  }
+}

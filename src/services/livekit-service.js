@@ -36,6 +36,9 @@ class ChefSocialLiveKitService {
         // Session cleanup interval
         this.startSessionCleanup();
         
+        // SMS briefing session tracking
+        this.briefingSessions = new Map(); // briefingSessionId -> liveKitSessionId
+        
         if (this.logger) {
             this.logger.info('ChefSocial LiveKit service initialized', {
                 liveKitUrl: this.liveKitUrl,
@@ -635,6 +638,255 @@ class ChefSocialLiveKitService {
         if (this.logger) {
             this.logger.info('LiveKit service shutdown complete');
         }
+    }
+
+    // ===== SMS BRIEFING SESSION METHODS =====
+
+    // Create a briefing room for SMS-initiated sessions
+    async createBriefingRoom(briefingSessionId, phoneNumber, imageUrl) {
+        try {
+            const sessionId = `briefing_${briefingSessionId}_${Date.now()}`;
+            const roomName = `briefing_room_${sessionId}`;
+
+            // Create room configuration optimized for voice briefings
+            const roomOptions = {
+                name: roomName,
+                emptyTimeout: 600, // 10 minutes for briefing
+                maxParticipants: 3, // User (phone) + AI agent + potential moderator
+                metadata: JSON.stringify({
+                    sessionId,
+                    briefingSessionId,
+                    phoneNumber: phoneNumber.slice(-4), // Only store last 4 digits
+                    imageUrl,
+                    sessionType: 'sms_briefing',
+                    created: new Date().toISOString(),
+                    purpose: 'content_briefing'
+                })
+            };
+
+            // Create the LiveKit room
+            const room = await this.roomService.createRoom(roomOptions);
+
+            // Generate access token for the phone connection
+            const phoneAccessToken = await this.generateAccessToken(
+                `phone_${phoneNumber.slice(-4)}`, 
+                roomName, 
+                {
+                    sessionId,
+                    briefingSessionId,
+                    role: 'caller',
+                    connectionType: 'phone'
+                }
+            );
+
+            // Create session data
+            const sessionData = {
+                sessionId,
+                briefingSessionId,
+                roomName,
+                phoneNumber: phoneNumber.slice(-4), // Only store last 4 digits
+                imageUrl,
+                phoneAccessToken,
+                status: 'created',
+                created: new Date(),
+                lastActivity: new Date(),
+                sessionType: 'sms_briefing',
+                metadata: {
+                    roomConfig: roomOptions,
+                    briefingContext: null // Will be populated during conversation
+                },
+                participants: [],
+                performance: {
+                    startTime: Date.now(),
+                    latencyMeasurements: [],
+                    errors: []
+                }
+            };
+
+            // Store session
+            this.activeSessions.set(sessionId, sessionData);
+            this.briefingSessions.set(briefingSessionId, sessionId);
+            this.metrics.sessionsCreated++;
+
+            // Log briefing room creation
+            if (this.logger) {
+                this.logger.info('Briefing room created', {
+                    sessionId,
+                    briefingSessionId,
+                    roomName,
+                    phoneNumber: phoneNumber.slice(-4),
+                    service: 'livekit'
+                });
+            }
+
+            // Store in database if available
+            if (this.db) {
+                await this.storeVoiceSession(sessionData);
+            }
+
+            return {
+                sessionId,
+                roomName,
+                phoneAccessToken,
+                liveKitUrl: this.liveKitUrl,
+                briefingSessionId
+            };
+
+        } catch (error) {
+            this.metrics.errors++;
+            if (this.logger) {
+                this.logger.error('Failed to create briefing room', error, {
+                    briefingSessionId,
+                    phoneNumber: phoneNumber.slice(-4),
+                    service: 'livekit'
+                });
+            }
+            throw error;
+        }
+    }
+
+    // Connect phone number to LiveKit room
+    async connectPhoneToRoom(phoneNumber, roomName) {
+        try {
+            // This would typically use a SIP provider or Twilio Voice
+            // For now, we'll simulate the connection and return connection details
+            
+            const connectionId = `phone_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+            
+            // In a real implementation, this would:
+            // 1. Use Twilio Voice API to call the phone number
+            // 2. Bridge the call to the LiveKit room using WebRTC-SIP gateway
+            // 3. Return connection details
+            
+            if (this.logger) {
+                this.logger.info('Phone connection initiated', {
+                    phoneNumber: phoneNumber.slice(-4),
+                    roomName,
+                    connectionId,
+                    service: 'livekit'
+                });
+            }
+
+            return {
+                connectionId,
+                status: 'connecting',
+                phoneNumber: phoneNumber.slice(-4),
+                roomName,
+                // This would include actual call SID from Twilio in real implementation
+                callDetails: {
+                    provider: 'twilio',
+                    connectionType: 'webrtc_sip',
+                    bridged: true
+                }
+            };
+
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('Failed to connect phone to room', error, {
+                    phoneNumber: phoneNumber.slice(-4),
+                    roomName,
+                    service: 'livekit'
+                });
+            }
+            throw error;
+        }
+    }
+
+    // Handle briefing completion and extract context
+    async completeBriefingSession(briefingSessionId, transcript, extractedContext) {
+        try {
+            const liveKitSessionId = this.briefingSessions.get(briefingSessionId);
+            if (!liveKitSessionId) {
+                throw new Error('Briefing session not found');
+            }
+
+            const sessionData = this.activeSessions.get(liveKitSessionId);
+            if (!sessionData) {
+                throw new Error('LiveKit session not found');
+            }
+
+            // Update session with briefing results
+            sessionData.status = 'completed';
+            sessionData.metadata.briefingContext = extractedContext;
+            sessionData.metadata.transcript = transcript;
+            sessionData.ended = new Date();
+            sessionData.duration = Date.now() - sessionData.performance.startTime;
+
+            // Store briefing context in database
+            if (this.db) {
+                await this.db.saveBriefingContext({
+                    sessionId: briefingSessionId,
+                    transcript,
+                    dishStory: extractedContext.dishStory,
+                    targetAudience: extractedContext.targetAudience,
+                    desiredMood: extractedContext.desiredMood,
+                    platformPreferences: JSON.stringify(extractedContext.platformPreferences),
+                    postingUrgency: extractedContext.postingUrgency,
+                    brandPersonality: extractedContext.brandPersonality
+                });
+
+                // Update briefing session status
+                await this.db.updateBriefingSessionSchedule(briefingSessionId, null, 'completed');
+            }
+
+            // Clean up session
+            this.activeSessions.delete(liveKitSessionId);
+            this.briefingSessions.delete(briefingSessionId);
+            this.metrics.sessionsCompleted++;
+            this.metrics.totalDuration += sessionData.duration;
+
+            if (this.logger) {
+                this.logger.info('Briefing session completed', {
+                    briefingSessionId,
+                    liveKitSessionId,
+                    duration: sessionData.duration,
+                    contextExtracted: !!extractedContext,
+                    service: 'livekit'
+                });
+            }
+
+            return {
+                sessionId: briefingSessionId,
+                liveKitSessionId,
+                duration: sessionData.duration,
+                extractedContext,
+                status: 'completed'
+            };
+
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('Failed to complete briefing session', error, {
+                    briefingSessionId,
+                    service: 'livekit'
+                });
+            }
+            throw error;
+        }
+    }
+
+    // Get briefing session status
+    getBriefingSessionStatus(briefingSessionId) {
+        const liveKitSessionId = this.briefingSessions.get(briefingSessionId);
+        if (!liveKitSessionId) {
+            return { status: 'not_found' };
+        }
+
+        const sessionData = this.activeSessions.get(liveKitSessionId);
+        if (!sessionData) {
+            return { status: 'expired' };
+        }
+
+        return {
+            status: sessionData.status,
+            sessionId: liveKitSessionId,
+            briefingSessionId,
+            created: sessionData.created,
+            lastActivity: sessionData.lastActivity,
+            participants: sessionData.participants.length,
+            duration: sessionData.status === 'completed' ? 
+                sessionData.duration : 
+                Date.now() - sessionData.performance.startTime
+        };
     }
 }
 

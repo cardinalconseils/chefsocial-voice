@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Tracking - ChefSocial Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="../shared/content-preview-styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div id="dashboard-sidebar"></div>
+
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h1 class="header-title">Session Tracking</h1>
+                    <div id="breadcrumbs" class="breadcrumbs"></div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="sessionTracker.loadActiveSessions()">
+                        🔄 Refresh
+                    </button>
+                    <a href="/conversation.html" class="btn btn-primary">
+                        🎤 New Session
+                    </a>
+                </div>
+            </div>
+
+            <!-- Session Overview Stats -->
+            <div class="grid grid-4 mb-3">
+                <div class="card stat-card">
+                    <div class="stat-value" id="active-sessions-count">0</div>
+                    <div class="stat-label">Active Sessions</div>
+                    <div class="stat-trend positive">+2 from yesterday</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value" id="total-content-count">0</div>
+                    <div class="stat-label">Content Generated</div>
+                    <div class="stat-trend positive">+15 today</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value" id="voice-minutes-count">0</div>
+                    <div class="stat-label">Voice Minutes</div>
+                    <div class="stat-trend neutral">2h 30m today</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value" id="avg-session-duration">0</div>
+                    <div class="stat-label">Avg Duration</div>
+                    <div class="stat-trend positive">+5m improvement</div>
+                </div>
+            </div>
+
+            <!-- Session Tracking Interface -->
+            <div class="session-tracking-layout">
+                <div class="session-list-panel">
+                    <div class="panel-header">
+                        <h3>Active Sessions</h3>
+                        <div class="session-filters">
+                            <select id="session-filter" onchange="sessionTracker.filterSessions(this.value)">
+                                <option value="all">All Sessions</option>
+                                <option value="active">Active Only</option>
+                                <option value="voice_content">Voice Content</option>
+                                <option value="conversation">AI Chat</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="session-list" class="session-list">
+                        <!-- Sessions will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="session-details-panel">
+                    <div id="session-details" class="session-details">
+                        <!-- Session details will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Activity Feed -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Real-time Activity</h3>
+                    <div class="activity-controls">
+                        <button class="btn btn-secondary btn-sm" onclick="sessionTracker.pauseTracking()">
+                            ⏸️ Pause
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="sessionTracker.clearActivity()">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                </div>
+                <div id="activity-feed" class="activity-feed">
+                    <!-- Real-time activities will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/auth.js"></script>
+    <script src="../shared/nav.js"></script>
+    <script src="../shared/session-tracker.js"></script>
+    <script src="../shared/content-preview.js"></script>
+    <script>
+        class SessionDashboard {
+            constructor() {
+                this.authManager = new AuthManager();
+                this.nav = new DashboardNav();
+                this.sessionTracker = new SessionTracker();
+                this.contentPreview = new ContentPreview();
+                
+                this.init();
+            }
+
+            async init() {
+                // Check authentication
+                const isAuthenticated = await this.authManager.verifyAuth();
+                if (!isAuthenticated) return;
+
+                // Render navigation
+                this.nav.renderSidebar();
+                this.nav.renderBreadcrumbs();
+
+                // Initialize session tracking
+                this.setupActivityFeed();
+                this.loadSessionStats();
+
+                // Set up real-time updates
+                this.setupRealTimeUpdates();
+            }
+
+            setupActivityFeed() {
+                const activityFeed = document.getElementById('activity-feed');
+                if (!activityFeed) return;
+
+                // Initialize with placeholder
+                activityFeed.innerHTML = `
+                    <div class="activity-item">
+                        <div class="activity-icon">🎤</div>
+                        <div class="activity-content">
+                            <div class="activity-message">Waiting for session activity...</div>
+                            <div class="activity-time">Ready to track</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadSessionStats() {
+                try {
+                    const response = await this.authManager.apiRequest('/api/sessions/stats');
+                    if (!response.ok) throw new Error('Failed to load stats');
+
+                    const stats = await response.json();
+                    this.updateStatsDisplay(stats);
+
+                } catch (error) {
+                    console.error('Failed to load session stats:', error);
+                }
+            }
+
+            updateStatsDisplay(stats) {
+                document.getElementById('active-sessions-count').textContent = stats.active_sessions || 0;
+                document.getElementById('total-content-count').textContent = stats.total_content || 0;
+                document.getElementById('voice-minutes-count').textContent = `${stats.voice_minutes || 0}m`;
+                document.getElementById('avg-session-duration').textContent = `${stats.avg_duration || 0}m`;
+            }
+
+            setupRealTimeUpdates() {
+                // Listen for session tracker events
+                if (this.sessionTracker.eventSource) {
+                    this.sessionTracker.eventSource.addEventListener('message', (event) => {
+                        const data = JSON.parse(event.data);
+                        this.addActivityItem(data);
+                    });
+                }
+            }
+
+            addActivityItem(data) {
+                const activityFeed = document.getElementById('activity-feed');
+                if (!activityFeed) return;
+
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item new';
+                
+                activityItem.innerHTML = `
+                    <div class="activity-icon">${this.getActivityIcon(data.type)}</div>
+                    <div class="activity-content">
+                        <div class="activity-message">${this.getActivityMessage(data)}</div>
+                        <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+
+                // Add to top of feed
+                activityFeed.insertBefore(activityItem, activityFeed.firstChild);
+
+                // Remove 'new' class after animation
+                setTimeout(() => {
+                    activityItem.classList.remove('new');
+                }, 500);
+
+                // Keep only last 50 items
+                const items = activityFeed.querySelectorAll('.activity-item');
+                if (items.length > 50) {
+                    items[items.length - 1].remove();
+                }
+            }
+
+            getActivityIcon(type) {
+                const icons = {
+                    'session_started': '🎤',
+                    'session_ended': '⏹️',
+                    'content_generated': '📝',
+                    'voice_processed': '🔊',
+                    'session_paused': '⏸️',
+                    'session_resumed': '▶️',
+                    'error': '❌'
+                };
+                return icons[type] || '📊';
+            }
+
+            getActivityMessage(data) {
+                switch (data.type) {
+                    case 'session_started':
+                        return `New ${data.session?.type || 'session'} started`;
+                    case 'session_ended':
+                        return `Session completed (${data.duration || 'unknown'} duration)`;
+                    case 'content_generated':
+                        return `Generated ${data.content?.type || 'content'} for ${data.content?.platform || 'platform'}`;
+                    case 'voice_processed':
+                        return `Voice input processed (${data.duration || 'unknown'})`;
+                    case 'session_paused':
+                        return 'Session paused';
+                    case 'session_resumed':
+                        return 'Session resumed';
+                    case 'error':
+                        return `Error: ${data.message || 'Unknown error'}`;
+                    default:
+                        return data.message || 'Unknown activity';
+                }
+            }
+
+            clearActivity() {
+                const activityFeed = document.getElementById('activity-feed');
+                if (activityFeed) {
+                    activityFeed.innerHTML = `
+                        <div class="activity-item">
+                            <div class="activity-icon">✨</div>
+                            <div class="activity-content">
+                                <div class="activity-message">Activity feed cleared</div>
+                                <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initialize dashboard when page loads
+        let sessionDashboard;
+        let sessionTracker;
+        let contentPreview;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            sessionDashboard = new SessionDashboard();
+            sessionTracker = sessionDashboard.sessionTracker;
+            contentPreview = sessionDashboard.contentPreview;
+        });
+    </script>
+
+    <style>
+        .session-tracking-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            height: 600px;
+        }
+
+        .session-list-panel,
+        .session-details-panel {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .session-filters select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-100);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .session-list {
+            height: calc(600px - 80px);
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .session-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .session-item:hover {
+            background: var(--orange-50);
+        }
+
+        .session-item.active {
+            background: var(--orange-50);
+            border-left: 4px solid var(--orange-500);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .session-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .session-type {
+            font-size: 0.75rem;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .session-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-indicator.active {
+            background: var(--green-500);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.paused {
+            background: var(--orange-500);
+        }
+
+        .status-indicator.completed {
+            background: var(--gray-600);
+        }
+
+        .status-indicator.failed {
+            background: var(--red-500);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .session-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .session-preview {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .session-details {
+            height: calc(600px - 80px);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .session-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--gray-600);
+        }
+
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--orange-500);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .stat-trend.positive {
+            color: var(--green-500);
+        }
+
+        .stat-trend.negative {
+            color: var(--red-500);
+        }
+
+        .stat-trend.neutral {
+            color: var(--gray-600);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item.new {
+            background: var(--orange-50);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-icon {
+            font-size: 1.25rem;
+            min-width: 1.5rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-message {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .activity-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--gray-600);
+            padding: 2rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .empty-state p {
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .session-tracking-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .session-list-panel {
+                height: 400px;
+            }
+            
+            .session-details-panel {
+                height: 500px;
+            }
+            
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

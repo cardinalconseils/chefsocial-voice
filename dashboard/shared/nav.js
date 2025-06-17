@@ -11,6 +11,7 @@ class DashboardNav {
         if (path.includes('/profile')) return 'profile';
         if (path.includes('/analytics')) return 'analytics';
         if (path.includes('/content')) return 'content';
+        if (path.includes('/sessions')) return 'sessions';
         return 'overview';
     }
 
@@ -29,6 +30,11 @@ class DashboardNav {
                     <li class="nav-item">
                         <a href="/dashboard/" class="nav-link ${this.currentPage === 'overview' ? 'active' : ''}" data-page="overview">
                             📊 Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/sessions/" class="nav-link ${this.currentPage === 'sessions' ? 'active' : ''}" data-page="sessions">
+                            🔄 Sessions
                         </a>
                     </li>
                     <li class="nav-item">

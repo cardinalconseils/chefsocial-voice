@@ -675,6 +675,363 @@ module.exports = (app) => {
         })
     );
 
+    // LiveKit Agent Briefing Endpoints
+
+    // Schedule a briefing session
+    router.post('/schedule-briefing',
+        authSystem.authMiddleware(),
+        validateRequest([
+            body('phoneNumber').isMobilePhone().withMessage('Valid phone number required'),
+            body('imageUrl').isURL().withMessage('Valid image URL required'),
+            body('scheduledTime').isISO8601().withMessage('Valid scheduled time required'),
+            body('metadata').optional().isObject()
+        ]),
+        asyncHandler(async (req, res) => {
+            const { phoneNumber, imageUrl, scheduledTime, metadata = {} } = req.body;
+            
+            // Generate unique session ID
+            const sessionId = `briefing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Create briefing session in database
+            const sessionData = {
+                id: sessionId,
+                phoneNumber,
+                userId: req.userId,
+                imageUrl,
+                uploadMethod: 'api'
+            };
+            
+            await authSystem.db.createBriefingSession(sessionData);
+            
+            // Schedule the briefing time
+            await authSystem.db.updateBriefingSessionSchedule(sessionId, scheduledTime, 'scheduled');
+            
+            // Track workflow step
+            await authSystem.db.trackWorkflowStep(sessionId, 'briefing_scheduled', 'completed', {
+                scheduledTime,
+                phoneNumber,
+                metadata
+            });
+
+            // Audit log briefing creation
+            await logger.auditUserAction(
+                req.userId,
+                'briefing_session_scheduled',
+                'briefing_session',
+                sessionId,
+                {
+                    phoneNumber,
+                    scheduledTime,
+                    imageUrl,
+                    metadata
+                },
+                req
+            );
+
+            logger.info('Briefing session scheduled', {
+                userId: req.userId,
+                sessionId,
+                phoneNumber,
+                scheduledTime,
+                service: 'livekit-agent'
+            });
+
+            res.json({
+                success: true,
+                sessionId,
+                scheduledTime,
+                message: 'Briefing session scheduled successfully'
+            });
+        })
+    );
+
+    // Get briefing session details
+    router.get('/briefing/:sessionId',
+        authSystem.authMiddleware(),
+        validateRequest([
+            param('sessionId').notEmpty().withMessage('Session ID required')
+        ]),
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.params;
+            
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Briefing session not found'
+                });
+            }
+
+            // Verify user owns this session
+            if (session.user_id !== req.userId) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied to this briefing session'
+                });
+            }
+
+            res.json({
+                success: true,
+                session: {
+                    sessionId: session.id,
+                    phoneNumber: session.phone_number,
+                    imageUrl: session.image_url,
+                    status: session.status,
+                    scheduledTime: session.scheduled_time,
+                    actualCallTime: session.actual_call_time,
+                    briefingCompleted: session.briefing_completed,
+                    createdAt: session.created_at,
+                    updatedAt: session.updated_at
+                }
+            });
+        })
+    );
+
+    // Update briefing session status
+    router.patch('/briefing/:sessionId/status',
+        authSystem.authMiddleware(),
+        validateRequest([
+            param('sessionId').notEmpty().withMessage('Session ID required'),
+            body('status').isIn(['pending', 'scheduled', 'in_progress', 'completed', 'failed']).withMessage('Valid status required'),
+            body('actualCallTime').optional().isISO8601(),
+            body('briefingCompleted').optional().isBoolean()
+        ]),
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.params;
+            const { status, actualCallTime, briefingCompleted } = req.body;
+            
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Briefing session not found'
+                });
+            }
+
+            // Verify user owns this session
+            if (session.user_id !== req.userId) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied to this briefing session'
+                });
+            }
+
+            // Update session status
+            if (status === 'completed' && actualCallTime) {
+                await authSystem.db.updateBriefingSessionSchedule(sessionId, actualCallTime, status);
+            } else {
+                await authSystem.db.updateBriefingSessionSchedule(sessionId, session.scheduled_time, status);
+            }
+
+            // Track workflow step
+            await authSystem.db.trackWorkflowStep(sessionId, 'status_update', 'completed', {
+                newStatus: status,
+                actualCallTime,
+                briefingCompleted
+            });
+
+            // Audit log status update
+            await logger.auditUserAction(
+                req.userId,
+                'briefing_session_status_update',
+                'briefing_session',
+                sessionId,
+                {
+                    status,
+                    actualCallTime,
+                    briefingCompleted
+                },
+                req
+            );
+
+            logger.info('Briefing session status updated', {
+                userId: req.userId,
+                sessionId,
+                status,
+                service: 'livekit-agent'
+            });
+
+            res.json({
+                success: true,
+                sessionId,
+                status,
+                message: 'Briefing session status updated successfully'
+            });
+        })
+    );
+
+    // Save briefing context from voice session
+    router.post('/briefing/:sessionId/context',
+        authSystem.authMiddleware(),
+        validateRequest([
+            param('sessionId').notEmpty().withMessage('Session ID required'),
+            body('transcript').notEmpty().withMessage('Transcript required'),
+            body('dishStory').optional().isString(),
+            body('targetAudience').optional().isString(),
+            body('desiredMood').optional().isString(),
+            body('platformPreferences').optional().isString(),
+            body('postingUrgency').optional().isString(),
+            body('brandPersonality').optional().isString()
+        ]),
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.params;
+            const { transcript, dishStory, targetAudience, desiredMood, platformPreferences, postingUrgency, brandPersonality } = req.body;
+            
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Briefing session not found'
+                });
+            }
+
+            // Verify user owns this session
+            if (session.user_id !== req.userId) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied to this briefing session'
+                });
+            }
+
+            // Save briefing context
+            const contextData = {
+                sessionId,
+                transcript,
+                dishStory,
+                targetAudience,
+                desiredMood,
+                platformPreferences,
+                postingUrgency,
+                brandPersonality
+            };
+
+            const contextId = await authSystem.db.saveBriefingContext(contextData);
+
+            // Track workflow step
+            await authSystem.db.trackWorkflowStep(sessionId, 'context_saved', 'completed', contextData);
+
+            // Audit log context save
+            await logger.auditUserAction(
+                req.userId,
+                'briefing_context_saved',
+                'briefing_session',
+                sessionId,
+                {
+                    contextId,
+                    transcriptLength: transcript.length,
+                    hasCustomData: !!(dishStory || targetAudience || desiredMood)
+                },
+                req
+            );
+
+            logger.info('Briefing context saved', {
+                userId: req.userId,
+                sessionId,
+                contextId,
+                service: 'livekit-agent'
+            });
+
+            res.json({
+                success: true,
+                sessionId,
+                contextId,
+                message: 'Briefing context saved successfully'
+            });
+        })
+    );
+
+    // Webhook endpoint for external system notifications
+    router.post('/briefing/webhook',
+        validateRequest([
+            body('sessionId').notEmpty().withMessage('Session ID required'),
+            body('status').notEmpty().withMessage('Status required'),
+            body('timestamp').isISO8601().withMessage('Valid timestamp required'),
+            body('webhookSecret').notEmpty().withMessage('Webhook secret required')
+        ]),
+        asyncHandler(async (req, res) => {
+            const { sessionId, status, timestamp, webhookSecret, data = {} } = req.body;
+            
+            // Verify webhook secret (you should set this in your environment)
+            const expectedSecret = process.env.LIVEKIT_WEBHOOK_SECRET || 'default-webhook-secret';
+            if (webhookSecret !== expectedSecret) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid webhook secret'
+                });
+            }
+
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Briefing session not found'
+                });
+            }
+
+            // Update session based on webhook status
+            if (status === 'briefing_completed') {
+                await authSystem.db.updateBriefingSessionSchedule(sessionId, new Date().toISOString(), 'completed');
+                
+                // Track completion
+                await authSystem.db.trackWorkflowStep(sessionId, 'briefing_completed', 'completed', {
+                    completedAt: timestamp,
+                    webhookData: data
+                });
+
+                // Trigger your system's webhook if configured
+                if (process.env.EXTERNAL_WEBHOOK_URL) {
+                    try {
+                        await fetch(process.env.EXTERNAL_WEBHOOK_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${process.env.EXTERNAL_WEBHOOK_TOKEN || ''}`
+                            },
+                            body: JSON.stringify({
+                                sessionId,
+                                status: 'completed',
+                                timestamp,
+                                phoneNumber: session.phone_number,
+                                userId: session.user_id,
+                                imageUrl: session.image_url,
+                                data
+                            })
+                        });
+
+                        logger.info('External webhook notification sent', {
+                            sessionId,
+                            status,
+                            service: 'livekit-agent'
+                        });
+                    } catch (webhookError) {
+                        logger.error('Failed to send external webhook notification', webhookError, {
+                            sessionId,
+                            status
+                        });
+                    }
+                }
+            }
+
+            logger.info('Briefing webhook received', {
+                sessionId,
+                status,
+                timestamp,
+                service: 'livekit-agent'
+            });
+
+            res.json({
+                success: true,
+                sessionId,
+                status,
+                message: 'Webhook processed successfully'
+            });
+        })
+    );
+
     // Service Health and Monitoring
 
     // Get LiveKit service health and metrics

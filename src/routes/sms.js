@@ -137,7 +137,7 @@ module.exports = (app) => {
         })
     );
 
-    // POST /api/sms/webhook - Twilio webhook for incoming SMS
+    // POST /api/sms/webhook - Twilio webhook for incoming SMS (existing)
     router.post('/webhook', 
         express.raw({type: 'application/x-www-form-urlencoded'}), 
         asyncHandler(async (req, res) => {
@@ -174,6 +174,292 @@ module.exports = (app) => {
             
             // Respond with empty TwiML (we handle responses separately)
             res.type('text/xml').send(twiml.toString());
+        })
+    );
+
+    // POST /api/sms/webhook/image-received - New webhook for MMS with images
+    router.post('/webhook/image-received', 
+        express.raw({type: 'application/x-www-form-urlencoded'}), 
+        asyncHandler(async (req, res) => {
+            const twiml = new twilio.twiml.MessagingResponse();
+            
+            const fromNumber = req.body.From;
+            const messageBody = req.body.Body || '';
+            const messageSid = req.body.MessageSid;
+            const imageUrl = req.body.MediaUrl0; // First image attachment
+            const numMedia = parseInt(req.body.NumMedia) || 0;
+            
+            logger.info('MMS with image received', {
+                fromNumber: fromNumber.slice(-4),
+                messageSid,
+                hasImage: !!imageUrl,
+                numMedia
+            });
+            
+            try {
+                if (imageUrl && numMedia > 0) {
+                    // Create briefing session for the image
+                    const result = await smsService.createBriefingSession(fromNumber, imageUrl);
+                    
+                    // Send scheduling options
+                    await smsService.sendSchedulingOptions(fromNumber, result.sessionId);
+                    
+                    // Track the workflow step
+                    await authSystem.db.trackWorkflowStep(result.sessionId, 'image_received', 'completed', {
+                        imageUrl,
+                        messageBody,
+                        messageSid
+                    });
+                    
+                    logger.info('Briefing session created', {
+                        fromNumber: fromNumber.slice(-4),
+                        sessionId: result.sessionId,
+                        messageSid
+                    });
+                    
+                } else {
+                    // No image found, send help message
+                    await smsService.sendResponse(fromNumber, 
+                        "🍽️ Welcome to ChefSocial! Please send a photo of your dish to start creating viral content. " +
+                        "I'll then call you for a quick briefing to create amazing social media posts!");
+                }
+                
+            } catch (error) {
+                logger.error('MMS image processing failed', error, {
+                    fromNumber: fromNumber.slice(-4),
+                    messageSid,
+                    hasImage: !!imageUrl
+                });
+                
+                // Send error message to user
+                await smsService.sendResponse(fromNumber, 
+                    "❌ Sorry, there was an issue processing your image. Please try again or contact support.");
+            }
+            
+            res.type('text/xml').send(twiml.toString());
+        })
+    );
+
+    // POST /api/sms/webhook/schedule-response - Handle scheduling responses
+    router.post('/webhook/schedule-response', 
+        express.raw({type: 'application/x-www-form-urlencoded'}), 
+        asyncHandler(async (req, res) => {
+            const twiml = new twilio.twiml.MessagingResponse();
+            
+            const fromNumber = req.body.From;
+            const messageBody = req.body.Body;
+            const messageSid = req.body.MessageSid;
+            
+            logger.info('Scheduling response received', {
+                fromNumber: fromNumber.slice(-4),
+                response: messageBody?.substring(0, 20) + '...',
+                messageSid
+            });
+            
+            try {
+                // Handle the scheduling response
+                const result = await smsService.handleSchedulingResponse(fromNumber, messageBody);
+                
+                if (result.success) {
+                    // Track workflow step
+                    await authSystem.db.trackWorkflowStep(result.sessionId, 'schedule_set', 'completed', {
+                        scheduledTime: result.scheduledTime,
+                        responseType: result.responseType
+                    });
+                    
+                    // Trigger N8N workflow for content generation
+                    if (app.locals.services.n8nCoordinator) {
+                        try {
+                            await app.locals.services.n8nCoordinator.triggerSMSBriefingWorkflow({
+                                sessionId: result.sessionId,
+                                phoneNumber: fromNumber,
+                                scheduledTime: result.scheduledTime,
+                                responseType: result.responseType,
+                                imageUrl: session.image_url,
+                                userId: session.user_id
+                            });
+                        } catch (n8nError) {
+                            logger.error('N8N workflow trigger failed', n8nError, {
+                                sessionId: result.sessionId
+                            });
+                        }
+                    }
+                    
+                    logger.info('Schedule set successfully', {
+                        fromNumber: fromNumber.slice(-4),
+                        sessionId: result.sessionId,
+                        scheduledTime: result.scheduledTime,
+                        responseType: result.responseType
+                    });
+                }
+                
+            } catch (error) {
+                logger.error('Schedule response processing failed', error, {
+                    fromNumber: fromNumber.slice(-4),
+                    messageSid,
+                    response: messageBody?.substring(0, 50)
+                });
+            }
+            
+            res.type('text/xml').send(twiml.toString());
+        })
+    );
+
+    // GET /api/sms/sessions - Get user's briefing sessions
+    router.get('/sessions', 
+        authSystem.authMiddleware(),
+        asyncHandler(async (req, res) => {
+            const { status = 'all', limit = 50 } = req.query;
+            
+            // Get user's briefing sessions from database
+            const sessions = await new Promise((resolve, reject) => {
+                let query = `
+                    SELECT sbs.*, sr.response_text, sr.parsed_schedule, sr.response_type
+                    FROM sms_briefing_sessions sbs
+                    LEFT JOIN sms_scheduling_responses sr ON sbs.id = sr.session_id
+                    WHERE sbs.user_id = ? OR sbs.phone_number IN (
+                        SELECT phone FROM users WHERE id = ?
+                    )
+                `;
+                
+                const params = [req.userId, req.userId];
+                
+                if (status !== 'all') {
+                    query += ' AND sbs.status = ?';
+                    params.push(status);
+                }
+                
+                query += ' ORDER BY sbs.created_at DESC LIMIT ?';
+                params.push(parseInt(limit));
+                
+                authSystem.db.db.all(query, params, (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+            
+            logger.info('Briefing sessions retrieved', {
+                userId: req.userId,
+                sessionCount: sessions.length,
+                status
+            });
+            
+            res.json({
+                success: true,
+                sessions: sessions,
+                total: sessions.length
+            });
+        })
+    );
+
+    // GET /api/sms/session/:sessionId - Get specific briefing session
+    router.get('/session/:sessionId', 
+        authSystem.authMiddleware(),
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.params;
+            
+            // Get session details
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Session not found'
+                });
+            }
+            
+            // Check if user owns this session
+            const user = await authSystem.db.getUserById(req.userId);
+            if (session.user_id !== req.userId && session.phone_number !== user.phone) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied'
+                });
+            }
+            
+            // Get workflow status
+            const workflowSteps = await new Promise((resolve, reject) => {
+                authSystem.db.db.all(`
+                    SELECT * FROM sms_workflow_status 
+                    WHERE session_id = ? 
+                    ORDER BY started_at ASC
+                `, [sessionId], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+            
+            // Get briefing context if available
+            const briefingContext = await new Promise((resolve, reject) => {
+                authSystem.db.db.get(`
+                    SELECT * FROM briefing_context 
+                    WHERE session_id = ?
+                `, [sessionId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+            
+            res.json({
+                success: true,
+                session: session,
+                workflowSteps: workflowSteps,
+                briefingContext: briefingContext
+            });
+        })
+    );
+
+    // POST /api/sms/session/:sessionId/reschedule - Reschedule a briefing session
+    router.post('/session/:sessionId/reschedule', 
+        authSystem.authMiddleware(),
+        validateRequest([
+            body('scheduledTime').isISO8601().withMessage('Valid scheduled time required')
+        ]),
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.params;
+            const { scheduledTime } = req.body;
+            
+            // Get session
+            const session = await authSystem.db.getBriefingSession(sessionId);
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Session not found'
+                });
+            }
+            
+            // Check ownership
+            const user = await authSystem.db.getUserById(req.userId);
+            if (session.user_id !== req.userId && session.phone_number !== user.phone) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied'
+                });
+            }
+            
+            // Update schedule
+            await authSystem.db.updateBriefingSessionSchedule(sessionId, scheduledTime, 'rescheduled');
+            
+            // Send confirmation SMS
+            await smsService.sendResponse(session.phone_number, 
+                `✅ Your briefing has been rescheduled to ${new Date(scheduledTime).toLocaleString()}. Session: ${sessionId.slice(-6)}`);
+            
+            // Track workflow step
+            await authSystem.db.trackWorkflowStep(sessionId, 'session_rescheduled', 'completed', {
+                newScheduledTime: scheduledTime,
+                rescheduledBy: 'user'
+            });
+            
+            logger.info('Session rescheduled', {
+                userId: req.userId,
+                sessionId,
+                newScheduledTime: scheduledTime
+            });
+            
+            res.json({
+                success: true,
+                message: 'Session rescheduled successfully',
+                scheduledTime: scheduledTime
+            });
         })
     );
 

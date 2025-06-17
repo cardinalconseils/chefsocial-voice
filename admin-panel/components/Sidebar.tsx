@@ -14,12 +14,14 @@ import {
   LogOut,
   Menu,
   X,
-  Shield
+  Shield,
+  Activity
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Users', href: '/users', icon: Users },
+  { name: 'Sessions', href: '/sessions', icon: Activity },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Usage Reports', href: '/usage', icon: FileText },
   { name: 'Audit Logs', href: '/audit', icon: Shield },

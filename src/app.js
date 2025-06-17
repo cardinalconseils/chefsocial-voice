@@ -20,6 +20,7 @@ const ChefSocialLiveKitService = require('./services/livekit-service');
 const SMSService = require('./services/sms-service');
 const I18nManager = require('../i18n');
 const ValidationSystem = require('./services/validation-system');
+const N8NCoordinator = require('./services/n8n-coordinator');
 
 // Initialize core services
 const authSystem = new ChefSocialAuth();
@@ -29,6 +30,7 @@ const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
 const smsService = new SMSService();
 const i18n = new I18nManager();
 const validationSystem = new ValidationSystem();
+const n8nCoordinator = new N8NCoordinator(logger, authSystem.db);
 
 // Store services in app locals for access in routes
 app.locals.services = {
@@ -38,7 +40,8 @@ app.locals.services = {
     liveKitService,
     smsService,
     i18n,
-    validationSystem
+    validationSystem,
+    n8nCoordinator
 };
 
 // Security middleware
@@ -97,6 +100,9 @@ app.get('/health', (req, res) => {
 // Mount API routes - pass app instance for service access
 app.use('/api', routes(app));
 
+// Set up N8N callback endpoints
+n8nCoordinator.createN8NEndpoints(app);
+
 // Global error handling middleware (must be last)
 app.use(middleware.errorHandler(logger));
 
@@ -134,7 +140,8 @@ logger.info('ChefSocial Voice AI application initialized', {
     features: {
         livekit: !!process.env.LIVEKIT_API_KEY,
         sms: !!process.env.TWILIO_ACCOUNT_SID,
-        stripe: !!process.env.STRIPE_SECRET_KEY
+        stripe: !!process.env.STRIPE_SECRET_KEY,
+        n8n: !!process.env.N8N_WEBHOOK_URL
     }
 });
 

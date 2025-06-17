@@ -56,8 +56,7 @@ class ChefSocialRateLimitService {
             },
             standardHeaders: true,
             legacyHeaders: false,
-            handler: (req, res) => this.handleRateLimitBreach(req, res, 'user'),
-            onLimitReached: (req, res, options) => this.onLimitReached(req, res, options, 'user')
+            handler: (req, res) => this.handleRateLimitBreach(req, res, 'user')
         });
     }
 
@@ -76,8 +75,7 @@ class ChefSocialRateLimitService {
             },
             standardHeaders: true,
             legacyHeaders: false,
-            handler: (req, res) => this.handleRateLimitBreach(req, res, 'admin'),
-            onLimitReached: (req, res, options) => this.onLimitReached(req, res, options, 'admin')
+            handler: (req, res) => this.handleRateLimitBreach(req, res, 'admin')
         });
     }
 
@@ -100,8 +98,7 @@ class ChefSocialRateLimitService {
             },
             standardHeaders: true,
             legacyHeaders: false,
-            handler: (req, res) => this.handleRateLimitBreach(req, res, endpointType),
-            onLimitReached: (req, res, options) => this.onLimitReached(req, res, options, endpointType)
+            handler: (req, res) => this.handleRateLimitBreach(req, res, endpointType)
         });
     }
 
@@ -132,9 +129,6 @@ class ChefSocialRateLimitService {
 
                 // Log breach and send notification
                 this.handleRateLimitBreach(req, res, options.type || 'custom');
-            },
-            onLimitReached: (req, res, options) => {
-                this.onLimitReached(req, res, options, config.type || 'custom');
             }
         });
     }

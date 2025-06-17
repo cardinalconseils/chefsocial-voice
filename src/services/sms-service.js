@@ -2,7 +2,7 @@
 require('dotenv').config();
 const twilio = require('twilio');
 const ChefSocialDatabase = require('./database');
-const I18nManager = require('./i18n');
+const I18nManager = require('../../i18n');
 
 class SMSService {
     constructor() {

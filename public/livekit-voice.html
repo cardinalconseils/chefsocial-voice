@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefSocial LiveKit Voice - Enhanced Voice Processing</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- LiveKit Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.6.0/dist/livekit-client.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .voice-interface {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .session-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #28a745;
+        }
+
+        .status-dot.connecting {
+            background: #ffc107;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .voice-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mic-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
+        }
+
+        .mic-button:active {
+            transform: translateY(-2px);
+        }
+
+        .mic-button.recording {
+            animation: recording-pulse 1s infinite;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .mic-button.disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        @keyframes recording-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .voice-visualizer {
+            width: 300px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .audio-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 100%;
+            gap: 3px;
+            padding: 10px;
+        }
+
+        .audio-bar {
+            width: 4px;
+            background: linear-gradient(to top, #ff6b35, #f7931e);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+            height: 10px;
+        }
+
+        .transcript-area {
+            margin: 20px 0;
+        }
+
+        .transcript-box {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .transcript-box:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(108, 117, 125, 0.3);
+        }
+
+        .session-info {
+            background: #e7f3ff;
+            border: 1px solid #b6d7ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .session-info h3 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        .session-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .voice-interface {
+                padding: 20px;
+            }
+
+            .mic-button {
+                width: 100px;
+                height: 100px;
+                font-size: 1.5rem;
+            }
+
+            .voice-visualizer {
+                width: 250px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ ChefSocial LiveKit Voice</h1>
+            <p>Enhanced voice processing with real-time communication</p>
+        </div>
+
+        <div class="voice-interface">
+            <div class="session-status">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Disconnected</span>
+                </div>
+                <div>
+                    <button class="btn btn-primary" id="connectBtn">Connect</button>
+                    <button class="btn btn-danger" id="disconnectBtn" disabled>Disconnect</button>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Connecting to voice session...</p>
+            </div>
+
+            <div class="voice-controls">
+                <button class="mic-button disabled" id="micButton" disabled>
+                    🎤
+                </button>
+                
+                <div class="voice-visualizer">
+                    <div class="audio-bars" id="audioBars">
+                        <!-- Audio visualization bars will be generated here -->
+                    </div>
+                </div>
+
+                <p id="micStatus">Click Connect to start voice session</p>
+            </div>
+
+            <div class="transcript-area">
+                <label for="transcript"><strong>Voice Transcript:</strong></label>
+                <textarea 
+                    id="transcript" 
+                    class="transcript-box" 
+                    placeholder="Your voice will be transcribed here in real-time..."
+                    readonly
+                ></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-success" id="generateContentBtn" disabled>
+                    Generate Content
+                </button>
+                <button class="btn btn-primary" id="recordBtn" disabled>
+                    Start Recording
+                </button>
+                <button class="btn btn-danger" id="stopRecordBtn" disabled>
+                    Stop Recording
+                </button>
+            </div>
+        </div>
+
+        <div class="session-info" id="sessionInfo" style="display: none;">
+            <h3>Session Information</h3>
+            <div class="session-details" id="sessionDetails">
+                <!-- Session details will be populated here -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 ChefSocial. Enhanced with <a href="https://livekit.io" target="_blank">LiveKit</a> real-time communication.</p>
+        </div>
+    </div>
+
+    <script>
+        class ChefSocialLiveKitVoice {
+            constructor() {
+                this.room = null;
+                this.audioTrack = null;
+                this.isConnected = false;
+                this.isRecording = false;
+                this.sessionId = null;
+                this.transcript = '';
+                this.audioContext = null;
+                this.analyser = null;
+                this.mediaStream = null;
+                
+                // Voice Activity Detection
+                this.vadEnabled = false;
+                this.silenceThreshold = 0.01;
+                this.silenceTimeout = null;
+                this.speechDetected = false;
+                
+                // UI elements
+                this.initializeElements();
+                this.setupEventListeners();
+                this.generateAudioBars();
+                
+                // Check authentication
+                this.checkAuthentication();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    statusDot: document.getElementById('statusDot'),
+                    statusText: document.getElementById('statusText'),
+                    connectBtn: document.getElementById('connectBtn'),
+                    disconnectBtn: document.getElementById('disconnectBtn'),
+                    micButton: document.getElementById('micButton'),
+                    micStatus: document.getElementById('micStatus'),
+                    transcript: document.getElementById('transcript'),
+                    generateContentBtn: document.getElementById('generateContentBtn'),
+                    recordBtn: document.getElementById('recordBtn'),
+                    stopRecordBtn: document.getElementById('stopRecordBtn'),
+                    errorMessage: document.getElementById('errorMessage'),
+                    successMessage: document.getElementById('successMessage'),
+                    loadingSpinner: document.getElementById('loadingSpinner'),
+                    sessionInfo: document.getElementById('sessionInfo'),
+                    sessionDetails: document.getElementById('sessionDetails'),
+                    audioBars: document.getElementById('audioBars')
+                };
+            }
+
+            setupEventListeners() {
+                this.elements.connectBtn.addEventListener('click', () => this.connectToSession());
+                this.elements.disconnectBtn.addEventListener('click', () => this.disconnectFromSession());
+                this.elements.micButton.addEventListener('click', () => this.toggleMicrophone());
+                this.elements.generateContentBtn.addEventListener('click', () => this.generateContent());
+                this.elements.recordBtn.addEventListener('click', () => this.startRecording());
+                this.elements.stopRecordBtn.addEventListener('click', () => this.stopRecording());
+            }
+
+            generateAudioBars() {
+                const barCount = 20;
+                this.elements.audioBars.innerHTML = '';
+                
+                for (let i = 0; i < barCount; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'audio-bar';
+                    this.elements.audioBars.appendChild(bar);
+                }
+            }
+
+            async checkAuthentication() {
+                try {
+                    const response = await fetch('/api/auth/verify', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Authentication required');
+                    }
+
+                    this.elements.connectBtn.disabled = false;
+                } catch (error) {
+                    this.showError('Please log in to use LiveKit voice features');
+                    this.elements.connectBtn.disabled = true;
+                }
+            }
+
+            async connectToSession() {
+                try {
+                    this.showLoading(true);
+                    this.updateStatus('connecting', 'Connecting...');
+
+                    // Create voice session
+                    const response = await fetch('/api/voice/session/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        },
+                        body: JSON.stringify({
+                            sessionType: 'enhanced_voice_chat',
+                            metadata: {
+                                userAgent: navigator.userAgent,
+                                timestamp: new Date().toISOString()
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to create voice session');
+                    }
+
+                    const sessionData = await response.json();
+                    this.sessionId = sessionData.session.sessionId;
+
+                    // Connect to LiveKit room
+                    this.room = new LiveKit.Room();
+                    
+                    // Setup room event listeners
+                    this.setupRoomEventListeners();
+
+                    // Connect to the room
+                    await this.room.connect(sessionData.session.liveKitUrl, sessionData.session.accessToken);
+
+                    this.isConnected = true;
+                    this.updateStatus('connected', 'Connected');
+                    this.updateSessionInfo(sessionData.session);
+                    this.showSuccess('Connected to LiveKit voice session');
+                    
+                    // Enable microphone
+                    this.elements.micButton.disabled = false;
+                    this.elements.micButton.classList.remove('disabled');
+                    this.elements.micStatus.textContent = 'Click microphone to start speaking';
+
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    this.showError(`Connection failed: ${error.message}`);
+                    this.updateStatus('disconnected', 'Connection failed');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            setupRoomEventListeners() {
+                this.room.on(LiveKit.RoomEvent.Connected, () => {
+                    console.log('Connected to LiveKit room');
+                });
+
+                this.room.on(LiveKit.RoomEvent.Disconnected, () => {
+                    console.log('Disconnected from LiveKit room');
+                    this.handleDisconnection();
+                });
+
+                this.room.on(LiveKit.RoomEvent.TrackPublished, (publication, participant) => {
+                    console.log('Track published:', publication.kind);
+                });
+
+                this.room.on(LiveKit.RoomEvent.TrackUnpublished, (publication, participant) => {
+                    console.log('Track unpublished:', publication.kind);
+                });
+
+                this.room.on(LiveKit.RoomEvent.DataReceived, (payload, participant) => {
+                    // Handle incoming data (e.g., transcription, AI responses)
+                    const data = JSON.parse(new TextDecoder().decode(payload));
+                    this.handleIncomingData(data);
+                });
+            }
+
+            async toggleMicrophone() {
+                if (!this.isConnected) return;
+
+                try {
+                    if (!this.audioTrack) {
+                        // Start microphone
+                        await this.startMicrophone();
+                    } else {
+                        // Stop microphone
+                        await this.stopMicrophone();
+                    }
+                } catch (error) {
+                    console.error('Microphone error:', error);
+                    this.showError(`Microphone error: ${error.message}`);
+                }
+            }
+
+            async startMicrophone() {
+                try {
+                    // Get microphone access
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                            sampleRate: 48000
+                        }
+                    });
+
+                    // Create audio track
+                    this.audioTrack = await LiveKit.createLocalAudioTrack({
+                        source: this.mediaStream.getAudioTracks()[0]
+                    });
+
+                    // Publish to room
+                    await this.room.localParticipant.publishTrack(this.audioTrack);
+
+                    // Setup audio visualization
+                    this.setupAudioVisualization();
+
+                    // Setup Voice Activity Detection
+                    this.setupVoiceActivityDetection();
+
+                    // Update UI
+                    this.elements.micButton.classList.add('recording');
+                    this.elements.micStatus.textContent = 'Speaking... (Voice detected automatically)';
+                    this.isRecording = true;
+
+                    this.showSuccess('Microphone started - voice detection active');
+
+                } catch (error) {
+                    throw new Error(`Failed to start microphone: ${error.message}`);
+                }
+            }
+
+            async stopMicrophone() {
+                try {
+                    if (this.audioTrack) {
+                        // Unpublish track
+                        await this.room.localParticipant.unpublishTrack(this.audioTrack);
+                        
+                        // Stop track
+                        this.audioTrack.stop();
+                        this.audioTrack = null;
+                    }
+
+                    if (this.mediaStream) {
+                        this.mediaStream.getTracks().forEach(track => track.stop());
+                        this.mediaStream = null;
+                    }
+
+                    // Cleanup audio context
+                    if (this.audioContext) {
+                        await this.audioContext.close();
+                        this.audioContext = null;
+                    }
+
+                    // Update UI
+                    this.elements.micButton.classList.remove('recording');
+                    this.elements.micStatus.textContent = 'Click microphone to start speaking';
+                    this.isRecording = false;
+                    this.resetAudioBars();
+
+                    this.showSuccess('Microphone stopped');
+
+                } catch (error) {
+                    throw new Error(`Failed to stop microphone: ${error.message}`);
+                }
+            }
+
+            setupAudioVisualization() {
+                if (!this.mediaStream) return;
+
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    
+                    const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+                    source.connect(this.analyser);
+                    
+                    this.analyser.fftSize = 256;
+                    this.analyser.smoothingTimeConstant = 0.8;
+                    
+                    this.visualizeAudio();
+                } catch (error) {
+                    console.warn('Audio visualization setup failed:', error);
+                }
+            }
+
+            visualizeAudio() {
+                if (!this.analyser) return;
+
+                const bufferLength = this.analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                const bars = this.elements.audioBars.children;
+
+                const animate = () => {
+                    if (!this.analyser) return;
+
+                    this.analyser.getByteFrequencyData(dataArray);
+
+                    // Update audio bars
+                    for (let i = 0; i < bars.length; i++) {
+                        const barIndex = Math.floor((i / bars.length) * bufferLength);
+                        const barHeight = (dataArray[barIndex] / 255) * 60 + 10;
+                        bars[i].style.height = `${barHeight}px`;
+                    }
+
+                    requestAnimationFrame(animate);
+                };
+
+                animate();
+            }
+
+            setupVoiceActivityDetection() {
+                if (!this.mediaStream) return;
+
+                // Simple VAD implementation
+                setInterval(() => {
+                    if (!this.analyser) return;
+
+                    const bufferLength = this.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    this.analyser.getByteTimeDomainData(dataArray);
+
+                    // Calculate RMS (Root Mean Square) for voice activity
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        const sample = (dataArray[i] - 128) / 128;
+                        sum += sample * sample;
+                    }
+                    const rms = Math.sqrt(sum / bufferLength);
+
+                    // Voice activity detection
+                    if (rms > this.silenceThreshold) {
+                        if (!this.speechDetected) {
+                            this.speechDetected = true;
+                            this.onSpeechStart();
+                        }
+                        
+                        // Reset silence timeout
+                        if (this.silenceTimeout) {
+                            clearTimeout(this.silenceTimeout);
+                        }
+                        
+                        this.silenceTimeout = setTimeout(() => {
+                            this.speechDetected = false;
+                            this.onSpeechEnd();
+                        }, 1500); // 1.5 seconds of silence
+                    }
+                }, 100); // Check every 100ms
+            }
+
+            onSpeechStart() {
+                console.log('Speech detected');
+                this.elements.micStatus.textContent = 'Listening... (Speech detected)';
+                
+                // Here you would typically start sending audio to transcription service
+                this.sendAudioForTranscription();
+            }
+
+            onSpeechEnd() {
+                console.log('Speech ended');
+                this.elements.micStatus.textContent = 'Waiting for speech...';
+                
+                // Process accumulated audio for transcription
+                this.processAccumulatedAudio();
+            }
+
+            async sendAudioForTranscription() {
+                // This would implement real-time transcription
+                // For now, we'll simulate with a placeholder
+                console.log('Sending audio for transcription...');
+            }
+
+            async processAccumulatedAudio() {
+                // Process the audio chunk for transcription
+                // This would integrate with the existing transcription system
+                console.log('Processing accumulated audio...');
+                
+                // Simulate transcription result
+                setTimeout(() => {
+                    const simulatedTranscript = 'Voice detected - transcription would appear here...';
+                    this.addToTranscript(simulatedTranscript);
+                }, 1000);
+            }
+
+            addToTranscript(text) {
+                if (this.transcript) {
+                    this.transcript += ' ';
+                }
+                this.transcript += text;
+                this.elements.transcript.value = this.transcript;
+                
+                // Enable content generation if we have transcript
+                if (this.transcript.trim()) {
+                    this.elements.generateContentBtn.disabled = false;
+                }
+            }
+
+            resetAudioBars() {
+                const bars = this.elements.audioBars.children;
+                for (let bar of bars) {
+                    bar.style.height = '10px';
+                }
+            }
+
+            handleIncomingData(data) {
+                console.log('Received data:', data);
+                
+                switch (data.type) {
+                    case 'transcription':
+                        this.addToTranscript(data.text);
+                        break;
+                    case 'ai_response':
+                        this.handleAIResponse(data);
+                        break;
+                    case 'error':
+                        this.showError(data.message);
+                        break;
+                }
+            }
+
+            async disconnectFromSession() {
+                try {
+                    this.showLoading(true);
+
+                    // Stop microphone if active
+                    if (this.audioTrack) {
+                        await this.stopMicrophone();
+                    }
+
+                    // Disconnect from room
+                    if (this.room) {
+                        await this.room.disconnect();
+                        this.room = null;
+                    }
+
+                    // End session on server
+                    if (this.sessionId) {
+                        await fetch(`/api/voice/session/end/${this.sessionId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                            }
+                        });
+                    }
+
+                    this.handleDisconnection();
+                    this.showSuccess('Disconnected from voice session');
+
+                } catch (error) {
+                    console.error('Disconnection error:', error);
+                    this.showError(`Disconnection error: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            handleDisconnection() {
+                this.isConnected = false;
+                this.sessionId = null;
+                this.transcript = '';
+                
+                this.updateStatus('disconnected', 'Disconnected');
+                this.elements.transcript.value = '';
+                this.elements.sessionInfo.style.display = 'none';
+                
+                // Reset buttons
+                this.elements.micButton.disabled = true;
+                this.elements.micButton.classList.add('disabled');
+                this.elements.micButton.classList.remove('recording');
+                this.elements.generateContentBtn.disabled = true;
+                this.elements.recordBtn.disabled = true;
+                this.elements.stopRecordBtn.disabled = true;
+                this.elements.micStatus.textContent = 'Click Connect to start voice session';
+                
+                this.resetAudioBars();
+            }
+
+            async generateContent() {
+                if (!this.transcript.trim()) {
+                    this.showError('No transcript available for content generation');
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    
+                    // Use existing voice processing endpoint
+                    const response = await fetch('/api/process-voice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        },
+                        body: JSON.stringify({
+                            audio: btoa(this.transcript), // Use transcript as audio data
+                            image: null
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Content generation failed');
+                    }
+
+                    const result = await response.json();
+                    this.showSuccess('Content generated successfully!');
+                    
+                    // Here you could show the generated content or redirect to content view
+                    console.log('Generated content:', result);
+
+                } catch (error) {
+                    console.error('Content generation error:', error);
+                    this.showError(`Content generation failed: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async startRecording() {
+                try {
+                    const response = await fetch(`/api/voice/session/record/start/${this.sessionId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to start recording');
+                    }
+
+                    this.elements.recordBtn.disabled = true;
+                    this.elements.stopRecordBtn.disabled = false;
+                    this.showSuccess('Recording started');
+
+                } catch (error) {
+                    console.error('Recording error:', error);
+                    this.showError(`Recording failed: ${error.message}`);
+                }
+            }
+
+            async stopRecording() {
+                try {
+                    const response = await fetch(`/api/voice/session/record/stop/${this.sessionId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to stop recording');
+                    }
+
+                    this.elements.recordBtn.disabled = false;
+                    this.elements.stopRecordBtn.disabled = true;
+                    this.showSuccess('Recording stopped');
+
+                } catch (error) {
+                    console.error('Stop recording error:', error);
+                    this.showError(`Stop recording failed: ${error.message}`);
+                }
+            }
+
+            updateStatus(status, text) {
+                this.elements.statusDot.className = `status-dot ${status}`;
+                this.elements.statusText.textContent = text;
+                
+                // Update button states
+                this.elements.connectBtn.disabled = status === 'connected' || status === 'connecting';
+                this.elements.disconnectBtn.disabled = status === 'disconnected';
+            }
+
+            updateSessionInfo(session) {
+                this.elements.sessionDetails.innerHTML = `
+                    <div class="detail-item">
+                        <span class="detail-label">Session ID:</span>
+                        <span class="detail-value">${session.sessionId}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Room:</span>
+                        <span class="detail-value">${session.roomName}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">${session.sessionData.sessionType}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created:</span>
+                        <span class="detail-value">${new Date(session.sessionData.created).toLocaleTimeString()}</span>
+                    </div>
+                `;
+                this.elements.sessionInfo.style.display = 'block';
+                
+                // Enable recording controls
+                this.elements.recordBtn.disabled = false;
+            }
+
+            showError(message) {
+                this.elements.errorMessage.textContent = message;
+                this.elements.errorMessage.style.display = 'block';
+                this.elements.successMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    this.elements.errorMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            showSuccess(message) {
+                this.elements.successMessage.textContent = message;
+                this.elements.successMessage.style.display = 'block';
+                this.elements.errorMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    this.elements.successMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            showLoading(show) {
+                this.elements.loadingSpinner.style.display = show ? 'block' : 'none';
+                this.elements.connectBtn.disabled = show;
+                this.elements.disconnectBtn.disabled = show && !this.isConnected;
+            }
+        }
+
+        // Initialize the LiveKit voice interface when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.liveKitVoice = new ChefSocialLiveKitVoice();
+        });
+    </script>
+</body>
+</html>

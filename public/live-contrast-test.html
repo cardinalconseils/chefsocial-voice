@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefSocial Live Contrast Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .test-result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+        
+        .pass {
+            background: #f0fff4;
+            border-left-color: #38a169;
+            color: #2f855a;
+        }
+        
+        .warning {
+            background: #fffaf0;
+            border-left-color: #ed8936;
+            color: #c05621;
+        }
+        
+        .fail {
+            background: #fed7d7;
+            border-left-color: #e53e3e;
+            color: #c53030;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        
+        button:hover {
+            background: #3182ce;
+        }
+        
+        .iframe-container {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 20px 0;
+            height: 600px;
+            overflow: hidden;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .summary {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 ChefSocial Live Contrast Analysis</h1>
+        
+        <div class="controls">
+            <button onclick="testCurrentPage()">🔍 Test Current Page</button>
+            <button onclick="testMobile()">📱 Test Mobile View</button>
+            <button onclick="testDesktop()">🖥️ Test Desktop View</button>
+            <button onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe id="testFrame" src="index.html"></iframe>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div class="summary" id="summary" style="display: none;"></div>
+    </div>
+
+    <script>
+        class ContrastAnalyzer {
+            constructor() {
+                this.wcagAA = 4.5;
+                this.wcagAAA = 7.0;
+                this.wcagAALarge = 3.0;
+                this.results = [];
+            }
+
+            hexToRgb(hex) {
+                if (!hex) return null;
+                const result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+
+            rgbaToRgb(rgba, bgColor = 'white') {
+                if (!rgba) return null;
+                
+                const match = rgba.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*([\\d.]+))?\\)/);
+                if (!match) return null;
+
+                let r = parseInt(match[1]);
+                let g = parseInt(match[2]);
+                let b = parseInt(match[3]);
+                const a = match[4] ? parseFloat(match[4]) : 1;
+
+                if (a < 1) {
+                    const bg = bgColor === 'white' ? { r: 255, g: 255, b: 255 } : { r: 0, g: 0, b: 0 };
+                    r = Math.round((1 - a) * bg.r + a * r);
+                    g = Math.round((1 - a) * bg.g + a * g);
+                    b = Math.round((1 - a) * bg.b + a * b);
+                }
+
+                return { r, g, b };
+            }
+
+            getLuminance(rgb) {
+                if (!rgb) return 0;
+                
+                const rsRGB = rgb.r / 255;
+                const gsRGB = rgb.g / 255;
+                const bsRGB = rgb.b / 255;
+
+                const r = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+                const g = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+                const b = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+                return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            }
+
+            getContrastRatio(color1, color2) {
+                const lum1 = this.getLuminance(color1);
+                const lum2 = this.getLuminance(color2);
+                
+                const lightest = Math.max(lum1, lum2);
+                const darkest = Math.min(lum1, lum2);
+                
+                return (lightest + 0.05) / (darkest + 0.05);
+            }
+
+            analyzeElement(element, name, context = '') {
+                try {
+                    const iframe = document.getElementById('testFrame');
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const targetElement = iframeDoc.querySelector(element);
+                    
+                    if (!targetElement) {
+                        console.log(`Element ${element} not found`);
+                        return null;
+                    }
+
+                    const styles = iframe.contentWindow.getComputedStyle(targetElement);
+                    const textColor = styles.color;
+                    const bgColor = styles.backgroundColor;
+                    
+                    // Get actual background by checking parent elements if transparent
+                    let actualBgColor = bgColor;
+                    let parentElement = targetElement.parentElement;
+                    
+                    while (parentElement && (actualBgColor === 'rgba(0, 0, 0, 0)' || actualBgColor === 'transparent')) {
+                        const parentStyles = iframe.contentWindow.getComputedStyle(parentElement);
+                        actualBgColor = parentStyles.backgroundColor;
+                        parentElement = parentElement.parentElement;
+                    }
+
+                    if (actualBgColor === 'rgba(0, 0, 0, 0)' || actualBgColor === 'transparent') {
+                        actualBgColor = 'rgb(255, 255, 255)'; // Default to white
+                    }
+
+                    console.log(`Testing ${name}:`, { textColor, actualBgColor });
+
+                    const textRgb = this.rgbaToRgb(textColor);
+                    const bgRgb = this.rgbaToRgb(actualBgColor);
+
+                    if (!textRgb || !bgRgb) {
+                        console.log(`Could not parse colors for ${name}`);
+                        return null;
+                    }
+
+                    const ratio = this.getContrastRatio(textRgb, bgRgb);
+                    
+                    return {
+                        name,
+                        context,
+                        element,
+                        textColor,
+                        backgroundColor: actualBgColor,
+                        ratio: Math.round(ratio * 100) / 100,
+                        wcagAA: ratio >= this.wcagAA,
+                        wcagAAA: ratio >= this.wcagAAA,
+                        status: ratio >= this.wcagAA ? 'pass' : ratio >= 4.0 ? 'warning' : 'fail'
+                    };
+                } catch (error) {
+                    console.error(`Error analyzing ${name}:`, error);
+                    return null;
+                }
+            }
+
+            async runAnalysis() {
+                this.results = [];
+                
+                // Wait for iframe to load
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const tests = [
+                    { selector: '.header-logo', name: 'Header Logo', context: 'All pages' },
+                    { selector: '.header-nav-links a', name: 'Navigation Links', context: 'All pages' },
+                    { selector: '.login-button', name: 'Login Button', context: 'All pages' },
+                    { selector: '.header-cta-button', name: 'CTA Button', context: 'All pages' },
+                    { selector: '.lang-button', name: 'Language Toggle', context: 'All pages' },
+                    { selector: '.mobile-menu-toggle', name: 'Mobile Menu Toggle', context: 'Mobile view' },
+                    { selector: 'h1', name: 'Main Heading', context: 'Homepage' },
+                    { selector: 'p', name: 'Body Text', context: 'All pages' }
+                ];
+
+                for (const test of tests) {
+                    const result = this.analyzeElement(test.selector, test.name, test.context);
+                    if (result) {
+                        this.results.push(result);
+                    }
+                }
+
+                this.displayResults();
+            }
+
+            displayResults() {
+                const resultsContainer = document.getElementById('results');
+                const summaryContainer = document.getElementById('summary');
+                
+                resultsContainer.innerHTML = '<h2>🔍 Live Contrast Test Results</h2>';
+                
+                this.results.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = `test-result ${result.status}`;
+                    
+                    const statusIcon = result.status === 'pass' ? '✅' : result.status === 'warning' ? '⚠️' : '❌';
+                    const statusText = result.status === 'pass' ? 'PASS' : result.status === 'warning' ? 'WARNING' : 'FAIL';
+                    
+                    resultDiv.innerHTML = `
+                        <strong>${statusIcon} ${result.name}</strong> (${result.context})<br>
+                        <small>Element: ${result.element}</small><br>
+                        Text: ${result.textColor} | Background: ${result.backgroundColor}<br>
+                        <strong>Contrast Ratio: ${result.ratio}:1</strong> | 
+                        WCAG AA: ${result.wcagAA ? '✅' : '❌'} | 
+                        WCAG AAA: ${result.wcagAAA ? '✅' : '❌'}<br>
+                        <strong>Status: ${statusText}</strong>
+                    `;
+                    
+                    resultsContainer.appendChild(resultDiv);
+                });
+
+                // Summary
+                const passed = this.results.filter(r => r.status === 'pass').length;
+                const warnings = this.results.filter(r => r.status === 'warning').length;
+                const failed = this.results.filter(r => r.status === 'fail').length;
+                const total = this.results.length;
+                const passRate = Math.round((passed / total) * 100);
+
+                summaryContainer.style.display = 'block';
+                summaryContainer.innerHTML = `
+                    <h3>📊 Analysis Summary</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${passRate}%; background: ${passRate >= 80 ? '#38a169' : passRate >= 60 ? '#ed8936' : '#e53e3e'}"></div>
+                    </div>
+                    <p><strong>Pass Rate: ${passRate}%</strong> (${passed}/${total} tests passed)</p>
+                    <p>✅ Passed: ${passed} | ⚠️ Warnings: ${warnings} | ❌ Failed: ${failed}</p>
+                    ${passRate < 100 ? '<p><strong>🚨 Action needed:</strong> Fix failing contrast ratios for accessibility compliance.</p>' : '<p><strong>🎉 Excellent!</strong> All contrast ratios meet WCAG standards.</p>'}
+                `;
+            }
+        }
+
+        const analyzer = new ContrastAnalyzer();
+
+        function testCurrentPage() {
+            analyzer.runAnalysis();
+        }
+
+        function testMobile() {
+            const iframe = document.getElementById('testFrame');
+            iframe.style.width = '375px';
+            setTimeout(() => analyzer.runAnalysis(), 500);
+        }
+
+        function testDesktop() {
+            const iframe = document.getElementById('testFrame');
+            iframe.style.width = '100%';
+            setTimeout(() => analyzer.runAnalysis(), 500);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+        }
+
+        // Auto-run test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(testCurrentPage, 2000);
+        });
+    </script>
+</body>
+</html> 

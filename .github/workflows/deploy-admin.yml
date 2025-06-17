@@ -1,18 +1,14 @@
-name: Deploy Admin Panel to Vercel
+name: Deploy Integrated App with Admin Panel
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'admin-panel/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'admin-panel/**'
   workflow_dispatch:
 
 jobs:
-  deploy-admin:
+  deploy-integrated:
     runs-on: ubuntu-latest
     steps:
       - name: 🔍 Checkout code
@@ -20,15 +16,15 @@ jobs:
       
       - name: 📋 Log deployment info
         run: |
-          echo "🔍 Admin Panel Deployment"
-          echo "========================"
+          echo "🔍 Integrated App Deployment (Main + Admin)"
+          echo "==========================================="
           echo "Event: ${{ github.event_name }}"
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
           echo "Actor: ${{ github.actor }}"
           echo ""
-          echo "📁 Admin panel structure:"
-          ls -la admin-panel/ || echo "❌ admin-panel directory not found"
+          echo "📁 Project structure:"
+          ls -la
           echo ""
       
       - name: 🔧 Setup Node.js
@@ -36,22 +32,26 @@ jobs:
         with:
           node-version: '18'
       
-      - name: 📦 Install dependencies
+      - name: 📦 Install main app dependencies
+        run: |
+          echo "📦 Installing main app dependencies..."
+          npm install
+          echo "✅ Main app dependencies installed"
+      
+      - name: 📦 Install admin panel dependencies
         working-directory: ./admin-panel
         run: |
           echo "📦 Installing admin panel dependencies..."
           npm install
-          echo "✅ Dependencies installed"
-          npm list --depth=0
+          echo "✅ Admin panel dependencies installed"
       
-      - name: 🏗️ Build admin panel
-        working-directory: ./admin-panel
+      - name: 🏗️ Build and integrate admin panel
         run: |
-          echo "🏗️ Building admin panel..."
-          npm run build
-          echo "✅ Build completed"
-          echo "📁 Build output:"
-          ls -la out/ || ls -la .next/ || echo "No build output found"
+          echo "🏗️ Building admin panel and integrating with main app..."
+          ./deploy-admin.sh
+          echo "✅ Admin panel integrated at /admin"
+          echo "📁 Verification:"
+          ls -la public/admin/ || echo "❌ Admin integration failed"
       
       - name: 🔍 Verify Vercel secrets
         run: |
@@ -80,14 +80,13 @@ jobs:
           
           echo "✅ All required secrets are present"
       
-      - name: 🚀 Deploy to Vercel
-        working-directory: ./admin-panel
+      - name: 🚀 Deploy integrated app to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          echo "🚀 Deploying to Vercel using CLI..."
+          echo "🚀 Deploying integrated app to Vercel..."
           npx vercel --version
           npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
           npx vercel build --prod --token=$VERCEL_TOKEN
@@ -95,10 +94,12 @@ jobs:
       
       - name: ✅ Deployment complete
         run: |
-          echo "🎉 Admin panel deployment completed!"
-          echo "🌐 Check your Vercel dashboard for the deployment URL"
+          echo "🎉 Integrated app deployment completed!"
+          echo "🌐 Main app: Available at your Vercel domain"
+          echo "🔧 Admin panel: Available at /admin"
           echo ""
           echo "📋 Next steps:"
-          echo "1. Configure custom domain in Vercel dashboard"
-          echo "2. Test the admin login functionality"
-          echo "3. Verify API connectivity to the backend"
+          echo "1. Test main app functionality"
+          echo "2. Test admin panel at /admin"
+          echo "3. Verify API connectivity"
+          echo "4. Configure custom domain if needed"

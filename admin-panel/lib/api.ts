@@ -12,12 +12,17 @@ const api = axios.create({
   },
 });
 
+// Helper function to check if we're on the client side
+const isClient = typeof window !== 'undefined';
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (isClient) {
+      const token = localStorage.getItem('admin_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -30,7 +35,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && isClient) {
       // Clear invalid token and redirect to login
       localStorage.removeItem('admin_token');
       localStorage.removeItem('admin_user');
@@ -48,16 +53,20 @@ export const authAPI = {
   },
   
   logout: () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    if (isClient) {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+    }
   },
   
   getCurrentUser: () => {
+    if (!isClient) return null;
     const user = localStorage.getItem('admin_user');
     return user ? JSON.parse(user) : null;
   },
   
   isAuthenticated: () => {
+    if (!isClient) return false;
     return !!localStorage.getItem('admin_token');
   }
 };

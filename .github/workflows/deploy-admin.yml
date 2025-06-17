@@ -58,7 +58,7 @@ jobs:
           echo "🔍 Verifying Vercel secrets..."
           echo "VERCEL_TOKEN exists: ${{ secrets.VERCEL_TOKEN != '' }}"
           echo "VERCEL_ORG_ID exists: ${{ secrets.VERCEL_ORG_ID != '' }}"
-          echo "VERCEL_PROJECT_ID_ADMIN exists: ${{ secrets.VERCEL_PROJECT_ID_ADMIN != '' }}"
+          echo "VERCEL_PROJECT_ID exists: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
           
           if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
             echo "❌ VERCEL_TOKEN is missing"
@@ -72,9 +72,9 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ secrets.VERCEL_PROJECT_ID_ADMIN }}" ]; then
-            echo "❌ VERCEL_PROJECT_ID_ADMIN is missing"
-            echo "Please add VERCEL_PROJECT_ID_ADMIN to repository secrets"
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID is missing"
+            echo "Please add VERCEL_PROJECT_ID to repository secrets"
             exit 1
           fi
           
@@ -88,7 +88,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: '--prod'
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_ADMIN }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: './admin-panel'
           scope: ${{ secrets.VERCEL_ORG_ID }}
       

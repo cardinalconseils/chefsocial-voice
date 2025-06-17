@@ -1,0 +1,46 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          npm install
+          echo "✅ Dependencies installed"
+      
+      - name: 🏗️ Build project
+        run: |
+          echo "🏗️ Building admin panel..."
+          npm run build
+          echo "✅ Build completed"
+      
+      - name: 🚀 Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "🌐 Admin panel available at: https://app.chefsocial.io/admin"

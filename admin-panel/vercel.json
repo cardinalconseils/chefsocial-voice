@@ -4,16 +4,6 @@
   "outputDirectory": "out",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "routes": [
-    {
-      "src": "/admin/(.*)",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "rewrites": [
     {
       "source": "/admin/:path*",
@@ -29,7 +19,7 @@
           "value": "DENY"
         },
         {
-          "key": "X-Content-Type-Options",
+          "key": "X-Content-Type-Options", 
           "value": "nosniff"
         },
         {
@@ -44,7 +34,7 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "@chefsocial_api_url",
-    "NEXT_PUBLIC_APP_URL": "@chefsocial_app_url"
+    "NEXT_PUBLIC_API_URL": "https://api.chefsocial.io",
+    "NEXT_PUBLIC_APP_URL": "https://app.chefsocial.io"
   }
 }

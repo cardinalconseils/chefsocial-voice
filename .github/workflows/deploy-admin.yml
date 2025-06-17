@@ -1,0 +1,104 @@
+name: Deploy Admin Panel to Vercel
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'admin-panel/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'admin-panel/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 📋 Log deployment info
+        run: |
+          echo "🔍 Admin Panel Deployment"
+          echo "========================"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo ""
+          echo "📁 Admin panel structure:"
+          ls -la admin-panel/ || echo "❌ admin-panel directory not found"
+          echo ""
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        working-directory: ./admin-panel
+        run: |
+          echo "📦 Installing admin panel dependencies..."
+          npm install
+          echo "✅ Dependencies installed"
+          npm list --depth=0
+      
+      - name: 🏗️ Build admin panel
+        working-directory: ./admin-panel
+        run: |
+          echo "🏗️ Building admin panel..."
+          npm run build
+          echo "✅ Build completed"
+          echo "📁 Build output:"
+          ls -la out/ || ls -la .next/ || echo "No build output found"
+      
+      - name: 🔍 Verify Vercel secrets
+        run: |
+          echo "🔍 Verifying Vercel secrets..."
+          echo "VERCEL_TOKEN exists: ${{ secrets.VERCEL_TOKEN != '' }}"
+          echo "VERCEL_ORG_ID exists: ${{ secrets.VERCEL_ORG_ID != '' }}"
+          echo "VERCEL_PROJECT_ID_ADMIN exists: ${{ secrets.VERCEL_PROJECT_ID_ADMIN != '' }}"
+          
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "❌ VERCEL_TOKEN is missing"
+            echo "Please add VERCEL_TOKEN to repository secrets"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "❌ VERCEL_ORG_ID is missing"
+            echo "Please add VERCEL_ORG_ID to repository secrets"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID_ADMIN }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID_ADMIN is missing"
+            echo "Please add VERCEL_PROJECT_ID_ADMIN to repository secrets"
+            exit 1
+          fi
+          
+          echo "✅ All required secrets are present"
+      
+      - name: 🚀 Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_ADMIN }}
+          working-directory: './admin-panel'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+      
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Admin panel deployment completed!"
+          echo "🌐 Preview URL: ${{ steps.vercel-deploy.outputs.preview-url }}"
+          echo "🌐 Production URL: https://app.chefsocial.io/admin"
+          echo ""
+          echo "📋 Next steps:"
+          echo "1. Test the admin login at the URL above"
+          echo "2. Verify API connectivity to the backend"
+          echo "3. Check admin panel functionality"

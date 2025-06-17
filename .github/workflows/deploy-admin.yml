@@ -81,24 +81,24 @@ jobs:
           echo "✅ All required secrets are present"
       
       - name: 🚀 Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        id: vercel-deploy
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          vercel-args: '--prod'
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: './admin-panel'
-          scope: ${{ secrets.VERCEL_ORG_ID }}
+        working-directory: ./admin-panel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "🚀 Deploying to Vercel using CLI..."
+          npx vercel --version
+          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          npx vercel build --prod --token=$VERCEL_TOKEN
+          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
       
       - name: ✅ Deployment complete
         run: |
           echo "🎉 Admin panel deployment completed!"
-          echo "🌐 Preview URL: ${{ steps.vercel-deploy.outputs.preview-url }}"
-          echo "🌐 Production URL: https://app.chefsocial.io/admin"
+          echo "🌐 Check your Vercel dashboard for the deployment URL"
           echo ""
           echo "📋 Next steps:"
-          echo "1. Test the admin login at the URL above"
-          echo "2. Verify API connectivity to the backend"
-          echo "3. Check admin panel functionality"
+          echo "1. Configure custom domain in Vercel dashboard"
+          echo "2. Test the admin login functionality"
+          echo "3. Verify API connectivity to the backend"

@@ -146,6 +146,9 @@ class ChefSocialDatabase {
         
         // Create additional tables
         this.createAdditionalTables();
+        
+        // Create SMS scheduling tables
+        this.createSMSSchedulingTables();
     }
 
     initializeFeatures() {
@@ -270,12 +273,7 @@ class ChefSocialDatabase {
         const indexes = [
             'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
             'CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id)',
-            'CREATE INDEX IF NOT EXISTS idx_users_status ON users(status)',
-            'CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id)',
-            'CREATE INDEX IF NOT EXISTS idx_content_user_id ON content(user_id)',
-            'CREATE INDEX IF NOT EXISTS idx_content_user_platform ON content(user_id, platform)',
-            'CREATE INDEX IF NOT EXISTS idx_usage_user_month ON usage_tracking(user_id, month_year)',
-            'CREATE INDEX IF NOT EXISTS idx_user_features_lookup ON user_features(user_id, feature_key)'
+            'CREATE INDEX IF NOT EXISTS idx_users_status ON users(status)'
         ];
 
         indexes.forEach(indexSql => {
@@ -335,6 +333,186 @@ class ChefSocialDatabase {
         `);
 
         console.log('✅ Admin tables created');
+    }
+
+    createSMSSchedulingTables() {
+        // SMS briefing sessions table
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS sms_briefing_sessions (
+                id TEXT PRIMARY KEY,
+                phone_number TEXT NOT NULL,
+                user_id TEXT,
+                image_url TEXT NOT NULL,
+                upload_method TEXT DEFAULT 'sms',
+                status TEXT DEFAULT 'pending',
+                scheduled_time DATETIME,
+                actual_call_time DATETIME,
+                briefing_completed BOOLEAN DEFAULT FALSE,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        `);
+
+        // SMS scheduling responses table
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS sms_scheduling_responses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                phone_number TEXT NOT NULL,
+                response_text TEXT NOT NULL,
+                parsed_schedule TEXT,
+                scheduled_time DATETIME,
+                response_type TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES sms_briefing_sessions (id)
+            )
+        `);
+
+        // Briefing context extracted from voice sessions
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS briefing_context (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                transcript TEXT,
+                dish_story TEXT,
+                target_audience TEXT,
+                desired_mood TEXT,
+                platform_preferences TEXT,
+                posting_urgency TEXT,
+                brand_personality TEXT,
+                extracted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES sms_briefing_sessions (id)
+            )
+        `);
+
+        // SMS workflow tracking
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS sms_workflow_status (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                workflow_step TEXT NOT NULL,
+                status TEXT NOT NULL,
+                data TEXT,
+                started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                completed_at DATETIME,
+                error_message TEXT,
+                FOREIGN KEY (session_id) REFERENCES sms_briefing_sessions (id)
+            )
+        `);
+
+        console.log('✅ SMS scheduling tables created');
+    }
+
+    // SMS Briefing Session methods
+    async createBriefingSession(sessionData) {
+        return new Promise((resolve, reject) => {
+            const { id, phoneNumber, userId, imageUrl, uploadMethod } = sessionData;
+            this.db.run(`
+                INSERT INTO sms_briefing_sessions 
+                (id, phone_number, user_id, image_url, upload_method, status)
+                VALUES (?, ?, ?, ?, ?, 'pending')
+            `, [id, phoneNumber, userId, imageUrl, uploadMethod || 'sms'], function(err) {
+                if (err) reject(err);
+                else resolve({ id, sessionId: id });
+            });
+        });
+    }
+
+    async getBriefingSession(sessionId) {
+        return new Promise((resolve, reject) => {
+            this.db.get(`
+                SELECT * FROM sms_briefing_sessions WHERE id = ?
+            `, [sessionId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+    }
+
+    async getActiveBriefingSessionByPhone(phoneNumber) {
+        return new Promise((resolve, reject) => {
+            this.db.get(`
+                SELECT * FROM sms_briefing_sessions 
+                WHERE phone_number = ? AND status IN ('pending', 'scheduled', 'in_progress')
+                ORDER BY created_at DESC LIMIT 1
+            `, [phoneNumber], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+    }
+
+    async updateBriefingSessionSchedule(sessionId, scheduledTime, status = 'scheduled') {
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                UPDATE sms_briefing_sessions 
+                SET scheduled_time = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [scheduledTime, status, sessionId], function(err) {
+                if (err) reject(err);
+                else resolve({ changes: this.changes });
+            });
+        });
+    }
+
+    async saveBriefingContext(contextData) {
+        return new Promise((resolve, reject) => {
+            const {
+                sessionId, transcript, dishStory, targetAudience, 
+                desiredMood, platformPreferences, postingUrgency, brandPersonality
+            } = contextData;
+
+            this.db.run(`
+                INSERT INTO briefing_context 
+                (session_id, transcript, dish_story, target_audience, desired_mood, 
+                 platform_preferences, posting_urgency, brand_personality)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `, [sessionId, transcript, dishStory, targetAudience, desiredMood, 
+                platformPreferences, postingUrgency, brandPersonality], function(err) {
+                if (err) reject(err);
+                else resolve({ id: this.lastID });
+            });
+        });
+    }
+
+    async saveSchedulingResponse(responseData) {
+        return new Promise((resolve, reject) => {
+            const { sessionId, phoneNumber, responseText, parsedSchedule, scheduledTime, responseType } = responseData;
+            this.db.run(`
+                INSERT INTO sms_scheduling_responses 
+                (session_id, phone_number, response_text, parsed_schedule, scheduled_time, response_type)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [sessionId, phoneNumber, responseText, parsedSchedule, scheduledTime, responseType], function(err) {
+                if (err) reject(err);
+                else resolve({ id: this.lastID });
+            });
+        });
+    }
+
+    async trackWorkflowStep(sessionId, step, status, data = null) {
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                INSERT INTO sms_workflow_status (session_id, workflow_step, status, data)
+                VALUES (?, ?, ?, ?)
+            `, [sessionId, step, status, JSON.stringify(data)], function(err) {
+                if (err) reject(err);
+                else resolve({ id: this.lastID });
+            });
+        });
+    }
+
+    async updateWorkflowStep(sessionId, step, status, errorMessage = null) {
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                UPDATE sms_workflow_status 
+                SET status = ?, completed_at = CURRENT_TIMESTAMP, error_message = ?
+                WHERE session_id = ? AND workflow_step = ? AND completed_at IS NULL
+            `, [status, errorMessage, sessionId, step], function(err) {
+                if (err) reject(err);
+                else resolve({ changes: this.changes });
+            });
+        });
     }
 
     // User methods

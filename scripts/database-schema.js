@@ -284,7 +284,6 @@ class DatabaseSchema {
             'CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_id ON subscriptions(stripe_subscription_id)',
             'CREATE INDEX IF NOT EXISTS idx_generated_content_user_id ON generated_content(user_id)',
             'CREATE INDEX IF NOT EXISTS idx_generated_content_platform ON generated_content(user_id, platform)',
-            'CREATE INDEX IF NOT EXISTS idx_usage_tracking_user_month ON usage_tracking(user_id, month_year)',
             'CREATE INDEX IF NOT EXISTS idx_user_feature_access_lookup ON user_feature_access(user_id, feature_key)',
             'CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)',
             'CREATE INDEX IF NOT EXISTS idx_user_sessions_token_id ON user_sessions(refresh_token_id)',

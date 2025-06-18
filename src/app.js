@@ -28,6 +28,9 @@ const ValidationSystem = require('./services/validation-system');
 const N8NCoordinator = require('./services/n8n-coordinator');
 const twilio = require('twilio');
 
+// Initialize Twilio Client
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
 // Initialize core services
 const authSystem = new ChefSocialAuth();
 const logger = new ChefSocialLogger(authSystem.db);
@@ -62,7 +65,7 @@ app.locals.services = {
     i18n,
     validationSystem,
     n8nCoordinator,
-    twilio
+    twilio: twilioClient
 };
 
 // Security middleware

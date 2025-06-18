@@ -14,66 +14,54 @@
       "use": "@vercel/next"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/demo.html",
-      "dest": "/marketing-site/pages/demo.html"
+      "source": "/demo.html",
+      "destination": "/marketing-site/pages/demo.html"
     },
     {
-      "src": "/demo",
-      "dest": "/marketing-site/pages/demo.html"
+      "source": "/demo",
+      "destination": "/marketing-site/pages/demo.html"
     },
     {
-      "src": "/api/auth/(.*)",
-      "dest": "/api/auth.js"
+      "source": "/api/auth/(.*)",
+      "destination": "/api/auth.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/admin/_next/static/(.*)",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
+      "source": "/admin/_next/(.*)",
+      "destination": "/admin-panel/_next/$1"
     },
     {
-      "src": "/admin/_next/(.*)",
-      "dest": "/admin-panel/_next/$1"
+      "source": "/admin/(.*)",
+      "destination": "/admin-panel/$1"
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "/admin-panel/$1"
+      "source": "/admin",
+      "destination": "/admin-panel/index.html"
     },
     {
-      "src": "/admin",
-      "dest": "/admin-panel/index.html"
+      "source": "/marketing/(.*)",
+      "destination": "/marketing-site/$1"
     },
     {
-      "src": "/marketing/(.*)",
-      "dest": "/marketing-site/$1"
+      "source": "/auth/(.*)",
+      "destination": "/auth/$1"
     },
     {
-      "src": "/auth/(.*)",
-      "dest": "/auth/$1"
+      "source": "/dashboard/(.*)",
+      "destination": "/dashboard/$1"
     },
     {
-      "src": "/dashboard/(.*)",
-      "dest": "/dashboard/$1"
+      "source": "/apps/(.*)",
+      "destination": "/apps/$1"
     },
     {
-      "src": "/apps/(.*)",
-      "dest": "/apps/$1"
-    },
-    {
-      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)",
-      "headers": {
-        "cache-control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/marketing-site/pages/index.html"
+      "source": "/(.*)",
+      "destination": "/marketing-site/pages/index.html"
     }
   ],
   "headers": [
@@ -100,6 +88,19 @@
         {
           "key": "Content-Type",
           "value": "text/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/admin/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }

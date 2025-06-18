@@ -139,10 +139,11 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '2.1.0',
+        version: '2.2.0',
         environment: process.env.NODE_ENV || 'production',
         serverless: true,
-        adminApiIntegrated: true
+        adminApiIntegrated: true,
+        vercelConfigFixed: true
     });
 });
 

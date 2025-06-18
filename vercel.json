@@ -25,42 +25,34 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "/public/admin/$1"
+      "source": "/admin/(.*)",
+      "destination": "/public/admin/$1"
     },
     {
-      "src": "/dashboard/(.*)",
-      "dest": "/dashboard/$1"
+      "source": "/dashboard/(.*)",
+      "destination": "/dashboard/$1"
     },
     {
-      "src": "/dashboard$",
-      "dest": "/dashboard/index.html"
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
     },
     {
-      "src": "/auth/(.*)",
-      "dest": "/auth/$1"
+      "source": "/auth/(.*)",
+      "destination": "/auth/$1"
     },
     {
-      "src": "/apps/(.*)",
-      "dest": "/apps/$1"
+      "source": "/apps/(.*)",
+      "destination": "/apps/$1"
     },
     {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/dashboard/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "source": "/",
+      "destination": "/dashboard/index.html"
     }
   ],
   "headers": [

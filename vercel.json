@@ -16,6 +16,13 @@
       }
     },
     {
+      "src": "api/admin.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 15
+      }
+    },
+    {
       "src": "public/**/*",
       "use": "@vercel/static"
     },
@@ -30,9 +37,17 @@
     {
       "src": "apps/**/*",
       "use": "@vercel/static"
+    },
+    {
+      "src": "marketing-site/**/*",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/admin/(.*)",
+      "destination": "/api/admin.js"
+    },
     {
       "source": "/api/auth/(.*)",
       "destination": "/api/auth.js"
@@ -72,6 +87,18 @@
     {
       "source": "/apps/(.*)",
       "destination": "/apps/$1"
+    },
+    {
+      "source": "/marketing/(.*)",
+      "destination": "/marketing-site/pages/$1"
+    },
+    {
+      "source": "/marketing",
+      "destination": "/marketing-site/pages/index.html"
+    },
+    {
+      "source": "/demo.html",
+      "destination": "/marketing-site/pages/demo.html"
     },
     {
       "source": "/favicon.svg",

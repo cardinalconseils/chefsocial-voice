@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 const app = require('./app');
-const WebSocketService = require('./websocket');
+// const WebSocketService = require('./websocket'); // TODO: Implement WebSocket service
 
 // Server configuration
 const PORT = process.env.PORT || 3001;
@@ -33,7 +33,7 @@ const server = app.listen(PORT, () => {
 });
 
 // Initialize WebSocket services
-const webSocketService = new WebSocketService(server);
+// const webSocketService = new WebSocketService(server); // TODO: Implement WebSocket service
 
 // Graceful shutdown handling
 const gracefulShutdown = async (signal) => {
@@ -42,7 +42,7 @@ const gracefulShutdown = async (signal) => {
     try {
         // Close WebSocket connections
         console.log('🔌 Closing WebSocket connections...');
-        await webSocketService.shutdown();
+        // await webSocketService.shutdown(); // TODO: Implement WebSocket service
         
         // Close HTTP server
         console.log('🌐 Closing HTTP server...');

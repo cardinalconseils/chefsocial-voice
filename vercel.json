@@ -2,14 +2,46 @@
   "version": 2,
   "builds": [
     {
-      "src": "simple_voice_backend.js",
+      "src": "src/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/marketing-site/pages/index.html"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "/auth/$1"
+    },
+    {
+      "src": "/apps/(.*)",
+      "dest": "/apps/$1"
+    },
+    {
+      "src": "/dashboard/(.*)",
+      "dest": "/dashboard/$1"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin-panel/out/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "src/server.js"
+    },
+    {
+      "src": "/favicon\\.(ico|svg)",
+      "dest": "/public/favicon.$1"
+    },
+    {
+      "src": "/cleanup-sw\\.js",
+      "dest": "/public/cleanup-sw.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "simple_voice_backend.js"
+      "dest": "src/server.js"
     }
   ],
   "env": {

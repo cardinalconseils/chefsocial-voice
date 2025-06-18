@@ -2,7 +2,7 @@
 require('dotenv').config();
 const OpenAI = require('openai');
 const axios = require('axios'); // For external integrations
-const RegionalModelRouter = require('./ai-training/regional-model-router');
+const RegionalModelRouter = require('../../ai-training/regional-model-router');
 
 class EnhancedVoiceAgent {
     constructor() {

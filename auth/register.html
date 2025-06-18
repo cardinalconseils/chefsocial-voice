@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started - ChefSocial Voice</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/auth/shared/css/auth-styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="nav">
+            <a href="/" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+            <div class="language-toggle">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="login-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2 data-i18n="register.title">Get Started</h2>
+                        <p data-i18n="register.subtitle">Create your account and start generating amazing content</p>
+                    </div>
+
+                    <div class="demo-section">
+                        <h3 data-i18n="login.demo.title">🎯 Want to try before you sign up?</h3>
+                        <p data-i18n="login.demo.description">Experience our AI-powered food content creation with our free demo</p>
+                        <a href="/apps/demo.html" class="btn-demo">
+                            <span>🎤</span>
+                            <span data-i18n="login.demo.button">Try Demo Now</span>
+                        </a>
+                    </div>
+
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="name" data-i18n="register.name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" data-i18n="register.email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" data-i18n="register.password">Password</label>
+                            <input type="password" id="password" name="password" required minlength="8">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" data-i18n="register.confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8">
+                        </div>
+
+                        <button type="submit" id="submitButton" class="btn-primary">
+                            <span data-i18n="register.submit">Create Account</span>
+                        </button>
+                    </form>
+
+                    <div class="auth-link">
+                        <span data-i18n="register.hasAccount">Already have an account?</span> 
+                        <a href="/auth/login.html" data-i18n="register.signIn">Sign in here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">👨‍🍳</span>
+                        <span>ChefSocial Voice</span>
+                    </div>
+                    <p data-i18n="footer.description">AI-powered voice-to-content platform for restaurants and food creators.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.product.title">Product</h4>
+                    <ul>
+                        <li><a href="/apps/demo.html" data-i18n="footer.product.demo">Demo</a></li>
+                        <li><a href="/auth/register.html" data-i18n="footer.product.pricing">Pricing</a></li>
+                        <li><a href="/#features" data-i18n="footer.product.features">Features</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.company.title">Company</h4>
+                    <ul>
+                        <li><a href="/about.html" data-i18n="footer.company.about">About</a></li>
+                        <li><a href="/contact.html" data-i18n="footer.company.contact">Contact</a></li>
+                        <li><a href="/blog.html" data-i18n="footer.company.blog">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.legal.title">Legal</h4>
+                    <ul>
+                        <li><a href="/privacy.html" data-i18n="footer.legal.privacy">Privacy Policy</a></li>
+                        <li><a href="/terms.html" data-i18n="footer.legal.terms">Terms of Service</a></li>
+                        <li><a href="/cookies.html" data-i18n="footer.legal.cookies">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p data-i18n="footer.copyright">&copy; 2024 ChefSocial Voice. All rights reserved.</p>
+                    <div class="language-toggle">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/auth/shared/js/i18n.js"></script>
+    <script src="/auth/shared/js/auth-handler.js"></script>
+    <script>
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AuthHandler('register');
+        });
+    </script>
+    
+    <!-- Cleanup script for service workers -->
+    <script src="/cleanup-sw.js"></script>
+</body>
+</html>

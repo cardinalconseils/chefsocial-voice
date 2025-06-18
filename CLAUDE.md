@@ -15,7 +15,7 @@ npm run dev
 # or
 npm start
 
-# Both commands run: node simple_voice_backend.js
+# Both commands run: node src/server.js
 # Server runs on port 3001 by default
 ```
 
@@ -71,7 +71,7 @@ The application follows a modular service-based architecture where each major fe
 - **LoggingSystem** (`logging-system.js`) - Winston-based logging with database persistence
 
 ### Main Server Structure
-The main server (`simple_voice_backend.js`) initializes all services and provides:
+The main server (`src/server.js`) initializes all services and provides:
 - RESTful API endpoints for voice processing
 - WebSocket connections for real-time communication
 - Admin API endpoints for user management

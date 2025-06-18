@@ -18,19 +18,34 @@ const ChefSocialLogger = require('./services/logging-system');
 const ChefSocialRateLimitService = require('./services/rate-limit-service');
 const ChefSocialLiveKitService = require('./services/livekit-service');
 const SMSService = require('./services/sms-service');
+const BriefingSessionService = require('./services/briefing-session-service');
+const VoiceCallingService = require('./services/voice-calling-service');
+const EnhancedVoiceAgent = require('./services/enhanced-voice-agent');
+const RealtimeHandler = require('./services/realtime-handler');
+const NaturalConversationFallback = require('./services/natural-conversation-fallback');
 const I18nManager = require('../i18n');
 const ValidationSystem = require('./services/validation-system');
 const N8NCoordinator = require('./services/n8n-coordinator');
+const twilio = require('twilio');
 
 // Initialize core services
 const authSystem = new ChefSocialAuth();
 const logger = new ChefSocialLogger(authSystem.db);
 const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
 const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
+const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
+const voiceCallingService = new VoiceCallingService(authSystem.db, logger);
 const smsService = new SMSService();
+const enhancedVoiceAgent = new EnhancedVoiceAgent();
+const realtimeHandler = new RealtimeHandler();
+const naturalHandler = new NaturalConversationFallback();
 const i18n = new I18nManager();
 const validationSystem = new ValidationSystem();
 const n8nCoordinator = new N8NCoordinator(logger, authSystem.db);
+
+// Inject service dependencies after initialization
+briefingSessionService.smsService = smsService;
+smsService.setServices(briefingSessionService, voiceCallingService);
 
 // Store services in app locals for access in routes
 app.locals.services = {
@@ -39,9 +54,15 @@ app.locals.services = {
     rateLimitService,
     liveKitService,
     smsService,
+    briefingSessionService,
+    voiceCallingService,
+    enhancedVoiceAgent,
+    realtimeHandler,
+    naturalHandler,
     i18n,
     validationSystem,
-    n8nCoordinator
+    n8nCoordinator,
+    twilio
 };
 
 // Security middleware

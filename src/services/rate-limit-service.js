@@ -34,6 +34,26 @@ class ChefSocialRateLimitService {
                 requests: 50,
                 window: 60 * 1000, // 1 minute
                 endpoint: 'api'
+            },
+            content: {
+                requests: 20,
+                window: 60 * 1000, // 1 minute
+                endpoint: 'content'
+            },
+            restaurant: {
+                requests: 30,
+                window: 60 * 1000, // 1 minute
+                endpoint: 'restaurant'
+            },
+            sms: {
+                requests: 10,
+                window: 60 * 1000, // 1 minute
+                endpoint: 'sms'
+            },
+            system: {
+                requests: 100,
+                window: 60 * 1000, // 1 minute
+                endpoint: 'system'
             }
         };
 

@@ -1,14 +1,27 @@
-// ChefSocial Voice AI - Voice Processing Routes
+// ChefSocial Voice AI - Voice Processing Routes (Refactored)
 const express = require('express');
 const router = express.Router();
 const { asyncHandler, validateRequest } = require('../middleware/validation');
 const { body, param } = require('express-validator');
 
-// Voice processing routes module - receives services from app.js
+// Import voice services
+const VoiceProcessingService = require('../services/voice-processing-service');
+const VoiceSessionService = require('../services/voice-session-service');
+const VoiceConversationService = require('../services/voice-conversation-service');
+const VoiceBriefingService = require('../services/voice-briefing-service');
+const VoiceTwiMLService = require('../services/voice-twiml-service');
+
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService, liveKitService, enhancedVoiceAgent, realtimeHandler, naturalHandler } = app.locals.services;
+    const services = app.locals.services;
+    const { authSystem, logger, rateLimitService, liveKitService } = services;
     
-    // Rate limiter for voice processing endpoints
+    // Initialize voice services
+    const voiceProcessing = new VoiceProcessingService(services);
+    const voiceSession = new VoiceSessionService(services);
+    const voiceConversation = new VoiceConversationService(services);
+    const voiceBriefing = new VoiceBriefingService(services);
+    const voiceTwiML = new VoiceTwiMLService(services);
+    
     const voiceLimiter = rateLimitService.createEndpointLimiter('voice');
     
     // Validation schemas
@@ -41,153 +54,27 @@ module.exports = (app) => {
             const { audio, image } = req.body;
             const userLanguage = req.language || 'en';
             
-            // Start performance tracking for voice processing
-            const performanceTracker = logger.startPerformanceTracking('voice_processing', {
-                userId: req.userId,
-                hasImage: !!image,
-                language: userLanguage
-            });
-
-            // Audit log voice processing request
-            await logger.auditUserAction(
-                req.userId,
-                'voice_process_start',
-                'content',
-                null,
-                {
-                    hasAudio: !!audio,
-                    hasImage: !!image,
-                    language: userLanguage,
-                    audioSize: audio ? audio.length : 0
-                },
-                req
-            );
-            
-            logger.info(`Processing voice request in ${userLanguage}`, {
-                userId: req.userId,
-                hasImage: !!image,
-                language: userLanguage
-            });
-            
-            // Step 1: Convert voice to text using Whisper with enhanced language detection
-            const transcriptionResult = await transcribeAudio(audio, userLanguage);
-            const transcript = transcriptionResult.text || transcriptionResult;
-            const detectedLanguage = transcriptionResult.detectedLanguage || userLanguage;
-            
-            logger.info('Audio transcribed', {
-                userId: req.userId,
-                transcript: transcript.substring(0, 100),
-                detectedLanguage
-            });
-            
-            // Step 2: Analyze the image (optional but adds value)
-            const imageAnalysis = await analyzeImage(image);
-            logger.info('Image analyzed', {
-                userId: req.userId,
-                hasImageAnalysis: !!imageAnalysis
-            });
-            
-            // Step 3: Generate social media content using detected language
-            const content = await generateContent(transcript, imageAnalysis, detectedLanguage);
-            
-            // Step 4: Auto-save generated content for user
-            try {
-                const contentPromises = [];
-                
-                if (content.instagram) {
-                    const instagramContentId = `content_${Date.now()}_ig_${Math.random().toString(36).substring(2, 11)}`;
-                    contentPromises.push(
-                        authSystem.db.saveGeneratedContent({
-                            id: instagramContentId,
-                            userId: req.userId,
-                            platform: 'instagram',
-                            contentType: 'post',
-                            caption: content.instagram.caption,
-                            hashtags: content.instagram.hashtags,
-                            imageUrl: null,
-                            transcript: transcript,
-                            viralScore: content.viralPotential ? parseInt(content.viralPotential) : 7
-                        })
-                    );
-                }
-                
-                if (content.tiktok) {
-                    const tiktokContentId = `content_${Date.now()}_tt_${Math.random().toString(36).substring(2, 11)}`;
-                    contentPromises.push(
-                        authSystem.db.saveGeneratedContent({
-                            id: tiktokContentId,
-                            userId: req.userId,
-                            platform: 'tiktok',
-                            contentType: 'video',
-                            caption: content.tiktok.caption,
-                            hashtags: content.tiktok.hashtags,
-                            imageUrl: null,
-                            transcript: transcript,
-                            viralScore: content.viralPotential ? parseInt(content.viralPotential) : 7
-                        })
-                    );
-                }
-                
-                await Promise.all(contentPromises);
-                logger.info('Content auto-saved to user library', {
-                    userId: req.userId,
-                    contentCount: contentPromises.length
-                });
-                
-            } catch (saveError) {
-                logger.error('Failed to auto-save content', saveError, {
-                    userId: req.userId
-                });
-            }
-
-            // Track usage for voice processing
-            await authSystem.db.trackUsage(req.userId, 'voice_minutes_used', 1);
-
-            // End performance tracking
-            performanceTracker.end({
-                success: true,
-                transcriptLength: transcript.length,
-                hasImageAnalysis: !!imageAnalysis,
-                contentGenerated: Object.keys(content).length
-            });
-
-            // Audit log successful voice processing
-            await logger.auditUserAction(
-                req.userId,
-                'voice_process_complete',
-                'content',
-                null,
-                {
-                    transcript: transcript.substring(0, 200),
-                    detectedLanguage,
-                    contentPlatforms: Object.keys(content),
-                    viralPotential: content.viralPotential
-                },
+            const result = await voiceProcessing.processVoiceRequest(
+                req.userId, 
+                audio, 
+                image, 
+                userLanguage, 
                 req
             );
 
             res.json({
                 success: true,
-                transcript: transcript,
-                content: content,
-                detectedLanguage: detectedLanguage,
-                processingTime: performanceTracker.getDuration()
+                ...result
             });
         })
     );
 
-    // Demo voice processing endpoint (public with limited features)
+    // Demo voice processing endpoint
     router.post('/process-demo', 
         asyncHandler(async (req, res) => {
             const { audio, image, language } = req.body;
             const userLanguage = language || 'en';
             
-            logger.info('Processing demo voice request', {
-                hasImage: !!image,
-                language: userLanguage
-            });
-            
-            // Validate audio input
             if (!audio) {
                 return res.status(400).json({
                     success: false,
@@ -195,215 +82,88 @@ module.exports = (app) => {
                 });
             }
             
-            let transcript = '';
-            let imageAnalysis = '';
-            
-            // Step 1: Convert voice to text using Whisper (with error handling)
-            try {
-                const transcriptionResult = await transcribeAudio(audio, userLanguage);
-                transcript = transcriptionResult.text || transcriptionResult;
-                const detectedLang = transcriptionResult.detectedLanguage || userLanguage;
-                
-                logger.info('Demo transcript generated', {
-                    transcript: transcript.substring(0, 100),
-                    detectedLanguage: detectedLang
-                });
-            } catch (transcriptError) {
-                logger.warn('Demo transcription failed, using fallback', transcriptError);
-                transcript = userLanguage === 'fr' 
-                    ? "Je décris ce délicieux plat" 
-                    : "I'm describing this delicious dish";
-            }
-            
-            // Step 2: Analyze the image (optional for demo - skip if it fails)
-            if (image) {
-                try {
-                    imageAnalysis = await analyzeImage(image);
-                    logger.info('Demo image analysis completed');
-                } catch (imageError) {
-                    logger.warn('Demo image analysis failed, using fallback', imageError);
-                    imageAnalysis = "A delicious looking dish";
-                }
-            } else {
-                imageAnalysis = "Food photo uploaded";
-            }
-            
-            // Step 3: Generate social media content (limited features)
-            const content = await generateDemoContent(transcript, imageAnalysis, userLanguage);
-            
+            const result = await voiceProcessing.processDemoVoiceRequest(audio, image, userLanguage);
+
             res.json({
                 success: true,
-                transcript: transcript,
-                content: content,
-                demo: true,
-                message: "Demo mode - Register for advanced AI features!"
+                ...result
             });
         })
     );
 
     // LiveKit Voice Session Management
-
-    // Create voice session
     router.post('/session/create', 
         authSystem.authMiddleware(),
         sessionValidation,
         asyncHandler(async (req, res) => {
             const { sessionType = 'voice_chat', metadata = {} } = req.body;
             
-            // Check if user already has an active session
-            const existingSession = liveKitService.getActiveSession(req.userId);
-            if (existingSession) {
-                return res.json({
-                    success: true,
-                    session: existingSession,
-                    message: 'Rejoining existing session'
-                });
-            }
-
-            // Create new voice session
-            const session = await liveKitService.createVoiceSession(req.userId, sessionType, {
-                ...metadata,
-                userAgent: req.get('User-Agent'),
-                ipAddress: req.ip
-            });
-
-            // Audit log session creation
-            await logger.auditUserAction(
-                req.userId,
-                'voice_session_create',
-                'voice_session',
-                session.sessionId,
-                {
-                    sessionType,
-                    roomName: session.roomName,
-                    liveKitEnabled: true
-                },
-                req
-            );
-
-            logger.info('LiveKit voice session created', {
-                userId: req.userId,
-                sessionId: session.sessionId,
-                sessionType,
-                service: 'livekit'
-            });
+            const result = await voiceSession.createVoiceSession(req.userId, sessionType, metadata, req);
 
             res.json({
                 success: true,
-                session: session
+                ...result
             });
         })
     );
 
-    // Join existing voice session
     router.post('/session/join/:sessionId',
         authSystem.authMiddleware(),
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
-            const session = await liveKitService.joinVoiceSession(sessionId, req.userId);
-
-            // Audit log session join
-            await logger.auditUserAction(
-                req.userId,
-                'voice_session_join',
-                'voice_session',
-                sessionId,
-                {
-                    roomName: session.roomName,
-                    rejoining: true
-                },
-                req
-            );
-
-            logger.info('User joined LiveKit voice session', {
-                userId: req.userId,
-                sessionId,
-                service: 'livekit'
-            });
+            const result = await voiceSession.joinVoiceSession(sessionId, req.userId, req);
 
             res.json({
                 success: true,
-                session: session
+                ...result
             });
         })
     );
 
-    // End voice session
     router.post('/session/end/:sessionId',
         authSystem.authMiddleware(),
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
-            const result = await liveKitService.endVoiceSession(sessionId, req.userId);
-
-            // Audit log session end
-            await logger.auditUserAction(
-                req.userId,
-                'voice_session_end',
-                'voice_session',
-                sessionId,
-                {
-                    duration: result.duration,
-                    summary: result.summary
-                },
-                req
-            );
-
-            logger.info('LiveKit voice session ended', {
-                userId: req.userId,
-                sessionId,
-                duration: result.duration,
-                service: 'livekit'
-            });
+            const result = await voiceSession.endVoiceSession(sessionId, req.userId, req);
 
             res.json({
                 success: true,
-                result: result
+                ...result
             });
         })
     );
 
-    // Get active voice session
     router.get('/session/active',
         authSystem.authMiddleware(),
         asyncHandler(async (req, res) => {
-            const activeSession = liveKitService.getActiveSession(req.userId);
+            const result = await voiceSession.getActiveSession(req.userId);
             
             res.json({
                 success: true,
-                session: activeSession
+                ...result
             });
         })
     );
 
-    // Get voice session statistics
     router.get('/session/stats/:sessionId',
         authSystem.authMiddleware(),
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
-            const stats = liveKitService.getSessionStats(sessionId);
+            const result = await voiceSession.getSessionStats(sessionId);
             
-            if (!stats) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Session not found'
-                });
-            }
-
             res.json({
                 success: true,
-                stats: stats
+                ...result
             });
         })
     );
 
     // Session Recording Management
-
-    // Start session recording
     router.post('/session/record/start/:sessionId',
         authSystem.authMiddleware(),
         sessionIdValidation,
@@ -412,104 +172,45 @@ module.exports = (app) => {
             const { sessionId } = req.params;
             const { recordingOptions = {} } = req.body;
             
-            const recording = await liveKitService.startSessionRecording(sessionId, recordingOptions);
-
-            // Audit log recording start
-            await logger.auditUserAction(
-                req.userId,
-                'voice_recording_start',
-                'voice_session',
-                sessionId,
-                {
-                    recordingId: recording.recordingId,
-                    recordingOptions
-                },
-                req
-            );
-
-            logger.info('Voice session recording started', {
-                userId: req.userId,
-                sessionId,
-                recordingId: recording.recordingId,
-                service: 'livekit'
-            });
+            const result = await voiceSession.startSessionRecording(sessionId, req.userId, recordingOptions, req);
 
             res.json({
                 success: true,
-                recording: recording
+                ...result
             });
         })
     );
 
-    // Stop session recording
     router.post('/session/record/stop/:sessionId',
         authSystem.authMiddleware(),
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
-            const recordings = await liveKitService.stopSessionRecording(sessionId);
-
-            // Audit log recording stop
-            await logger.auditUserAction(
-                req.userId,
-                'voice_recording_stop',
-                'voice_session',
-                sessionId,
-                {
-                    recordingsCount: recordings.length,
-                    recordings: recordings.map(r => ({ id: r.recordingId, duration: r.duration }))
-                },
-                req
-            );
-
-            logger.info('Voice session recording stopped', {
-                userId: req.userId,
-                sessionId,
-                recordingsCount: recordings.length,
-                service: 'livekit'
-            });
+            const result = await voiceSession.stopSessionRecording(sessionId, req.userId, req);
 
             res.json({
                 success: true,
-                recordings: recordings
+                ...result
             });
         })
     );
 
     // Enhanced Conversation Endpoints
-
-    // Start enhanced conversation
     router.post('/enhanced-conversation/start', 
         authSystem.authMiddleware(),
         asyncHandler(async (req, res) => {
             const { context = {} } = req.body;
             
-            const session = await enhancedVoiceAgent.startConversation(req.userId, context);
-            
-            // Audit log enhanced conversation start
-            await logger.auditUserAction(
-                req.userId,
-                'enhanced_conversation_start',
-                'conversation',
-                session.sessionId,
-                { context },
-                req
-            );
-
-            logger.info('Enhanced conversation started', {
-                userId: req.userId,
-                sessionId: session.sessionId
-            });
+            const result = await voiceConversation.startEnhancedConversation(req.userId, context, req);
 
             res.json({
                 success: true,
-                session: session
+                ...result
             });
         })
     );
 
-    // Process audio in enhanced conversation
     router.post('/enhanced-conversation/audio', 
         authSystem.authMiddleware(),
         validateRequest([
@@ -520,61 +221,30 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { sessionId, audioBuffer, userContext = {} } = req.body;
             
-            const result = await enhancedVoiceAgent.processVoiceInput(sessionId, audioBuffer, { 
-                userId: req.userId,
-                ...userContext 
-            });
-
-            // Audit log audio processing
-            await logger.auditUserAction(
-                req.userId,
-                'enhanced_conversation_audio',
-                'conversation',
-                sessionId,
-                {
-                    audioProcessed: true,
-                    responseGenerated: !!result.response
-                },
-                req
-            );
-
-            logger.info('Enhanced conversation audio processed', {
-                userId: req.userId,
-                sessionId,
-                hasResponse: !!result.response
-            });
+            const result = await voiceConversation.processEnhancedAudio(sessionId, audioBuffer, req.userId, userContext, req);
 
             res.json({
                 success: true,
-                result: result
+                ...result
             });
         })
     );
 
-    // Get enhanced conversation session
     router.get('/enhanced-conversation/session/:sessionId', 
         authSystem.authMiddleware(),
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
-            const session = await enhancedVoiceAgent.getSession(sessionId);
-            
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Session not found'
-                });
-            }
+            const result = await voiceConversation.getEnhancedSession(sessionId);
 
             res.json({
                 success: true,
-                session: session
+                ...result
             });
         })
     );
 
-    // Generate content from enhanced conversation
     router.post('/enhanced-conversation/generate-content', 
         authSystem.authMiddleware(),
         validateRequest([
@@ -584,67 +254,39 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { sessionId, contentType = 'post' } = req.body;
             
-            const content = await enhancedVoiceAgent.generateContent(sessionId, contentType);
-
-            // Audit log content generation
-            await logger.auditUserAction(
-                req.userId,
-                'enhanced_conversation_content_generate',
-                'content',
-                null,
-                {
-                    sessionId,
-                    contentType,
-                    contentGenerated: !!content
-                },
-                req
-            );
-
-            logger.info('Enhanced conversation content generated', {
-                userId: req.userId,
-                sessionId,
-                contentType
-            });
+            const result = await voiceConversation.generateContentFromConversation(sessionId, req.userId, contentType, req);
 
             res.json({
                 success: true,
-                content: content
+                ...result
             });
         })
     );
 
-    // Get enhanced conversation statistics
     router.get('/enhanced-conversation/stats', 
         authSystem.authMiddleware(),
         asyncHandler(async (req, res) => {
-            const stats = await enhancedVoiceAgent.getUserStats(req.userId);
+            const result = await voiceConversation.getEnhancedConversationStats(req.userId);
             
             res.json({
                 success: true,
-                stats: stats
+                ...result
             });
         })
     );
 
     // Regular Conversation Endpoints (Legacy)
-
-    // Start regular conversation
     router.post('/conversation/start', 
         asyncHandler(async (req, res) => {
-            const session = await realtimeHandler.createSession();
+            const result = await voiceConversation.startRegularConversation();
             
-            logger.info('Regular conversation started', {
-                sessionId: session.sessionId
-            });
-
             res.json({
                 success: true,
-                session: session
+                ...result
             });
         })
     );
 
-    // Process audio in regular conversation
     router.post('/conversation/audio', 
         validateRequest([
             body('sessionId').isUUID(),
@@ -653,31 +295,16 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { sessionId, audioBuffer } = req.body;
             
-            const session = await realtimeHandler.getSession(sessionId);
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Session not found'
-                });
-            }
-
-            const result = await realtimeHandler.processAudioInput(audioBuffer, session);
-
-            logger.info('Regular conversation audio processed', {
-                sessionId,
-                hasResponse: !!result.response
-            });
+            const result = await voiceConversation.processRegularAudio(sessionId, audioBuffer);
 
             res.json({
                 success: true,
-                result: result
+                ...result
             });
         })
     );
 
     // LiveKit Agent Briefing Endpoints
-
-    // Schedule a briefing session
     router.post('/schedule-briefing',
         authSystem.authMiddleware(),
         validateRequest([
@@ -689,63 +316,15 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { phoneNumber, imageUrl, scheduledTime, metadata = {} } = req.body;
             
-            // Generate unique session ID
-            const sessionId = `briefing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
-            // Create briefing session in database
-            const sessionData = {
-                id: sessionId,
-                phoneNumber,
-                userId: req.userId,
-                imageUrl,
-                uploadMethod: 'api'
-            };
-            
-            await authSystem.db.createBriefingSession(sessionData);
-            
-            // Schedule the briefing time
-            await authSystem.db.updateBriefingSessionSchedule(sessionId, scheduledTime, 'scheduled');
-            
-            // Track workflow step
-            await authSystem.db.trackWorkflowStep(sessionId, 'briefing_scheduled', 'completed', {
-                scheduledTime,
-                phoneNumber,
-                metadata
-            });
-
-            // Audit log briefing creation
-            await logger.auditUserAction(
-                req.userId,
-                'briefing_session_scheduled',
-                'briefing_session',
-                sessionId,
-                {
-                    phoneNumber,
-                    scheduledTime,
-                    imageUrl,
-                    metadata
-                },
-                req
-            );
-
-            logger.info('Briefing session scheduled', {
-                userId: req.userId,
-                sessionId,
-                phoneNumber,
-                scheduledTime,
-                service: 'livekit-agent'
-            });
+            const result = await voiceBriefing.scheduleBriefing(req.userId, phoneNumber, imageUrl, scheduledTime, metadata, req);
 
             res.json({
                 success: true,
-                sessionId,
-                scheduledTime,
-                message: 'Briefing session scheduled successfully'
+                ...result
             });
         })
     );
 
-    // Get briefing session details
     router.get('/briefing/:sessionId',
         authSystem.authMiddleware(),
         validateRequest([
@@ -754,41 +333,15 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
-            const session = await authSystem.db.getBriefingSession(sessionId);
-            
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Briefing session not found'
-                });
-            }
-
-            // Verify user owns this session
-            if (session.user_id !== req.userId) {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Access denied to this briefing session'
-                });
-            }
+            const session = await voiceBriefing.getBriefingSession(sessionId, req.userId);
 
             res.json({
                 success: true,
-                session: {
-                    sessionId: session.id,
-                    phoneNumber: session.phone_number,
-                    imageUrl: session.image_url,
-                    status: session.status,
-                    scheduledTime: session.scheduled_time,
-                    actualCallTime: session.actual_call_time,
-                    briefingCompleted: session.briefing_completed,
-                    createdAt: session.created_at,
-                    updatedAt: session.updated_at
-                }
+                session
             });
         })
     );
 
-    // Update briefing session status
     router.patch('/briefing/:sessionId/status',
         authSystem.authMiddleware(),
         validateRequest([
@@ -801,68 +354,15 @@ module.exports = (app) => {
             const { sessionId } = req.params;
             const { status, actualCallTime, briefingCompleted } = req.body;
             
-            const session = await authSystem.db.getBriefingSession(sessionId);
-            
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Briefing session not found'
-                });
-            }
-
-            // Verify user owns this session
-            if (session.user_id !== req.userId) {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Access denied to this briefing session'
-                });
-            }
-
-            // Update session status
-            if (status === 'completed' && actualCallTime) {
-                await authSystem.db.updateBriefingSessionSchedule(sessionId, actualCallTime, status);
-            } else {
-                await authSystem.db.updateBriefingSessionSchedule(sessionId, session.scheduled_time, status);
-            }
-
-            // Track workflow step
-            await authSystem.db.trackWorkflowStep(sessionId, 'status_update', 'completed', {
-                newStatus: status,
-                actualCallTime,
-                briefingCompleted
-            });
-
-            // Audit log status update
-            await logger.auditUserAction(
-                req.userId,
-                'briefing_session_status_update',
-                'briefing_session',
-                sessionId,
-                {
-                    status,
-                    actualCallTime,
-                    briefingCompleted
-                },
-                req
-            );
-
-            logger.info('Briefing session status updated', {
-                userId: req.userId,
-                sessionId,
-                status,
-                service: 'livekit-agent'
-            });
+            const result = await voiceBriefing.updateBriefingStatus(sessionId, req.userId, status, actualCallTime, briefingCompleted, req);
 
             res.json({
                 success: true,
-                sessionId,
-                status,
-                message: 'Briefing session status updated successfully'
+                ...result
             });
         })
     );
 
-    // Save briefing context from voice session
     router.post('/briefing/:sessionId/context',
         authSystem.authMiddleware(),
         validateRequest([
@@ -879,71 +379,20 @@ module.exports = (app) => {
             const { sessionId } = req.params;
             const { transcript, dishStory, targetAudience, desiredMood, platformPreferences, postingUrgency, brandPersonality } = req.body;
             
-            const session = await authSystem.db.getBriefingSession(sessionId);
-            
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Briefing session not found'
-                });
-            }
-
-            // Verify user owns this session
-            if (session.user_id !== req.userId) {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Access denied to this briefing session'
-                });
-            }
-
-            // Save briefing context
             const contextData = {
-                sessionId,
-                transcript,
-                dishStory,
-                targetAudience,
-                desiredMood,
-                platformPreferences,
-                postingUrgency,
-                brandPersonality
+                transcript, dishStory, targetAudience, desiredMood, 
+                platformPreferences, postingUrgency, brandPersonality
             };
 
-            const contextId = await authSystem.db.saveBriefingContext(contextData);
-
-            // Track workflow step
-            await authSystem.db.trackWorkflowStep(sessionId, 'context_saved', 'completed', contextData);
-
-            // Audit log context save
-            await logger.auditUserAction(
-                req.userId,
-                'briefing_context_saved',
-                'briefing_session',
-                sessionId,
-                {
-                    contextId,
-                    transcriptLength: transcript.length,
-                    hasCustomData: !!(dishStory || targetAudience || desiredMood)
-                },
-                req
-            );
-
-            logger.info('Briefing context saved', {
-                userId: req.userId,
-                sessionId,
-                contextId,
-                service: 'livekit-agent'
-            });
+            const result = await voiceBriefing.saveBriefingContext(sessionId, req.userId, contextData, req);
 
             res.json({
                 success: true,
-                sessionId,
-                contextId,
-                message: 'Briefing context saved successfully'
+                ...result
             });
         })
     );
 
-    // Webhook endpoint for external system notifications
     router.post('/briefing/webhook',
         validateRequest([
             body('sessionId').notEmpty().withMessage('Session ID required'),
@@ -954,87 +403,76 @@ module.exports = (app) => {
         asyncHandler(async (req, res) => {
             const { sessionId, status, timestamp, webhookSecret, data = {} } = req.body;
             
-            // Verify webhook secret (you should set this in your environment)
-            const expectedSecret = process.env.LIVEKIT_WEBHOOK_SECRET || 'default-webhook-secret';
-            if (webhookSecret !== expectedSecret) {
-                return res.status(401).json({
-                    success: false,
-                    error: 'Invalid webhook secret'
-                });
-            }
-
-            const session = await authSystem.db.getBriefingSession(sessionId);
-            
-            if (!session) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Briefing session not found'
-                });
-            }
-
-            // Update session based on webhook status
-            if (status === 'briefing_completed') {
-                await authSystem.db.updateBriefingSessionSchedule(sessionId, new Date().toISOString(), 'completed');
-                
-                // Track completion
-                await authSystem.db.trackWorkflowStep(sessionId, 'briefing_completed', 'completed', {
-                    completedAt: timestamp,
-                    webhookData: data
-                });
-
-                // Trigger your system's webhook if configured
-                if (process.env.EXTERNAL_WEBHOOK_URL) {
-                    try {
-                        await fetch(process.env.EXTERNAL_WEBHOOK_URL, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${process.env.EXTERNAL_WEBHOOK_TOKEN || ''}`
-                            },
-                            body: JSON.stringify({
-                                sessionId,
-                                status: 'completed',
-                                timestamp,
-                                phoneNumber: session.phone_number,
-                                userId: session.user_id,
-                                imageUrl: session.image_url,
-                                data
-                            })
-                        });
-
-                        logger.info('External webhook notification sent', {
-                            sessionId,
-                            status,
-                            service: 'livekit-agent'
-                        });
-                    } catch (webhookError) {
-                        logger.error('Failed to send external webhook notification', webhookError, {
-                            sessionId,
-                            status
-                        });
-                    }
-                }
-            }
-
-            logger.info('Briefing webhook received', {
-                sessionId,
-                status,
-                timestamp,
-                service: 'livekit-agent'
-            });
+            const result = await voiceBriefing.processWebhook(sessionId, status, timestamp, webhookSecret, data);
 
             res.json({
                 success: true,
-                sessionId,
-                status,
-                message: 'Webhook processed successfully'
+                ...result
+            });
+        })
+    );
+
+    // Twilio Voice Integration Endpoints
+    router.get('/twiml/briefing-call',
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.query;
+            
+            const twiml = await voiceTwiML.generateBriefingTwiML(sessionId, req);
+            
+            res.type('text/xml').send(twiml);
+        })
+    );
+
+    router.get('/twiml/connect-livekit',
+        asyncHandler(async (req, res) => {
+            const { sessionId, room } = req.query;
+            
+            const twiml = await voiceTwiML.generateConnectLiveKitTwiML(sessionId, room);
+            
+            res.type('text/xml').send(twiml);
+        })
+    );
+
+    router.post('/twiml/process-speech',
+        asyncHandler(async (req, res) => {
+            const { sessionId } = req.query;
+            const { SpeechResult, Confidence } = req.body;
+            
+            const twiml = await voiceTwiML.processSpeechInput(sessionId, SpeechResult, Confidence);
+            
+            res.type('text/xml').send(twiml);
+        })
+    );
+
+    router.post('/webhook/call-status',
+        asyncHandler(async (req, res) => {
+            const { CallSid, CallStatus, CallDuration, RecordingUrl } = req.body;
+            
+            const result = await voiceTwiML.handleCallStatusUpdate(CallSid, CallStatus, CallDuration, RecordingUrl);
+            
+            res.status(200).send(result);
+        })
+    );
+
+    router.post('/call/start-briefing',
+        authSystem.authMiddleware(),
+        validateRequest([
+            body('phoneNumber').isMobilePhone().withMessage('Valid phone number required'),
+            body('briefingSessionId').notEmpty().withMessage('Briefing session ID required')
+        ]),
+        asyncHandler(async (req, res) => {
+            const { phoneNumber, briefingSessionId } = req.body;
+            
+            const result = await voiceBriefing.initiateOutboundCall(req.userId, phoneNumber, briefingSessionId, req);
+
+            res.json({
+                success: true,
+                ...result
             });
         })
     );
 
     // Service Health and Monitoring
-
-    // Get LiveKit service health and metrics
     router.get('/health',
         authSystem.authMiddleware(),
         asyncHandler(async (req, res) => {
@@ -1043,15 +481,21 @@ module.exports = (app) => {
 
             res.json({
                 success: true,
-                health: health,
-                metrics: metrics
+                health,
+                metrics
             });
         })
     );
 
     // Error handling middleware for voice routes
     router.use((error, req, res, next) => {
-        // Log voice processing errors
+        logger.error('Voice route error', error, {
+            userId: req.userId,
+            path: req.path,
+            method: req.method
+        });
+
+        // Handle voice-specific errors
         if (error.message && error.message.includes('transcription')) {
             logger.logSecurityEvent(
                 'transcription_error',
@@ -1079,7 +523,7 @@ module.exports = (app) => {
             );
         }
 
-        // Handle voice-specific errors
+        // Voice-specific error responses
         if (error.message && error.message.includes('session')) {
             return res.status(400).json({
                 success: false,

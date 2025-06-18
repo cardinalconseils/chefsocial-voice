@@ -5,7 +5,6 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "legacy": "node simple_voice_backend.js",
     "build": "echo \"✅ Build complete - static files ready in public/\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "echo \"No linter configured\"",

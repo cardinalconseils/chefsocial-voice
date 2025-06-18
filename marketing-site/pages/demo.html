@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefSocial Voice Demo - Experience AI-Powered Content Creation</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #ff4757 75%, #ff3742 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #3b4a59 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-light: #fafafa;
+            --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 25px 50px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 30px 60px rgba(0, 0, 0, 0.2);
+            --recording: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            --processing: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 0.25rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+
+        /* Demo Section */
+        .demo-section {
+            padding: 120px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .demo-title {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .demo-subtitle {
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Voice Input Section */
+        .voice-input-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+        }
+
+        .voice-input-section:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .voice-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: var(--recording);
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 35px rgba(255, 65, 108, 0.4);
+            position: relative;
+        }
+
+        .record-button::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 3px solid rgba(255, 65, 108, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            animation: none;
+        }
+
+        .record-button.recording::before {
+            opacity: 1;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        .record-button.recording {
+            background: var(--success);
+            box-shadow: 0 15px 35px rgba(17, 153, 142, 0.4);
+        }
+
+        .record-button.processing {
+            background: var(--processing);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        .record-button:hover {
+            transform: scale(1.05);
+        }
+
+        .record-status {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            min-height: 1.5rem;
+        }
+
+        .image-upload {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .image-upload.has-image {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .upload-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        /* Generated Content Section */
+        .generated-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+        }
+
+        .generated-content:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .content-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 15px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .content-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 15px;
+        }
+
+        .content-tab {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .content-tab.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .platform-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .instagram-content {
+            border-left-color: #e1306c;
+        }
+
+        .tiktok-content {
+            border-left-color: #000000;
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .platform-icon {
+            font-size: 2rem;
+        }
+
+        .platform-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .content-caption {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            border: 1px solid #e2e8f0;
+        }
+
+        .content-hashtags {
+            color: #4facfe;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .viral-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .demo-note {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            color: #2d3436;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 2rem;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(255, 234, 167, 0.3);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 15px;
+            }
+
+            .demo-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .voice-input-section,
+            .generated-content {
+                padding: 2rem;
+            }
+
+            .record-button {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .content-tabs {
+                flex-direction: column;
+            }
+
+            .viral-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading animations */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* Error states */
+        .error-message {
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(255, 118, 117, 0.3);
+        }
+
+        /* Success animations */
+        .success-animation {
+            animation: successPulse 0.6s ease-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #3b4a59 100%);
+            color: white;
+            padding: 60px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo .logo-icon {
+            font-size: 2rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-section h4 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+        }
+
+        .footer-bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+
+        .footer .language-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer .lang-btn {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer .lang-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="nav">
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">👨‍🍳</span>
+                ChefSocial Voice
+            </a>
+            <div class="language-toggle">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section class="demo-section">
+            <div class="container">
+                <div class="demo-header">
+                    <h1 class="demo-title" data-i18n="demo.title">Experience the Magic</h1>
+                    <p class="demo-subtitle" data-i18n="demo.subtitle">Try our AI-powered voice-to-content generator. Speak about your food and watch as we create viral social media content in real-time.</p>
+                </div>
+
+                <div class="demo-container">
+                    <!-- Voice Input Section -->
+                    <div class="voice-input-section glass">
+                        <h2 class="section-title" data-i18n="demo.input.title">🎤 Your Voice Input</h2>
+                        
+                        <div class="voice-controls">
+                            <button id="recordButton" class="record-button" data-i18n-title="demo.input.record">
+                                🎤
+                            </button>
+                            <div id="recordStatus" class="record-status" data-i18n="demo.input.status">Click to start recording</div>
+                        </div>
+
+                        <div class="image-upload" id="imageUpload">
+                            <div class="upload-icon">📸</div>
+                            <div class="upload-text" data-i18n="demo.input.upload">Click to upload a food photo (optional)</div>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        </div>
+
+                        <div id="transcript" style="margin-top: 2rem; padding: 1.5rem; background: rgba(255, 255, 255, 0.1); border-radius: 15px; color: white; min-height: 60px; display: none;">
+                            <strong data-i18n="demo.input.transcript">Your words:</strong>
+                            <div id="transcriptText" style="margin-top: 0.5rem; font-style: italic;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Generated Content Section -->
+                    <div class="generated-content">
+                        <h2 class="section-title" style="color: var(--text-primary);" data-i18n="demo.output.title">✨ Generated Content</h2>
+                        
+                        <div id="contentPlaceholder" class="content-placeholder">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">🎯</div>
+                            <div data-i18n="demo.output.placeholder">Your AI-generated social media content will appear here...</div>
+                        </div>
+
+                        <div id="generatedContent" style="display: none;">
+                            <div class="content-tabs">
+                                <button class="content-tab active" data-tab="instagram" data-i18n="demo.output.instagram">📱 Instagram</button>
+                                <button class="content-tab" data-tab="tiktok" data-i18n="demo.output.tiktok">🎵 TikTok</button>
+                            </div>
+
+                            <div id="instagramPanel" class="content-panel active">
+                                <div class="platform-content instagram-content">
+                                    <div class="platform-header">
+                                        <span class="platform-icon">📱</span>
+                                        <span class="platform-name">Instagram Post</span>
+                                    </div>
+                                    <div class="content-caption" id="instagramCaption"></div>
+                                    <div class="content-hashtags" id="instagramHashtags"></div>
+                                </div>
+                            </div>
+
+                            <div id="tiktokPanel" class="content-panel">
+                                <div class="platform-content tiktok-content">
+                                    <div class="platform-header">
+                                        <span class="platform-icon">🎵</span>
+                                        <span class="platform-name">TikTok Video</span>
+                                    </div>
+                                    <div class="content-caption" id="tiktokCaption"></div>
+                                    <div class="content-hashtags" id="tiktokHashtags"></div>
+                                </div>
+                            </div>
+
+                            <div class="viral-stats">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="viralScore">8</div>
+                                    <div class="stat-label" data-i18n="demo.output.viral">Viral Potential</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="bestTime">7 PM</div>
+                                    <div class="stat-label" data-i18n="demo.output.time">Best Time</div>
+                                </div>
+                            </div>
+
+                            <div class="demo-note">
+                                <strong data-i18n="demo.output.note">🚀 Demo Mode:</strong>
+                                <span data-i18n="demo.output.upgrade">Upgrade for advanced AI features, brand learning, and unlimited content generation!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">👨‍🍳</span>
+                        <span>ChefSocial Voice</span>
+                    </div>
+                    <p data-i18n="footer.description">AI-powered voice-to-content platform for restaurants and food creators.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.product.title">Product</h4>
+                    <ul>
+                        <li><a href="/demo.html" data-i18n="footer.product.demo">Demo</a></li>
+                        <li><a href="/auth/register.html" data-i18n="footer.product.pricing">Pricing</a></li>
+                        <li><a href="/#features" data-i18n="footer.product.features">Features</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.company.title">Company</h4>
+                    <ul>
+                        <li><a href="/about.html" data-i18n="footer.company.about">About</a></li>
+                        <li><a href="/contact.html" data-i18n="footer.company.contact">Contact</a></li>
+                        <li><a href="/blog.html" data-i18n="footer.company.blog">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.legal.title">Legal</h4>
+                    <ul>
+                        <li><a href="/privacy.html" data-i18n="footer.legal.privacy">Privacy Policy</a></li>
+                        <li><a href="/terms.html" data-i18n="footer.legal.terms">Terms of Service</a></li>
+                        <li><a href="/cookies.html" data-i18n="footer.legal.cookies">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p data-i18n="footer.copyright">&copy; 2024 ChefSocial Voice. All rights reserved.</p>
+                    <div class="language-toggle">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Translation data
+        const translations = {
+            en: {
+                'nav.home': 'Home',
+                'nav.features': 'Features',
+                'nav.pricing': 'Pricing',
+                'nav.login': 'Login',
+                'nav.get-started': 'Get Started',
+                'demo.title': 'Experience the Magic',
+                'demo.subtitle': 'Try our AI-powered voice-to-content generator. Speak about your food and watch as we create viral social media content in real-time.',
+                'demo.input.title': '🎤 Your Voice Input',
+                'demo.input.record': 'Click to record',
+                'demo.input.status': 'Click to start recording',
+                'demo.input.upload': 'Click to upload a food photo (optional)',
+                'demo.input.transcript': 'Your words:',
+                'demo.output.title': '✨ Generated Content',
+                'demo.output.placeholder': 'Your AI-generated social media content will appear here...',
+                'demo.output.instagram': '📱 Instagram',
+                'demo.output.tiktok': '🎵 TikTok',
+                'demo.output.viral': 'Viral Potential',
+                'demo.output.time': 'Best Time',
+                'demo.output.note': '🚀 Demo Mode:',
+                'demo.output.upgrade': 'Upgrade for advanced AI features, brand learning, and unlimited content generation!',
+                'demo.status.recording': 'Recording... Speak now!',
+                'demo.status.processing': 'Processing your voice...',
+                'demo.status.analyzing': 'Analyzing image...',
+                'demo.status.generating': 'Generating content...',
+                'demo.status.complete': 'Ready to record again',
+                'demo.error.microphone': 'Microphone access denied. Please allow microphone access and try again.',
+                'demo.error.processing': 'Error processing your request. Please try again.',
+                'demo.error.upload': 'Error uploading image. Please try again with a different image.',
+                'footer.description': 'AI-powered voice-to-content platform for restaurants and food creators.',
+                'footer.product.title': 'Product',
+                'footer.product.demo': 'Demo',
+                'footer.product.pricing': 'Pricing',
+                'footer.product.features': 'Features',
+                'footer.company.title': 'Company',
+                'footer.company.about': 'About',
+                'footer.company.contact': 'Contact',
+                'footer.company.blog': 'Blog',
+                'footer.legal.title': 'Legal',
+                'footer.legal.privacy': 'Privacy Policy',
+                'footer.legal.terms': 'Terms of Service',
+                'footer.legal.cookies': 'Cookie Policy',
+                'footer.copyright': '© 2024 ChefSocial Voice. All rights reserved.'
+            },
+            fr: {
+                'nav.home': 'Accueil',
+                'nav.features': 'Fonctionnalités',
+                'nav.pricing': 'Tarifs',
+                'nav.login': 'Connexion',
+                'nav.get-started': 'Commencer',
+                'demo.title': 'Découvrez la Magie',
+                'demo.subtitle': 'Essayez notre générateur de contenu vocal alimenté par l\'IA. Parlez de votre nourriture et regardez-nous créer du contenu viral en temps réel.',
+                'demo.input.title': '🎤 Votre Entrée Vocale',
+                'demo.input.record': 'Cliquez pour enregistrer',
+                'demo.input.status': 'Cliquez pour commencer l\'enregistrement',
+                'demo.input.upload': 'Cliquez pour télécharger une photo de nourriture (optionnel)',
+                'demo.input.transcript': 'Vos mots:',
+                'demo.output.title': '✨ Contenu Généré',
+                'demo.output.placeholder': 'Votre contenu de médias sociaux généré par l\'IA apparaîtra ici...',
+                'demo.output.instagram': '📱 Instagram',
+                'demo.output.tiktok': '🎵 TikTok',
+                'demo.output.viral': 'Potentiel Viral',
+                'demo.output.time': 'Meilleur Moment',
+                'demo.output.note': '🚀 Mode Démo:',
+                'demo.output.upgrade': 'Améliorez pour les fonctionnalités IA avancées, l\'apprentissage de marque et la génération de contenu illimitée!',
+                'demo.status.recording': 'Enregistrement... Parlez maintenant!',
+                'demo.status.processing': 'Traitement de votre voix...',
+                'demo.status.analyzing': 'Analyse de l\'image...',
+                'demo.status.generating': 'Génération du contenu...',
+                'demo.status.complete': 'Prêt à enregistrer à nouveau',
+                'demo.error.microphone': 'Accès au microphone refusé. Veuillez autoriser l\'accès au microphone et réessayer.',
+                'demo.error.processing': 'Erreur lors du traitement de votre demande. Veuillez réessayer.',
+                'demo.error.upload': 'Erreur lors du téléchargement de l\'image. Veuillez réessayer avec une image différente.',
+                'footer.description': 'Plateforme vocale-vers-contenu alimentée par l\'IA pour restaurants et créateurs culinaires.',
+                'footer.product.title': 'Produit',
+                'footer.product.demo': 'Démo',
+                'footer.product.pricing': 'Tarification',
+                'footer.product.features': 'Fonctionnalités',
+                'footer.company.title': 'Entreprise',
+                'footer.company.about': 'À Propos',
+                'footer.company.contact': 'Contact',
+                'footer.company.blog': 'Blog',
+                'footer.legal.title': 'Légal',
+                'footer.legal.privacy': 'Politique de Confidentialité',
+                'footer.legal.terms': 'Conditions d\'Utilisation',
+                'footer.legal.cookies': 'Politique des Cookies',
+                'footer.copyright': '© 2024 ChefSocial Voice. Tous droits réservés.'
+            }
+        };
+
+        // Language manager
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('chefsocial-lang') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.updateLanguageButtons();
+                this.translatePage();
+                this.setupLanguageToggle();
+            }
+
+            setupLanguageToggle() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const lang = btn.dataset.lang;
+                        this.setLanguage(lang);
+                    });
+                });
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('chefsocial-lang', lang);
+                this.updateLanguageButtons();
+                this.translatePage();
+            }
+
+            updateLanguageButtons() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+                });
+            }
+
+            translatePage() {
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.dataset.i18n;
+                    const translation = translations[this.currentLang]?.[key];
+                    if (translation) {
+                        element.textContent = translation;
+                    }
+                });
+            }
+
+            t(key) {
+                return translations[this.currentLang]?.[key] || translations.en[key] || key;
+            }
+        }
+
+        // Initialize language manager
+        const lang = new LanguageManager();
+
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Demo functionality
+        class ChefSocialDemo {
+            constructor() {
+                this.isRecording = false;
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.selectedImage = null;
+                
+                this.recordButton = document.getElementById('recordButton');
+                this.recordStatus = document.getElementById('recordStatus');
+                this.imageUpload = document.getElementById('imageUpload');
+                this.imageInput = document.getElementById('imageInput');
+                this.transcript = document.getElementById('transcript');
+                this.transcriptText = document.getElementById('transcriptText');
+                this.contentPlaceholder = document.getElementById('contentPlaceholder');
+                this.generatedContent = document.getElementById('generatedContent');
+                
+                this.initializeEventListeners();
+                this.initializeContentTabs();
+            }
+
+            initializeEventListeners() {
+                this.recordButton.addEventListener('click', () => this.toggleRecording());
+                
+                this.imageUpload.addEventListener('click', () => this.imageInput.click());
+                this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e));
+                
+                // Prevent default drag behaviors
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    this.imageUpload.addEventListener(eventName, this.preventDefaults, false);
+                });
+                
+                // Handle dropped files
+                this.imageUpload.addEventListener('drop', (e) => this.handleImageDrop(e), false);
+            }
+
+            initializeContentTabs() {
+                document.querySelectorAll('.content-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabName = tab.dataset.tab;
+                        this.switchTab(tabName);
+                    });
+                });
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.content-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === tabName);
+                });
+                
+                // Update panels
+                document.querySelectorAll('.content-panel').forEach(panel => {
+                    panel.classList.toggle('active', panel.id === `${tabName}Panel`);
+                });
+            }
+
+            preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            async toggleRecording() {
+                if (!this.isRecording) {
+                    await this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+
+            async startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        this.processRecording();
+                    };
+                    
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    this.recordButton.classList.add('recording');
+                    this.recordButton.textContent = '⏹️';
+                    this.recordStatus.textContent = lang.t('demo.status.recording');
+                    
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    this.showError(lang.t('demo.error.microphone'));
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    this.isRecording = false;
+                    
+                    this.recordButton.classList.remove('recording');
+                    this.recordButton.classList.add('processing');
+                    this.recordButton.textContent = '⏳';
+                    this.recordStatus.textContent = lang.t('demo.status.processing');
+                }
+            }
+
+            async processRecording() {
+                try {
+                    // Convert audio to base64
+                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                    const audioBase64 = await this.blobToBase64(audioBlob);
+                    
+                    let imageBase64 = null;
+                    if (this.selectedImage) {
+                        this.recordStatus.textContent = lang.t('demo.status.analyzing');
+                        imageBase64 = await this.fileToBase64(this.selectedImage);
+                    }
+                    
+                    this.recordStatus.textContent = lang.t('demo.status.generating');
+                    
+                    // Send to backend
+                    const response = await fetch('/api/process-voice-demo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            audio: audioBase64,
+                            image: imageBase64,
+                            language: lang.currentLang
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayResults(result);
+                    } else {
+                        throw new Error(result.error || 'Processing failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    this.showError(lang.t('demo.error.processing'));
+                } finally {
+                    this.resetRecordButton();
+                }
+            }
+
+            displayResults(result) {
+                // Show transcript
+                this.transcriptText.textContent = result.transcript;
+                this.transcript.style.display = 'block';
+                
+                // Hide placeholder and show content
+                this.contentPlaceholder.style.display = 'none';
+                this.generatedContent.style.display = 'block';
+                
+                // Populate Instagram content
+                if (result.content.instagram) {
+                    document.getElementById('instagramCaption').textContent = result.content.instagram.caption;
+                    document.getElementById('instagramHashtags').textContent = result.content.instagram.hashtags;
+                }
+                
+                // Populate TikTok content
+                if (result.content.tiktok) {
+                    document.getElementById('tiktokCaption').textContent = result.content.tiktok.caption;
+                    document.getElementById('tiktokHashtags').textContent = result.content.tiktok.hashtags;
+                }
+                
+                // Update viral stats
+                document.getElementById('viralScore').textContent = result.content.viralPotential || '8';
+                document.getElementById('bestTime').textContent = result.content.bestTime || '7 PM';
+                
+                // Add success animation
+                this.generatedContent.classList.add('success-animation');
+                setTimeout(() => {
+                    this.generatedContent.classList.remove('success-animation');
+                }, 600);
+            }
+
+            resetRecordButton() {
+                this.recordButton.classList.remove('processing', 'recording');
+                this.recordButton.textContent = '🎤';
+                this.recordStatus.textContent = lang.t('demo.status.complete');
+            }
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.processImageFile(file);
+                }
+            }
+
+            handleImageDrop(event) {
+                event.preventDefault();
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    this.processImageFile(files[0]);
+                }
+            }
+
+            processImageFile(file) {
+                if (file.type.startsWith('image/')) {
+                    this.selectedImage = file;
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imageUpload.innerHTML = `
+                            <img src="${e.target.result}" class="image-preview" alt="Food preview">
+                            <div class="upload-text" style="color: #4facfe;">✅ Image ready for analysis</div>
+                        `;
+                        this.imageUpload.classList.add('has-image');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    this.showError(lang.t('demo.error.upload'));
+                }
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                this.recordStatus.parentNode.insertBefore(errorDiv, this.recordStatus.nextSibling);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+
+            async blobToBase64(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            async fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChefSocialDemo();
+        });
+    </script>
+    
+    <!-- Cleanup script for service workers -->
+    <script src="/cleanup-sw.js"></script>
+</body>
+</html>

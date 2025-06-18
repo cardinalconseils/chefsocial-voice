@@ -2,37 +2,51 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../middleware/validation');
+const { createServiceHelpers } = require('./route-helpers');
 
 // System routes module - receives services from app.js
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService, i18n, apiCacheMiddleware } = app.locals.services;
+    const { getServices, authMiddleware, rateLimitMiddleware, authWithRateLimit } = createServiceHelpers(app);
 
     // GET /api/health
     router.get('/health', (req, res) => {
-        const basicStats = rateLimitService.getRateLimitStats();
-        
-        res.json({ 
-            status: 'ok', 
-            timestamp: new Date().toISOString(),
-            service: 'ChefSocial Voice AI',
-            version: '2.0.0',
-            environment: process.env.NODE_ENV || 'development',
-            rateLimiting: {
-                service: 'active',
-                trackedKeys: basicStats.totalTrackedKeys,
-                recentBreaches: basicStats.recentBreaches
-            },
-            database: {
-                status: 'connected',
-                type: 'sqlite3'
-            }
-        });
+        try {
+            const { rateLimitService } = getServices();
+            const basicStats = rateLimitService.getRateLimitStats();
+            
+            res.json({ 
+                status: 'ok', 
+                timestamp: new Date().toISOString(),
+                service: 'ChefSocial Voice AI',
+                version: '2.0.0',
+                environment: process.env.NODE_ENV || 'development',
+                rateLimiting: {
+                    service: 'active',
+                    trackedKeys: basicStats.totalTrackedKeys,
+                    recentBreaches: basicStats.recentBreaches
+                },
+                database: {
+                    status: 'connected',
+                    type: 'sqlite3'
+                }
+            });
+        } catch (error) {
+            res.json({ 
+                status: 'initializing', 
+                timestamp: new Date().toISOString(),
+                service: 'ChefSocial Voice AI',
+                version: '2.0.0',
+                environment: process.env.NODE_ENV || 'development',
+                message: 'Services are still initializing'
+            });
+        }
     });
 
     // GET /api/features - Get user features and permissions
     router.get('/features', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const features = await authSystem.getUserFeatures(req.userId);
             
             // Audit log feature access
@@ -61,29 +75,41 @@ module.exports = (app) => {
         })
     );
 
-    // GET /api/languages - Get available languages (cached for 24 hours)
+    // GET /api/languages - Get available languages
     router.get('/languages', 
-        apiCacheMiddleware ? apiCacheMiddleware(86400) : (req, res, next) => next(),
         (req, res) => {
-            const languages = i18n ? i18n.getAvailableLanguages() : {
-                en: { name: 'English', flag: '🇺🇸' },
-                fr: { name: 'Français', flag: '🇫🇷' }
-            };
-            
-            res.json({ 
-                success: true, 
-                languages: languages,
-                current: req.language || 'en',
-                total: Object.keys(languages).length
-            });
+            try {
+                const { i18n } = getServices();
+                const languages = i18n ? i18n.getAvailableLanguages() : {
+                    en: { name: 'English', flag: '🇺🇸' },
+                    fr: { name: 'Français', flag: '🇫🇷' }
+                };
+                
+                res.json({ 
+                    success: true, 
+                    languages: languages,
+                    current: req.language || 'en',
+                    total: Object.keys(languages).length
+                });
+            } catch (error) {
+                res.json({ 
+                    success: true, 
+                    languages: {
+                        en: { name: 'English', flag: '🇺🇸' },
+                        fr: { name: 'Français', flag: '🇫🇷' }
+                    },
+                    current: 'en',
+                    total: 2
+                });
+            }
         }
     );
 
-    // GET /api/pricing - Get pricing plan and overages (cached for 1 hour)
+    // GET /api/pricing - Get pricing plan and overages
     router.get('/pricing', 
-        apiCacheMiddleware ? apiCacheMiddleware(3600) : (req, res, next) => next(),
         (req, res) => {
             try {
+                const { authSystem, logger } = getServices();
                 const pricing = authSystem.getPricingPlan();
                 res.json({ 
                     success: true, 
@@ -92,7 +118,7 @@ module.exports = (app) => {
                     lastUpdated: new Date().toISOString()
                 });
             } catch (error) {
-                logger.error('Pricing error', error);
+                console.error('Pricing error', error);
                 res.status(500).json({ 
                     success: false, 
                     error: 'Failed to get pricing information' 
@@ -101,10 +127,10 @@ module.exports = (app) => {
         }
     );
 
-    // GET /api/pricing/stripe - Get Stripe products with live pricing (cached for 30 minutes)
+    // GET /api/pricing/stripe - Get Stripe products with live pricing
     router.get('/pricing/stripe', 
-        apiCacheMiddleware ? apiCacheMiddleware(1800) : (req, res, next) => next(),
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const products = await authSystem.getStripeProducts();
             res.json({ 
                 success: true, 
@@ -117,7 +143,7 @@ module.exports = (app) => {
 
     // GET /api/status - Extended system status (authenticated endpoint)
     router.get('/status', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const rateLimitStats = rateLimitService.getRateLimitStats();
             
@@ -209,7 +235,7 @@ module.exports = (app) => {
 
     // POST /api/usage/track - Track feature usage
     router.post('/usage/track', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { feature, amount = 1, metadata = {} } = req.body;
             
@@ -255,7 +281,7 @@ module.exports = (app) => {
 
     // POST /api/billing/estimate - Get billing estimate
     router.post('/billing/estimate', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { usageData = {} } = req.body;
             

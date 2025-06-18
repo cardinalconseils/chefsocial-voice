@@ -133,7 +133,14 @@ module.exports = (app) => {
 
     // LiveKit Voice Session Management
     router.post('/session/create', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         sessionValidation,
         asyncHandler(async (req, res) => {
             const { sessionType = 'voice_chat', metadata = {} } = req.body;
@@ -148,7 +155,14 @@ module.exports = (app) => {
     );
 
     router.post('/session/join/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
@@ -163,7 +177,7 @@ module.exports = (app) => {
     );
 
     router.post('/session/end/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
@@ -178,7 +192,7 @@ module.exports = (app) => {
     );
 
     router.get('/session/active',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         asyncHandler(async (req, res) => {
             const result = await voiceSession.getActiveSession(req.userId);
             
@@ -190,7 +204,7 @@ module.exports = (app) => {
     );
 
     router.get('/session/stats/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
@@ -205,7 +219,7 @@ module.exports = (app) => {
 
     // Session Recording Management
     router.post('/session/record/start/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         sessionIdValidation,
         recordingValidation,
         asyncHandler(async (req, res) => {
@@ -222,7 +236,7 @@ module.exports = (app) => {
     );
 
     router.post('/session/record/stop/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
@@ -238,7 +252,7 @@ module.exports = (app) => {
 
     // Enhanced Conversation Endpoints
     router.post('/enhanced-conversation/start', 
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         asyncHandler(async (req, res) => {
             const { context = {} } = req.body;
             
@@ -252,7 +266,7 @@ module.exports = (app) => {
     );
 
     router.post('/enhanced-conversation/audio', 
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             body('sessionId').isUUID(),
             body('audioBuffer').notEmpty(),
@@ -271,7 +285,7 @@ module.exports = (app) => {
     );
 
     router.get('/enhanced-conversation/session/:sessionId', 
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         sessionIdValidation,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
@@ -286,7 +300,7 @@ module.exports = (app) => {
     );
 
     router.post('/enhanced-conversation/generate-content', 
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             body('sessionId').isUUID(),
             body('contentType').optional().isIn(['post', 'story', 'reel'])
@@ -304,7 +318,7 @@ module.exports = (app) => {
     );
 
     router.get('/enhanced-conversation/stats', 
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         asyncHandler(async (req, res) => {
             const result = await voiceConversation.getEnhancedConversationStats(req.userId);
             
@@ -346,7 +360,7 @@ module.exports = (app) => {
 
     // LiveKit Agent Briefing Endpoints
     router.post('/schedule-briefing',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             body('phoneNumber').isMobilePhone().withMessage('Valid phone number required'),
             body('imageUrl').isURL().withMessage('Valid image URL required'),
@@ -366,7 +380,7 @@ module.exports = (app) => {
     );
 
     router.get('/briefing/:sessionId',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             param('sessionId').notEmpty().withMessage('Session ID required')
         ]),
@@ -383,7 +397,7 @@ module.exports = (app) => {
     );
 
     router.patch('/briefing/:sessionId/status',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             param('sessionId').notEmpty().withMessage('Session ID required'),
             body('status').isIn(['pending', 'scheduled', 'in_progress', 'completed', 'failed']).withMessage('Valid status required'),
@@ -404,7 +418,7 @@ module.exports = (app) => {
     );
 
     router.post('/briefing/:sessionId/context',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             param('sessionId').notEmpty().withMessage('Session ID required'),
             body('transcript').notEmpty().withMessage('Transcript required'),
@@ -495,7 +509,7 @@ module.exports = (app) => {
     );
 
     router.post('/call/start-briefing',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         validateRequest([
             body('phoneNumber').isMobilePhone().withMessage('Valid phone number required'),
             body('briefingSessionId').notEmpty().withMessage('Briefing session ID required')
@@ -514,7 +528,7 @@ module.exports = (app) => {
 
     // Service Health and Monitoring
     router.get('/health',
-        authSystem.authMiddleware(),
+        (req, res, next) => { try { const { authSystem } = getServices(); authSystem.authMiddleware()(req, res, next); } catch (error) { res.status(503).json({ success: false, error: "Service initializing", message: error.message }); } },
         asyncHandler(async (req, res) => {
             const health = await liveKitService.healthCheck();
             const metrics = liveKitService.getMetrics();

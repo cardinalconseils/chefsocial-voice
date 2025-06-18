@@ -38,7 +38,7 @@ module.exports = (app) => {
 
     // GET /api/content/history
     router.get('/history', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         historyValidation,
         asyncHandler(async (req, res) => {
             const { limit = 50, offset = 0, platform } = req.query;
@@ -111,8 +111,7 @@ module.exports = (app) => {
 
     // POST /api/content/save
     router.post('/save', 
-        authSystem.authMiddleware(),
-        contentLimiter,
+        authWithRateLimit,
         contentSaveValidation,
         asyncHandler(async (req, res) => {
             const { platform, contentType, caption, hashtags, imageUrl, transcript, viralScore } = req.body;
@@ -174,7 +173,7 @@ module.exports = (app) => {
 
     // GET /api/content/:id
     router.get('/:id', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         contentIdValidation,
         asyncHandler(async (req, res) => {
             const contentId = req.params.id;
@@ -219,7 +218,7 @@ module.exports = (app) => {
 
     // PUT /api/content/:id
     router.put('/:id', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         contentIdValidation,
         contentUpdateValidation,
         asyncHandler(async (req, res) => {
@@ -293,7 +292,7 @@ module.exports = (app) => {
 
     // DELETE /api/content/:id
     router.delete('/:id', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         contentIdValidation,
         asyncHandler(async (req, res) => {
             const contentId = req.params.id;
@@ -346,7 +345,7 @@ module.exports = (app) => {
 
     // GET /api/content/analytics/summary
     router.get('/analytics/summary', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { timeframe = '30' } = req.query; // days
             const days = parseInt(timeframe);
@@ -419,7 +418,7 @@ module.exports = (app) => {
 
     // POST /api/content/duplicate/:id
     router.post('/duplicate/:id', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         contentIdValidation,
         asyncHandler(async (req, res) => {
             const contentId = req.params.id;
@@ -486,7 +485,7 @@ module.exports = (app) => {
 
     // GET /api/content/templates
     router.get('/templates', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { platform } = req.query;
             

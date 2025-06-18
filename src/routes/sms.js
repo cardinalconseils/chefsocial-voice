@@ -36,9 +36,9 @@ module.exports = (app) => {
 
     // SMS Workflow Endpoints
     router.post('/send-approval', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         authSystem.featureAccessMiddleware('voice_content_creation'),
-        smsLimiter,
+        authWithRateLimit,
         smsApprovalValidation,
         asyncHandler(async (req, res) => {
             const { contentId } = req.body;
@@ -53,8 +53,8 @@ module.exports = (app) => {
     );
 
     router.post('/daily-suggestions', 
-        authSystem.authMiddleware(),
-        smsLimiter,
+        authMiddleware,
+        authWithRateLimit,
         asyncHandler(async (req, res) => {
             const result = await smsWorkflow.sendDailySuggestions(req.userId, req);
             
@@ -66,7 +66,7 @@ module.exports = (app) => {
     );
 
     router.get('/workflows', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { status = 'all', limit = 50 } = req.query;
             
@@ -80,7 +80,7 @@ module.exports = (app) => {
     );
 
     router.get('/workflow/:workflowId', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         validateRequest([
             param('workflowId').isString().notEmpty()
         ]),
@@ -97,7 +97,7 @@ module.exports = (app) => {
     );
 
     router.get('/stats', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { timeframe = '30' } = req.query;
             
@@ -111,8 +111,8 @@ module.exports = (app) => {
     );
 
     router.post('/test', 
-        authSystem.authMiddleware(),
-        smsLimiter,
+        authMiddleware,
+        authWithRateLimit,
         asyncHandler(async (req, res) => {
             const result = await smsWorkflow.sendTestSMS(req.userId, req);
             
@@ -167,7 +167,7 @@ module.exports = (app) => {
 
     // SMS Session Management Endpoints
     router.get('/sessions', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { status = 'all', limit = 50 } = req.query;
             
@@ -181,7 +181,7 @@ module.exports = (app) => {
     );
 
     router.get('/session/:sessionId', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { sessionId } = req.params;
             
@@ -195,7 +195,7 @@ module.exports = (app) => {
     );
 
     router.post('/session/:sessionId/reschedule', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         validateRequest([
             body('scheduledTime').isISO8601().withMessage('Valid scheduled time required')
         ]),
@@ -214,7 +214,7 @@ module.exports = (app) => {
     );
 
     router.get('/webhook-logs', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { limit = 50, hours = 24 } = req.query;
             
@@ -229,7 +229,7 @@ module.exports = (app) => {
 
     // SMS Configuration Endpoints
     router.put('/config', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         smsConfigValidation,
         asyncHandler(async (req, res) => {
             const { phoneNumber, notifications, dailySuggestions, approvalWorkflow } = req.body;
@@ -245,7 +245,7 @@ module.exports = (app) => {
     );
 
     router.get('/config', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const result = await smsConfig.getSMSConfig(req.userId);
             

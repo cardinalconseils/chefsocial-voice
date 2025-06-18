@@ -33,7 +33,7 @@ module.exports = (app) => {
 
     // GET /api/restaurant/profile
     router.get('/profile', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const user = await authSystem.db.getUserById(req.userId);
             if (!user) {
@@ -89,8 +89,8 @@ module.exports = (app) => {
 
     // PUT /api/restaurant/profile
     router.put('/profile', 
-        authSystem.authMiddleware(),
-        restaurantLimiter,
+        authMiddleware,
+        authWithRateLimit,
         restaurantProfileValidation,
         asyncHandler(async (req, res) => {
             const {
@@ -174,7 +174,7 @@ module.exports = (app) => {
 
     // GET /api/restaurant/brand-voice
     router.get('/brand-voice', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const user = await authSystem.db.getUserById(req.userId);
             if (!user) {
@@ -224,8 +224,8 @@ module.exports = (app) => {
 
     // POST /api/restaurant/brand-voice/learn
     router.post('/brand-voice/learn', 
-        authSystem.authMiddleware(),
-        restaurantLimiter,
+        authMiddleware,
+        authWithRateLimit,
         brandVoiceValidation,
         asyncHandler(async (req, res) => {
             const { contentSamples, brandPersonality, preferredTone, keyMessages } = req.body;
@@ -288,7 +288,7 @@ module.exports = (app) => {
 
     // GET /api/restaurant/analytics
     router.get('/analytics', 
-        authSystem.authMiddleware(),
+        authMiddleware,
         asyncHandler(async (req, res) => {
             const { timeframe = '30' } = req.query;
             const days = parseInt(timeframe);

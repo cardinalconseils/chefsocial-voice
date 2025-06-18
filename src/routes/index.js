@@ -21,7 +21,7 @@ module.exports = (app) => {
     router.use('/voice', voiceRoutes(app));
     router.use('/content', contentRoutes(app));
     router.use('/restaurant', restaurantRoutes(app));
-    router.use('/sms', smsRoutes(app));
+    // router.use('/sms', smsRoutes(app)); // Temporarily disabled - needs route-helpers pattern
 
     // Mount system routes at root level
     router.use('/', systemRoutes(app));

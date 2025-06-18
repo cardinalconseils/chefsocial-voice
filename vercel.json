@@ -97,5 +97,9 @@
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "public": true,
+  "github": {
+    "silent": true
   }
 } 

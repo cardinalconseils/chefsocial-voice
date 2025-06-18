@@ -203,6 +203,34 @@ module.exports = (app) => {
         })
     );
 
+    // GET /api/debug - Debug service status
+    router.get('/debug', (req, res) => {
+        try {
+            const services = app.locals.services;
+            res.json({
+                success: true,
+                servicesStatus: {
+                    authSystem: !!services.authSystem,
+                    logger: !!services.logger,
+                    rateLimitService: !!services.rateLimitService,
+                    validationSystem: !!services.validationSystem,
+                    i18n: !!services.i18n
+                },
+                servicesValues: {
+                    authSystem: services.authSystem ? 'initialized' : 'null',
+                    logger: services.logger ? 'initialized' : 'null',
+                    rateLimitService: services.rateLimitService ? 'initialized' : 'null'
+                }
+            });
+        } catch (error) {
+            res.json({
+                success: false,
+                error: error.message,
+                stack: error.stack
+            });
+        }
+    });
+
     // GET /api/info - Public API information
     router.get('/info', (req, res) => {
         res.json({

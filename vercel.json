@@ -32,8 +32,12 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/_next/(.*)",
+      "destination": "/public/admin/_next/$1"
+    },
+    {
       "source": "/admin/_next/(.*)",
-      "destination": "/admin-panel/_next/$1"
+      "destination": "/public/admin/_next/$1"
     },
     {
       "source": "/admin/(.*)",

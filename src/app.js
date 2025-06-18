@@ -40,7 +40,13 @@ const validationSystem = new ValidationSystem();
 const i18n = new I18nManager();
 
 // Initialize dependent services after auth system is ready
-let logger;
+// Create a console logger initially for error handling
+let logger = {
+    info: (message, data) => console.log(`[INFO] ${message}`, data || ''),
+    error: (message, error, data) => console.error(`[ERROR] ${message}`, error, data || ''),
+    warn: (message, data) => console.warn(`[WARN] ${message}`, data || ''),
+    debug: (message, data) => console.debug(`[DEBUG] ${message}`, data || '')
+};
 let rateLimitService;
 
 // Async initialization of dependent services
@@ -50,11 +56,11 @@ async function initializeServices() {
         await authSystem.waitForInitialization();
         
         // Initialize services that depend on the database
-        logger = new ChefSocialLogger(authSystem.db);
+        const fullLogger = new ChefSocialLogger(authSystem.db);
         rateLimitService = new ChefSocialRateLimitService(authSystem.db);
         
         console.log('✅ All services initialized successfully');
-        return { authSystem, logger, rateLimitService, validationSystem, i18n };
+        return { authSystem, logger: fullLogger, rateLimitService, validationSystem, i18n };
     } catch (error) {
         console.error('❌ Service initialization failed:', error);
         throw error;
@@ -81,8 +87,8 @@ app.locals.services = {
     authSystem,
     validationSystem,
     i18n,
-    // These will be set after async initialization
-    logger: null,
+    // Use console logger initially, will be upgraded after async initialization
+    logger: logger,
     rateLimitService: null,
     // liveKitService,
     // smsService,

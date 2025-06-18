@@ -79,7 +79,7 @@ class AuthManager {
 
     // Redirect to login page
     redirectToLogin() {
-        window.location.href = '/login.html';
+        window.location.href = '/auth/login.html';
     }
 
     // Update user display

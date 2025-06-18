@@ -51,6 +51,14 @@
       "destination": "/auth/$1"
     },
     {
+      "source": "/login.html",
+      "destination": "/auth/login.html"
+    },
+    {
+      "source": "/register.html",
+      "destination": "/auth/register.html"
+    },
+    {
       "source": "/apps/(.*)",
       "destination": "/apps/$1"
     },

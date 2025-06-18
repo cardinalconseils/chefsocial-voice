@@ -16,9 +16,11 @@ class ChefSocialLiveKitService {
         // Validate configuration
         this.validateConfiguration();
         
-        // Initialize clients
-        this.roomService = new RoomServiceClient(this.liveKitUrl, this.liveKitApiKey, this.liveKitApiSecret);
-        this.egressService = new EgressClient(this.liveKitUrl, this.liveKitApiKey, this.liveKitApiSecret);
+        if (!this.disabled) {
+            // Initialize clients
+            this.roomService = new RoomServiceClient(this.liveKitUrl, this.liveKitApiKey, this.liveKitApiSecret);
+            this.egressService = new EgressClient(this.liveKitUrl, this.liveKitApiKey, this.liveKitApiSecret);
+        }
         
         // Voice session management
         this.activeSessions = new Map(); // sessionId -> sessionData
@@ -49,16 +51,30 @@ class ChefSocialLiveKitService {
 
     validateConfiguration() {
         if (!this.liveKitApiKey || !this.liveKitApiSecret) {
-            throw new Error('LiveKit API credentials not configured. Set LIVEKIT_API_KEY and LIVEKIT_API_SECRET');
-        }
-        
-        if (!this.liveKitUrl) {
-            throw new Error('LiveKit server URL not configured. Set LIVEKIT_URL');
+            if (this.logger) {
+                this.logger.warn('LiveKit API credentials not configured. LiveKit service will be disabled.');
+            } else {
+                console.warn('LiveKit API credentials not configured. LiveKit service will be disabled.');
+            }
+            this.disabled = true;
+        } else if (!this.liveKitUrl) {
+            if (this.logger) {
+                this.logger.warn('LiveKit server URL not configured. LiveKit service will be disabled.');
+            } else {
+                console.warn('LiveKit server URL not configured. LiveKit service will be disabled.');
+            }
+            this.disabled = true;
+        } else {
+            this.disabled = false;
         }
     }
 
     // Generate secure access token for user
     async generateAccessToken(userId, roomName, userMetadata = {}) {
+        if (this.disabled) {
+            if (this.logger) this.logger.warn('LiveKit is disabled, cannot generate access token.');
+            return null;
+        }
         try {
             const token = new AccessToken(this.liveKitApiKey, this.liveKitApiSecret, {
                 identity: userId,

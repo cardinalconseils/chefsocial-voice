@@ -10,8 +10,8 @@
       "use": "@vercel/static"
     },
     {
-      "src": "admin-panel/next.config.js",
-      "use": "@vercel/next"
+      "src": "public/**/*",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
@@ -41,11 +41,11 @@
     },
     {
       "source": "/admin/(.*)",
-      "destination": "/admin-panel/$1"
+      "destination": "/public/admin/$1"
     },
     {
       "source": "/admin",
-      "destination": "/admin-panel/index.html"
+      "destination": "/public/admin/index.html"
     },
     {
       "source": "/marketing/(.*)",

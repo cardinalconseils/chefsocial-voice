@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "chefsocial-marketing",
   "builds": [
     {
       "src": "pages/**/*.html",
@@ -15,14 +14,14 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/",
-      "dest": "/pages/index.html"
+      "source": "/",
+      "destination": "/pages/index.html"
     },
     {
-      "src": "/(.+)",
-      "dest": "/pages/$1"
+      "source": "/(.+)",
+      "destination": "/pages/$1"
     }
   ],
   "headers": [
@@ -44,7 +43,7 @@
       ]
     },
     {
-      "source": "/(.+\\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot))",
+      "source": "/static/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

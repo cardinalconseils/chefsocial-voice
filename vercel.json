@@ -61,6 +61,14 @@
       "destination": "/public/admin/$1"
     },
     {
+      "source": "/admin",
+      "destination": "/public/admin/index.html"
+    },
+    {
+      "source": "/_next/(.*)",
+      "destination": "/public/admin/_next/$1"
+    },
+    {
       "source": "/shared/(.*)",
       "destination": "/dashboard/shared/$1"
     },
@@ -77,6 +85,10 @@
       "destination": "/auth/$1"
     },
     {
+      "source": "/auth",
+      "destination": "/auth/login.html"
+    },
+    {
       "source": "/login.html",
       "destination": "/auth/login.html"
     },
@@ -87,6 +99,10 @@
     {
       "source": "/apps/(.*)",
       "destination": "/apps/$1"
+    },
+    {
+      "source": "/apps",
+      "destination": "/apps/natural.html"
     },
     {
       "source": "/marketing/(.*)",
@@ -110,7 +126,7 @@
     },
     {
       "source": "/",
-      "destination": "/dashboard/index.html"
+      "destination": "/marketing-site/pages/index.html"
     }
   ],
   "headers": [
@@ -188,6 +204,15 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }

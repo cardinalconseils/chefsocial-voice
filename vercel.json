@@ -8,10 +8,6 @@
   ],
   "routes": [
     {
-      "src": "/",
-      "dest": "/marketing-site/pages/index.html"
-    },
-    {
       "src": "/auth/(.*)",
       "dest": "/auth/$1"
     },
@@ -41,7 +37,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "src/server.js"
+      "dest": "/src/server.js"
     }
   ],
   "env": {

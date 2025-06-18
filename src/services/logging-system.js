@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 class ChefSocialLogger {
     constructor(database = null) {
         this.db = database;
-        this.logDir = path.join(__dirname, 'logs');
+        this.logDir = path.join('/tmp', 'logs');
         this.alerts = new Map(); // In-memory alert tracking
         this.performanceMetrics = new Map(); // Performance tracking
         this.securityEvents = [];

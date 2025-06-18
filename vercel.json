@@ -24,42 +24,6 @@
       "dest": "/marketing-site/pages/demo.html"
     },
     {
-      "src": "/api/admin/auth/login",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/stats",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/users",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/users/action",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/activity",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/settings",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/stripe/(.*)",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin/(.*)",
-      "dest": "/api/admin.js"
-    },
-    {
-      "src": "/api/admin",
-      "dest": "/api/admin.js"
-    },
-    {
       "src": "/api/auth/(.*)",
       "dest": "/api/auth.js"
     },
@@ -140,17 +104,6 @@
       ]
     }
   ],
-  "functions": {
-    "api/admin.js": {
-      "maxDuration": 30
-    },
-    "api/auth.js": {
-      "maxDuration": 30
-    },
-    "api/index.js": {
-      "maxDuration": 30
-    }
-  },
   "env": {
     "NODE_ENV": "production"
   },

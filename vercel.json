@@ -12,6 +12,18 @@
     {
       "src": "public/**/*",
       "use": "@vercel/static"
+    },
+    {
+      "src": "auth/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "dashboard/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "apps/**/*",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [

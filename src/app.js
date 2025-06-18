@@ -34,7 +34,9 @@ const twilio = require('twilio');
 // Initialize core services
 const authSystem = new ChefSocialAuth();
 const logger = new ChefSocialLogger(authSystem.db);
-// const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
+const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
+const validationSystem = new ValidationSystem();
+const i18n = new I18nManager();
 // const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
 // const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
 // const voiceCallingService = new VoiceCallingService(authSystem.db, logger);
@@ -42,8 +44,6 @@ const logger = new ChefSocialLogger(authSystem.db);
 // const enhancedVoiceAgent = new EnhancedVoiceAgent();
 // const realtimeHandler = new RealtimeHandler();
 // const naturalHandler = new NaturalConversationFallback();
-// const i18n = new I18nManager();
-// const validationSystem = new ValidationSystem();
 // const n8nCoordinator = new N8NCoordinator(logger, authSystem.db);
 
 // Inject service dependencies after initialization
@@ -54,7 +54,9 @@ const logger = new ChefSocialLogger(authSystem.db);
 app.locals.services = {
     authSystem,
     logger,
-    // rateLimitService,
+    rateLimitService,
+    validationSystem,
+    i18n,
     // liveKitService,
     // smsService,
     // briefingSessionService,
@@ -62,8 +64,6 @@ app.locals.services = {
     // enhancedVoiceAgent,
     // realtimeHandler,
     // naturalHandler,
-    // i18n,
-    // validationSystem,
     // n8nCoordinator,
     // twilio: twilioClient
 };
@@ -98,9 +98,9 @@ app.use(compression());
 
 // Apply core middleware
 app.use(middleware.requestLogger(logger));
-// app.use(middleware.rateLimiting(rateLimitService));
-// app.use(middleware.internationalization(i18n));  
-// app.use(middleware.security(validationSystem));
+app.use(middleware.rateLimiting(rateLimitService));
+app.use(middleware.internationalization(i18n));  
+app.use(middleware.security(validationSystem));
 app.use(middleware.timeout());
 
 // Body parsing middleware

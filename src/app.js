@@ -29,43 +29,43 @@ const N8NCoordinator = require('./services/n8n-coordinator');
 const twilio = require('twilio');
 
 // Initialize Twilio Client
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Initialize core services
-const authSystem = new ChefSocialAuth();
-const logger = new ChefSocialLogger(authSystem.db);
-const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
-const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
-const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
-const voiceCallingService = new VoiceCallingService(authSystem.db, logger);
-const smsService = new SMSService();
-const enhancedVoiceAgent = new EnhancedVoiceAgent();
-const realtimeHandler = new RealtimeHandler();
-const naturalHandler = new NaturalConversationFallback();
-const i18n = new I18nManager();
-const validationSystem = new ValidationSystem();
-const n8nCoordinator = new N8NCoordinator(logger, authSystem.db);
+// const authSystem = new ChefSocialAuth();
+// const logger = new ChefSocialLogger(authSystem.db);
+// const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
+// const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
+// const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
+// const voiceCallingService = new VoiceCallingService(authSystem.db, logger);
+// const smsService = new SMSService();
+// const enhancedVoiceAgent = new EnhancedVoiceAgent();
+// const realtimeHandler = new RealtimeHandler();
+// const naturalHandler = new NaturalConversationFallback();
+// const i18n = new I18nManager();
+// const validationSystem = new ValidationSystem();
+// const n8nCoordinator = new N8NCoordinator(logger, authSystem.db);
 
 // Inject service dependencies after initialization
-briefingSessionService.smsService = smsService;
-smsService.setServices(briefingSessionService, voiceCallingService);
+// briefingSessionService.smsService = smsService;
+// smsService.setServices(briefingSessionService, voiceCallingService);
 
 // Store services in app locals for access in routes
 app.locals.services = {
-    authSystem,
-    logger,
-    rateLimitService,
-    liveKitService,
-    smsService,
-    briefingSessionService,
-    voiceCallingService,
-    enhancedVoiceAgent,
-    realtimeHandler,
-    naturalHandler,
-    i18n,
-    validationSystem,
-    n8nCoordinator,
-    twilio: twilioClient
+    // authSystem,
+    // logger,
+    // rateLimitService,
+    // liveKitService,
+    // smsService,
+    // briefingSessionService,
+    // voiceCallingService,
+    // enhancedVoiceAgent,
+    // realtimeHandler,
+    // naturalHandler,
+    // i18n,
+    // validationSystem,
+    // n8nCoordinator,
+    // twilio: twilioClient
 };
 
 // Security middleware

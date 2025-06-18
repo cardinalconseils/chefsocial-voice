@@ -17,9 +17,11 @@ class AuthManager {
     }
 
     // Verify token and load user data
-    async verifyAuth() {
+    async verifyAuth(requireAuth = false) {
         if (!this.token) {
-            this.redirectToLogin();
+            if (requireAuth) {
+                this.redirectToLogin();
+            }
             return false;
         }
 
@@ -42,7 +44,13 @@ class AuthManager {
 
         } catch (error) {
             console.error('Auth verification failed:', error);
-            this.logout();
+            if (requireAuth) {
+                this.logout();
+            } else {
+                // Clear invalid token but don't redirect
+                localStorage.removeItem('auth_token');
+                this.token = null;
+            }
             return false;
         }
     }

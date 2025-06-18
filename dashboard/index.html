@@ -108,18 +108,91 @@
             }
 
             async init() {
-                // Check authentication
-                const isAuthenticated = await this.authManager.verifyAuth();
-                if (!isAuthenticated) return;
+                // Check authentication (don't require it for dashboard view)
+                const isAuthenticated = await this.authManager.verifyAuth(false);
+                
+                if (isAuthenticated) {
+                    // Authenticated user - show full dashboard
+                    this.showAuthenticatedDashboard();
+                } else {
+                    // Non-authenticated user - show public dashboard with login prompt
+                    this.showPublicDashboard();
+                }
 
-                // Render navigation
+                // Always render navigation
                 this.nav.renderSidebar();
                 this.nav.renderBreadcrumbs();
+            }
 
-                // Load dashboard data
+            showAuthenticatedDashboard() {
+                // Load dashboard data for authenticated users
                 this.updateUserInfo();
                 this.loadFeatures();
                 this.loadRecentActivity();
+            }
+
+            showPublicDashboard() {
+                // Show login prompt and demo features for non-authenticated users
+                this.showLoginPrompt();
+                this.loadPublicFeatures();
+            }
+
+            showLoginPrompt() {
+                const userInfo = document.querySelector('.user-info');
+                if (userInfo) {
+                    userInfo.innerHTML = `
+                        <div class="login-prompt">
+                            <h3>👋 Welcome to ChefSocial Voice</h3>
+                            <p>Sign in to access your personalized dashboard and AI-powered content creation tools.</p>
+                            <div style="margin-top: 1rem;">
+                                <a href="/auth/login.html" class="btn btn-primary" style="margin-right: 0.5rem;">Sign In</a>
+                                <a href="/auth/register.html" class="btn btn-secondary">Get Started</a>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <a href="/apps/demo.html" class="btn-demo">🎤 Try Demo</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            loadPublicFeatures() {
+                const featuresGrid = document.getElementById('features-grid');
+                if (featuresGrid) {
+                    featuresGrid.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">🎤 Voice-to-Content AI</h4>
+                                <span class="feature-status demo">🎯 Try Demo</span>
+                            </div>
+                            <p class="card-description">Transform your voice into professional food content</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">📝 Recipe Generation</h4>
+                                <span class="feature-status unavailable">🔒 Sign In Required</span>
+                            </div>
+                            <p class="card-description">AI-powered recipe creation and optimization</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">🌐 Multi-Language Support</h4>
+                                <span class="feature-status unavailable">🔒 Sign In Required</span>
+                            </div>
+                            <p class="card-description">Create content in multiple languages</p>
+                        </div>
+                    `;
+                }
+
+                const recentActivity = document.getElementById('recent-activity');
+                if (recentActivity) {
+                    recentActivity.innerHTML = `
+                        <div class="public-activity">
+                            <p>🔐 Sign in to see your recent activity and content creation history.</p>
+                            <a href="/auth/login.html" class="btn btn-primary" style="margin-top: 0.5rem;">Sign In to Continue</a>
+                        </div>
+                    `;
+                }
             }
 
             updateUserInfo() {
@@ -254,6 +327,53 @@
 
         .activity-item:last-child {
             border-bottom: none !important;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--orange-50) 0%, var(--blue-50) 100%);
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .login-prompt h3 {
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+
+        .login-prompt p {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--orange-500);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-demo:hover {
+            background: var(--orange-600);
+            transform: translateY(-1px);
+        }
+
+        .feature-status.demo {
+            background: var(--blue-50);
+            color: var(--blue-600);
+        }
+
+        .public-activity {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
         }
     </style>
 </body>

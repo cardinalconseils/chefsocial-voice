@@ -9,13 +9,28 @@ class ChefSocialDatabase {
         this.init();
     }
 
+    // Check if running in serverless environment (Vercel, AWS Lambda, etc.)
+    isServerlessEnvironment() {
+        return !!(
+            process.env.VERCEL || 
+            process.env.AWS_LAMBDA_FUNCTION_NAME || 
+            process.env.FUNCTION_NAME ||
+            process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV
+        );
+    }
+
     init() {
         this.db = new sqlite3.Database(this.dbPath, (err) => {
             if (err) {
                 console.error('❌ Database connection error:', err);
             } else {
                 console.log('✅ Connected to ChefSocial database');
-                this.createTables();
+                // Only create tables if not in serverless environment
+                if (!this.isServerlessEnvironment()) {
+                    this.createTables();
+                } else {
+                    console.log('📦 Serverless environment detected - skipping table creation');
+                }
             }
         });
     }

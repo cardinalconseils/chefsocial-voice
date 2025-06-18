@@ -12,6 +12,9 @@ const routes = require('./routes');
 // Initialize Express app
 const app = express();
 
+// Trust proxy for rate limiting and IP detection in serverless environments
+app.set('trust proxy', true);
+
 // Initialize services (moved from original server)
 const ChefSocialAuth = require('./services/auth-system');
 const ChefSocialLogger = require('./services/logging-system');

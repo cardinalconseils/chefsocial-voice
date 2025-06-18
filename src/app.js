@@ -32,8 +32,8 @@ const twilio = require('twilio');
 // const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Initialize core services
-// const authSystem = new ChefSocialAuth();
-// const logger = new ChefSocialLogger(authSystem.db);
+const authSystem = new ChefSocialAuth();
+const logger = new ChefSocialLogger(authSystem.db);
 // const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
 // const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
 // const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
@@ -52,8 +52,8 @@ const twilio = require('twilio');
 
 // Store services in app locals for access in routes
 app.locals.services = {
-    // authSystem,
-    // logger,
+    authSystem,
+    logger,
     // rateLimitService,
     // liveKitService,
     // smsService,

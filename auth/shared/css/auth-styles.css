@@ -20,13 +20,16 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.7;
     color: var(--text-primary);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: gradientShift 15s ease infinite;
     overflow-x: hidden;
 }
 
@@ -464,4 +467,642 @@ h1, h2, h3, h4, h5, h6 {
     border-top-color: white;
     animation: spin 0.8s ease-in-out infinite;
     margin-right: 0.5rem;
+}
+
+/* ChefSocial Authentication Styles with Stripe Integration */
+
+/* Container */
+.auth-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b35, #f7931e, #ff6b35);
+    border-radius: 20px 20px 0 0;
+}
+
+/* Header */
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.auth-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.auth-header p {
+    color: #718096;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Form Styles */
+.auth-form {
+    space-y: 24px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #2d3748;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input.error {
+    border-color: #e53e3e;
+    background-color: #fed7d7;
+}
+
+.form-group input.valid {
+    border-color: #38a169;
+    background-color: #f0fff4;
+}
+
+/* Password Toggle */
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #718096;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #ff6b35;
+}
+
+/* Field Validation */
+.field-error {
+    color: #e53e3e;
+    font-size: 14px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.field-error::before {
+    content: '⚠️';
+    font-size: 12px;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.strength-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.strength-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.strength-text {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Payment Section Styles */
+.payment-section {
+    margin: 32px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+}
+
+.pricing-info {
+    margin-bottom: 24px;
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.plan-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price .amount {
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.price .period {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+/* Trial Notice */
+.trial-notice {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.trial-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.trial-notice p {
+    margin: 0;
+    opacity: 0.95;
+    font-size: 14px;
+}
+
+/* Plan Features */
+.plan-features {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.plan-features h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 12px;
+}
+
+.plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.plan-features li {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Payment Method */
+.payment-method {
+    margin: 24px 0;
+}
+
+.payment-method h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.payment-note {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+}
+
+/* Stripe Card Element */
+.card-input {
+    padding: 16px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.card-input:focus-within {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+#card-errors {
+    color: #e53e3e;
+    font-size: 14px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fed7d7;
+    border-radius: 6px;
+    border: 1px solid #feb2b2;
+}
+
+/* Security Notice */
+.security-notice {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.security-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+.security-notice p {
+    font-size: 12px;
+    color: #38a169;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Billing Agreement */
+.billing-agreement {
+    margin: 24px 0;
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #ff6b35;
+}
+
+.agreement-text {
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.agreement-text a {
+    color: #ff6b35;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.agreement-text a:hover {
+    text-decoration: underline;
+}
+
+/* Submit Button */
+.submit-button {
+    width: 100%;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    color: white;
+    border: none;
+    padding: 18px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 107, 53, 0.3);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.button-text {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.button-subtext {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+/* Message Styles */
+.error-message,
+.success-message,
+.warning-message {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+.error-message {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+.success-message {
+    background: #c6f6d5;
+    color: #2f855a;
+    border: 1px solid #9ae6b4;
+}
+
+.warning-message {
+    background: #fef5e7;
+    color: #d69e2e;
+    border: 1px solid #f6e05e;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Footer Links */
+.auth-footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.auth-footer p {
+    color: #718096;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.auth-footer a {
+    color: #ff6b35;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.auth-footer a:hover {
+    color: #e53935;
+    text-decoration: underline;
+}
+
+/* Language Switcher */
+.language-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.language-switcher:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading States */
+.loading-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+    
+    .auth-container {
+        padding: 24px;
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .auth-header h1 {
+        font-size: 24px;
+    }
+    
+    .plan-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .price .amount {
+        font-size: 28px;
+    }
+    
+    .payment-section {
+        padding: 16px;
+    }
+    
+    .form-group input {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .plan-features li {
+        font-size: 13px;
+    }
+    
+    .checkbox-container {
+        gap: 8px;
+    }
+    
+    .agreement-text {
+        font-size: 13px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .auth-container {
+        background: white;
+        border: 2px solid #000;
+    }
+    
+    .form-group input {
+        border-color: #000;
+    }
+    
+    .submit-button {
+        background: #000;
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+    
+    .auth-container {
+        background: rgba(26, 32, 44, 0.95);
+        color: #e2e8f0;
+    }
+    
+    .auth-header h1 {
+        color: #e2e8f0;
+    }
+    
+    .form-group input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .form-group input:focus {
+        border-color: #ff6b35;
+        background: #374151;
+    }
+    
+    .payment-section {
+        background: linear-gradient(135deg, #2d3748 0%, #374151 100%);
+        border-color: #4a5568;
+    }
+    
+    .plan-features {
+        background: #374151;
+        border-color: #4a5568;
+    }
+    
+    .plan-features h4 {
+        color: #e2e8f0;
+    }
+    
+    .plan-features li {
+        color: #cbd5e0;
+    }
 }

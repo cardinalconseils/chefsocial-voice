@@ -3,136 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Started - ChefSocial Voice</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/auth/shared/css/auth-styles.css">
+    <title>Join ChefSocial - 14-Day Free Trial | AI-Powered Restaurant Marketing</title>
+    <meta name="description" content="Start your 14-day free trial with ChefSocial. Get AI-powered voice content, image generation, and smart video creation for your restaurant. No credit card required initially.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stripe.js -->
     <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/auth/shared/css/auth-styles.css">
+    
+    <!-- Environment Configuration -->
+    <script>
+        // Configure Stripe and API endpoints
+        window.STRIPE_PUBLISHABLE_KEY = 'pk_test_51234567890abcdef'; // Replace with actual Stripe publishable key
+        window.API_BASE_URL = window.location.origin;
+    </script>
 </head>
 <body>
-    <!-- Header will be injected by header component -->
+    <!-- Header Component -->
+    <script src="/dashboard/shared/header.js"></script>
 
-    <div class="main-content">
-        <div class="container">
-            <div class="login-container">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <h2 data-i18n="register.title">Get Started</h2>
-                        <p data-i18n="register.subtitle">Create your account and start generating amazing content</p>
+    <div class="auth-container">
+        <!-- Language Switcher -->
+        <div class="language-switcher" onclick="toggleLanguage()">
+            <span id="currentLang">🇺🇸 EN</span>
+        </div>
+
+        <div class="auth-header">
+            <h1 data-translate="register.title">Start Your Free Trial</h1>
+            <p data-translate="register.subtitle">Join thousands of restaurants using AI to boost their marketing. 14 days free, then $79/month.</p>
+        </div>
+
+        <!-- Messages -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+        <div id="warningMessage" class="warning-message" style="display: none;"></div>
+
+        <form id="registerForm" class="auth-form">
+            <!-- Personal Information -->
+            <div class="form-section">
+                <h3>👤 Personal Information</h3>
+                
+                <div class="form-group">
+                    <label for="name" data-translate="register.name">Full Name *</label>
+                    <input type="text" id="name" name="name" required 
+                           data-translate-placeholder="register.name_placeholder"
+                           placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email" data-translate="register.email">Email Address *</label>
+                    <input type="email" id="email" name="email" required 
+                           data-translate-placeholder="register.email_placeholder"
+                           placeholder="Enter your email address">
+                </div>
+            </div>
+
+            <!-- Restaurant Information -->
+            <div class="form-section">
+                <h3>🏪 Restaurant Information</h3>
+                
+                <div class="form-group">
+                    <label for="restaurantName" data-translate="register.restaurant_name">Restaurant Name *</label>
+                    <input type="text" id="restaurantName" name="restaurantName" required 
+                           data-translate-placeholder="register.restaurant_placeholder"
+                           placeholder="Enter your restaurant name">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cuisineType" data-translate="register.cuisine_type">Cuisine Type</label>
+                        <select id="cuisineType" name="cuisineType">
+                            <option value="" data-translate="register.select_cuisine">Select cuisine type</option>
+                            <option value="american">American</option>
+                            <option value="italian">Italian</option>
+                            <option value="french">French</option>
+                            <option value="mexican">Mexican</option>
+                            <option value="asian">Asian</option>
+                            <option value="mediterranean">Mediterranean</option>
+                            <option value="indian">Indian</option>
+                            <option value="other">Other</option>
+                        </select>
                     </div>
 
-                    <div class="demo-section">
-                        <h3 data-i18n="login.demo.title">🎯 Want to try before you sign up?</h3>
-                        <p data-i18n="login.demo.description">Experience our AI-powered food content creation with our free demo</p>
-                        <a href="/apps/demo.html" class="btn-demo">
-                            <span>🎤</span>
-                            <span data-i18n="login.demo.button">Try Demo Now</span>
-                        </a>
-                    </div>
-
-                    <div id="errorMessage" class="error-message"></div>
-                    <div id="successMessage" class="success-message"></div>
-
-                    <form id="registerForm">
-                        <div class="form-group">
-                            <label for="name" data-i18n="register.name">Full Name</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email" data-i18n="register.email">Email Address</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password" data-i18n="register.password">Password</label>
-                            <input type="password" id="password" name="password" required minlength="8">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" data-i18n="register.confirmPassword">Confirm Password</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8">
-                        </div>
-
-                        <button type="submit" id="submitButton" class="btn-primary">
-                            <span data-i18n="register.submit">Create Account</span>
-                        </button>
-                    </form>
-
-                    <div class="auth-link">
-                        <span data-i18n="register.hasAccount">Already have an account?</span> 
-                        <a href="/auth/login.html" data-i18n="register.signIn">Sign in here</a>
+                    <div class="form-group">
+                        <label for="location" data-translate="register.location">Location</label>
+                        <input type="text" id="location" name="location" 
+                               data-translate-placeholder="register.location_placeholder"
+                               placeholder="City, State/Province">
                     </div>
                 </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="form-section">
+                <h3>🔒 Secure Your Account</h3>
+                
+                <div class="form-group">
+                    <label for="password" data-translate="register.password">Password *</label>
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" required 
+                               data-translate-placeholder="register.password_placeholder"
+                               placeholder="Create a strong password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" data-translate="register.confirm_password">Confirm Password *</label>
+                    <div class="password-input-container">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required 
+                               data-translate-placeholder="register.confirm_password_placeholder"
+                               placeholder="Confirm your password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment section will be dynamically added by JavaScript -->
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button">
+                <span class="button-text">Start Free Trial</span>
+                <span class="button-subtext">14 days free, then $79/month</span>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p data-translate="register.have_account">Already have an account? 
+                <a href="/auth/login.html" data-translate="register.sign_in">Sign In</a>
+            </p>
+            
+            <div class="legal-links">
+                <a href="/terms.html" target="_blank" data-translate="footer.terms">Terms of Service</a>
+                <span>•</span>
+                <a href="/privacy.html" target="_blank" data-translate="footer.privacy">Privacy Policy</a>
+                <span>•</span>
+                <a href="/contact.html" target="_blank" data-translate="footer.contact">Contact Support</a>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <span class="logo-icon">👨‍🍳</span>
-                        <span>ChefSocial Voice</span>
-                    </div>
-                    <p data-i18n="footer.description">AI-powered voice-to-content platform for restaurants and food creators.</p>
-                </div>
-
-                <div class="footer-section">
-                    <h4 data-i18n="footer.product.title">Product</h4>
-                    <ul>
-                        <li><a href="/apps/demo.html" data-i18n="footer.product.demo">Demo</a></li>
-                        <li><a href="/auth/register.html" data-i18n="footer.product.pricing">Pricing</a></li>
-                        <li><a href="/#features" data-i18n="footer.product.features">Features</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4 data-i18n="footer.company.title">Company</h4>
-                    <ul>
-                        <li><a href="/about.html" data-i18n="footer.company.about">About</a></li>
-                        <li><a href="/contact.html" data-i18n="footer.company.contact">Contact</a></li>
-                        <li><a href="/blog.html" data-i18n="footer.company.blog">Blog</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4 data-i18n="footer.legal.title">Legal</h4>
-                    <ul>
-                        <li><a href="/privacy.html" data-i18n="footer.legal.privacy">Privacy Policy</a></li>
-                        <li><a href="/terms.html" data-i18n="footer.legal.terms">Terms of Service</a></li>
-                        <li><a href="/cookies.html" data-i18n="footer.legal.cookies">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p data-i18n="footer.copyright">&copy; 2024 ChefSocial Voice. All rights reserved.</p>
-                    <div class="language-toggle">
-                        <button class="lang-btn active" data-lang="en">EN</button>
-                        <button class="lang-btn" data-lang="fr">FR</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <!-- Scripts -->
-    <script src="/dashboard/shared/header.js"></script>
+    <script src="/i18n/index.js"></script>
     <script src="/auth/shared/js/i18n.js"></script>
     <script src="/auth/shared/js/auth-handler.js"></script>
+    
     <script>
-        // Initialize when page loads
+        // Password toggle functionality
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const toggle = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+
+        // Language toggle functionality
+        function toggleLanguage() {
+            if (typeof window.lang !== 'undefined') {
+                const currentLang = window.lang.getCurrentLanguage();
+                const newLang = currentLang === 'en' ? 'fr' : 'en';
+                window.lang.setLanguage(newLang);
+                
+                // Update language switcher display
+                const langDisplay = document.getElementById('currentLang');
+                langDisplay.textContent = newLang === 'en' ? '🇺🇸 EN' : '🇫🇷 FR';
+            }
+        }
+
+        // Trial countdown functionality
+        function updateTrialCountdown() {
+            const trialEndDate = new Date();
+            trialEndDate.setDate(trialEndDate.getDate() + 14);
+            
+            // Update any trial end date displays
+            document.querySelectorAll('[data-trial-end]').forEach(element => {
+                element.textContent = trialEndDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            });
+        }
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            new AuthHandler('register');
+            updateTrialCountdown();
+            
+            // Add form section styling
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.1}s`;
+                section.classList.add('fade-in');
+            });
+
+            // Initialize tooltips for form fields
+            initializeFormTooltips();
+        });
+
+        // Form field tooltips
+        function initializeFormTooltips() {
+            const tooltips = {
+                'name': 'Enter your full legal name as it appears on your ID',
+                'email': 'This will be your login email and where we send important updates',
+                'restaurantName': 'The official name of your restaurant or food business',
+                'password': 'Must be at least 8 characters with uppercase, lowercase, and numbers',
+                'confirmPassword': 'Re-enter your password to confirm it matches'
+            };
+
+            Object.entries(tooltips).forEach(([fieldId, tooltip]) => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.title = tooltip;
+                    field.setAttribute('aria-describedby', `${fieldId}-help`);
+                }
+            });
+        }
+
+        // Enhanced form validation
+        function validateBusinessInfo() {
+            const restaurantName = document.getElementById('restaurantName').value.trim();
+            if (restaurantName.length < 2) {
+                return { valid: false, message: 'Restaurant name must be at least 2 characters long' };
+            }
+            return { valid: true };
+        }
+
+        // Auto-save form data to localStorage (for recovery)
+        function autoSaveFormData() {
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                restaurantName: document.getElementById('restaurantName').value,
+                cuisineType: document.getElementById('cuisineType').value,
+                location: document.getElementById('location').value,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('chefsocial-registration-draft', JSON.stringify(formData));
+        }
+
+        // Restore form data from localStorage
+        function restoreFormData() {
+            const savedData = localStorage.getItem('chefsocial-registration-draft');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    // Only restore if less than 1 hour old
+                    if (Date.now() - data.timestamp < 3600000) {
+                        Object.entries(data).forEach(([key, value]) => {
+                            const field = document.getElementById(key);
+                            if (field && value) {
+                                field.value = value;
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error restoring form data:', error);
+                }
+            }
+        }
+
+        // Auto-save on input
+        document.addEventListener('input', (e) => {
+            if (e.target.form && e.target.form.id === 'registerForm') {
+                autoSaveFormData();
+            }
+        });
+
+        // Restore form data on load
+        document.addEventListener('DOMContentLoaded', restoreFormData);
+
+        // Clear saved data on successful submission
+        document.addEventListener('chefsocial-registration-success', () => {
+            localStorage.removeItem('chefsocial-registration-draft');
         });
     </script>
-    
-    <!-- Cleanup script for service workers -->
-    <script src="/cleanup-sw.js"></script>
+
+    <style>
+        /* Additional styles for registration form */
+        .form-section {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2d3748;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .legal-links {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .legal-links a {
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .legal-links a:hover {
+            text-decoration: underline;
+        }
+
+        .legal-links span {
+            margin: 0 8px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .form-section {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .form-section h3 {
+                font-size: 16px;
+                margin-bottom: 16px;
+            }
+        }
+    </style>
 </body>
 </html>

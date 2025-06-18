@@ -6,6 +6,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
+const Stripe = require('stripe');
 
 // Initialize app
 const app = express();
@@ -38,22 +39,44 @@ const validateRequest = (validations) => {
     };
 };
 
-// Temporary in-memory user store (replace with database)
-const users = new Map();
+// Initialize Stripe
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_...');
+
+// Mock database for development
+let users = [
+  {
+    id: 'user_demo',
+    email: 'demo@chefsocial.io',
+    password: '$2a$10$example.hash.for.demo.user', // 'demo123'
+    name: 'Demo User',
+    restaurantName: 'Demo Restaurant',
+    role: 'user',
+    subscriptionStatus: 'trialing',
+    trialStartDate: new Date().toISOString(),
+    trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    stripeCustomerId: null,
+    createdAt: new Date().toISOString()
+  }
+];
 
 // POST /api/auth/register
 app.post('/api/auth/register', 
     validateRequest([
         body('email').isEmail().withMessage('Valid email required'),
         body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-        body('name').notEmpty().withMessage('Name is required')
+        body('name').notEmpty().withMessage('Name is required'),
+        body('restaurantName').notEmpty().withMessage('Restaurant name is required'),
+        body('cuisineType').notEmpty().withMessage('Cuisine type is required'),
+        body('location').notEmpty().withMessage('Location is required'),
+        body('phone').notEmpty().withMessage('Phone is required'),
+        body('marketingConsent').isBoolean().withMessage('Marketing consent must be a boolean')
     ]),
     async (req, res) => {
         try {
-            const { email, password, name } = req.body;
+            const { email, password, name, restaurantName, cuisineType, location, phone, marketingConsent } = req.body;
             
             // Check if user exists
-            if (users.has(email)) {
+            if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
                 return res.status(409).json({
                     success: false,
                     error: 'User already exists',
@@ -64,21 +87,56 @@ app.post('/api/auth/register',
             // Hash password
             const hashedPassword = await bcrypt.hash(password, 12);
             
+            // Create Stripe customer
+            let stripeCustomerId = null;
+            try {
+                const stripeCustomer = await stripe.customers.create({
+                    email,
+                    name,
+                    metadata: {
+                        restaurant_name: restaurantName,
+                        cuisine_type: cuisineType,
+                        location: location,
+                        phone: phone,
+                        source: 'chefsocial_registration',
+                        marketing_consent: marketingConsent.toString()
+                    }
+                });
+                stripeCustomerId = stripeCustomer.id;
+                console.log('Stripe customer created:', stripeCustomerId);
+            } catch (stripeError) {
+                console.error('Stripe customer creation failed:', stripeError);
+                // Continue with registration even if Stripe fails
+            }
+            
             // Create user
             const user = {
                 id: Date.now().toString(),
                 email,
                 name,
                 password: hashedPassword,
+                restaurantName,
+                cuisineType,
+                location,
+                phone,
+                role: 'user',
+                subscriptionStatus: 'trialing',
+                trialStartDate: new Date().toISOString(),
+                trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                stripeCustomerId,
+                stripeSubscriptionId: null,
+                marketingConsent,
                 createdAt: new Date().toISOString(),
-                verified: false
+                lastLoginAt: null,
+                emailVerified: false,
+                onboardingCompleted: false
             };
             
-            users.set(email, user);
+            users.push(user);
             
             // Generate JWT
             const token = jwt.sign(
-                { userId: user.id, email: user.email },
+                { userId: user.id, email: user.email, role: user.role },
                 process.env.JWT_SECRET || 'dev-secret',
                 { expiresIn: '24h' }
             );
@@ -90,7 +148,15 @@ app.post('/api/auth/register',
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                    verified: user.verified
+                    restaurantName: user.restaurantName,
+                    cuisineType: user.cuisineType,
+                    location: user.location,
+                    phone: user.phone,
+                    role: user.role,
+                    subscriptionStatus: user.subscriptionStatus,
+                    trialEndDate: user.trialEndDate,
+                    stripeCustomerId: user.stripeCustomerId,
+                    onboardingCompleted: user.onboardingCompleted
                 },
                 token
             });
@@ -117,7 +183,7 @@ app.post('/api/auth/login',
             const { email, password } = req.body;
             
             // Find user
-            const user = users.get(email);
+            const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
             if (!user) {
                 return res.status(401).json({
                     success: false,
@@ -136,12 +202,20 @@ app.post('/api/auth/login',
                 });
             }
             
+            // Update last login
+            user.lastLoginAt = new Date().toISOString();
+            
             // Generate JWT
             const token = jwt.sign(
-                { userId: user.id, email: user.email },
+                { userId: user.id, email: user.email, role: user.role },
                 process.env.JWT_SECRET || 'dev-secret',
                 { expiresIn: '24h' }
             );
+            
+            // Calculate trial days remaining
+            const trialEnd = new Date(user.trialEndDate);
+            const now = new Date();
+            const trialDaysRemaining = Math.max(0, Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24)));
             
             res.json({
                 success: true,
@@ -150,9 +224,22 @@ app.post('/api/auth/login',
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                    verified: user.verified
+                    restaurantName: user.restaurantName,
+                    cuisineType: user.cuisineType,
+                    location: user.location,
+                    phone: user.phone,
+                    role: user.role,
+                    subscriptionStatus: user.subscriptionStatus,
+                    trialEndDate: user.trialEndDate,
+                    stripeCustomerId: user.stripeCustomerId,
+                    onboardingCompleted: user.onboardingCompleted
                 },
-                token
+                token,
+                trialInfo: {
+                    trialDaysRemaining,
+                    trialEndDate: user.trialEndDate,
+                    subscriptionRequired: trialDaysRemaining <= 3
+                }
             });
             
         } catch (error) {
@@ -180,7 +267,7 @@ app.get('/api/auth/verify', (req, res) => {
         }
         
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
-        const user = Array.from(users.values()).find(u => u.id === decoded.userId);
+        const user = users.find(u => u.id === decoded.userId);
         
         if (!user) {
             return res.status(401).json({
@@ -190,13 +277,31 @@ app.get('/api/auth/verify', (req, res) => {
             });
         }
         
+        // Calculate trial days remaining
+        const trialEnd = new Date(user.trialEndDate);
+        const now = new Date();
+        const trialDaysRemaining = Math.max(0, Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24)));
+        
         res.json({
             success: true,
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                verified: user.verified
+                restaurantName: user.restaurantName,
+                cuisineType: user.cuisineType,
+                location: user.location,
+                phone: user.phone,
+                role: user.role,
+                subscriptionStatus: user.subscriptionStatus,
+                trialEndDate: user.trialEndDate,
+                stripeCustomerId: user.stripeCustomerId,
+                onboardingCompleted: user.onboardingCompleted
+            },
+            trialInfo: {
+                trialDaysRemaining,
+                trialEndDate: user.trialEndDate,
+                subscriptionRequired: trialDaysRemaining <= 3
             }
         });
         

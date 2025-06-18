@@ -2,194 +2,117 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
-    },
-    {
-      "src": "api/auth.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 10
-      }
-    },
-    {
-      "src": "api/admin.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 15
-      }
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "dashboard/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "auth/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "apps/**/*",
-      "use": "@vercel/static"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     },
     {
       "src": "marketing-site/**/*",
       "use": "@vercel/static"
+    },
+    {
+      "src": "admin-panel/next.config.js",
+      "use": "@vercel/next"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/admin/(.*)",
-      "destination": "/api/admin.js"
+      "src": "/demo.html",
+      "dest": "/marketing-site/pages/demo.html"
     },
     {
-      "source": "/api/auth/(.*)",
-      "destination": "/api/auth.js"
+      "src": "/demo",
+      "dest": "/marketing-site/pages/demo.html"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "src": "/api/admin/auth/login",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/admin/(.*)",
-      "destination": "/public/admin/$1"
+      "src": "/api/admin/stats",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/admin",
-      "destination": "/public/admin/index.html"
+      "src": "/api/admin/users",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/_next/(.*)",
-      "destination": "/public/admin/_next/$1"
+      "src": "/api/admin/users/action",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/shared/(.*)",
-      "destination": "/dashboard/shared/$1"
+      "src": "/api/admin/activity",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/dashboard/(.*)",
-      "destination": "/dashboard/$1"
+      "src": "/api/admin/settings",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/dashboard",
-      "destination": "/dashboard/index.html"
+      "src": "/api/admin/stripe/(.*)",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/auth/(.*)",
-      "destination": "/auth/$1"
+      "src": "/api/admin/(.*)",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/auth",
-      "destination": "/auth/login.html"
+      "src": "/api/admin",
+      "dest": "/api/admin.js"
     },
     {
-      "source": "/login.html",
-      "destination": "/auth/login.html"
+      "src": "/api/auth/(.*)",
+      "dest": "/api/auth.js"
     },
     {
-      "source": "/register.html",
-      "destination": "/auth/register.html"
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "source": "/apps/(.*)",
-      "destination": "/apps/$1"
+      "src": "/admin/_next/static/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
     },
     {
-      "source": "/apps",
-      "destination": "/apps/natural.html"
+      "src": "/admin/_next/(.*)",
+      "dest": "/admin-panel/_next/$1"
     },
     {
-      "source": "/marketing/(.*)",
-      "destination": "/marketing-site/pages/$1"
+      "src": "/admin/(.*)",
+      "dest": "/admin-panel/$1"
     },
     {
-      "source": "/marketing",
-      "destination": "/marketing-site/pages/index.html"
+      "src": "/admin",
+      "dest": "/admin-panel/index.html"
     },
     {
-      "source": "/demo.html",
-      "destination": "/marketing-site/pages/demo.html"
+      "src": "/marketing/(.*)",
+      "dest": "/marketing-site/$1"
     },
     {
-      "source": "/favicon.svg",
-      "destination": "/dashboard/favicon.svg"
+      "src": "/auth/(.*)",
+      "dest": "/auth/$1"
     },
     {
-      "source": "/favicon.ico",
-      "destination": "/public/favicon.ico"
+      "src": "/dashboard/(.*)",
+      "dest": "/dashboard/$1"
     },
     {
-      "source": "/",
-      "destination": "/marketing-site/pages/index.html"
+      "src": "/apps/(.*)",
+      "dest": "/apps/$1"
+    },
+    {
+      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)",
+      "headers": {
+        "cache-control": "public, max-age=31536000"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/marketing-site/pages/index.html"
     }
   ],
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.css)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/css"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.js)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.svg)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "image/svg+xml"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
     {
       "source": "/api/(.*)",
       "headers": [
@@ -208,15 +131,26 @@
       ]
     },
     {
-      "source": "/_next/static/(.*)",
+      "source": "/(.*\\.(js|css))",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "key": "Content-Type",
+          "value": "text/javascript; charset=utf-8"
         }
       ]
     }
   ],
+  "functions": {
+    "api/admin.js": {
+      "maxDuration": 30
+    },
+    "api/auth.js": {
+      "maxDuration": 30
+    },
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   },

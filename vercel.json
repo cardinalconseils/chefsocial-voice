@@ -16,14 +16,6 @@
   ],
   "rewrites": [
     {
-      "source": "/demo.html",
-      "destination": "/marketing-site/pages/demo.html"
-    },
-    {
-      "source": "/demo",
-      "destination": "/marketing-site/pages/demo.html"
-    },
-    {
       "source": "/api/auth/(.*)",
       "destination": "/api/auth.js"
     },
@@ -48,8 +40,28 @@
       "destination": "/public/admin/index.html"
     },
     {
-      "source": "/marketing/(.*)",
-      "destination": "/marketing-site/$1"
+      "source": "/demo.html",
+      "destination": "/marketing-site/pages/demo.html"
+    },
+    {
+      "source": "/demo",
+      "destination": "/marketing-site/pages/demo.html"
+    },
+    {
+      "source": "/register.html",
+      "destination": "/auth/register.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/auth/register.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/auth/login.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/auth/login.html"
     },
     {
       "source": "/auth/(.*)",
@@ -60,8 +72,16 @@
       "destination": "/dashboard/$1"
     },
     {
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
+    },
+    {
       "source": "/apps/(.*)",
       "destination": "/apps/$1"
+    },
+    {
+      "source": "/marketing/(.*)",
+      "destination": "/marketing-site/$1"
     },
     {
       "source": "/(.*)",

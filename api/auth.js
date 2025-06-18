@@ -42,7 +42,7 @@ const validateRequest = (validations) => {
 const users = new Map();
 
 // POST /api/auth/register
-app.post('/register', 
+app.post('/api/auth/register', 
     validateRequest([
         body('email').isEmail().withMessage('Valid email required'),
         body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
@@ -107,7 +107,7 @@ app.post('/register',
 );
 
 // POST /api/auth/login
-app.post('/login',
+app.post('/api/auth/login',
     validateRequest([
         body('email').isEmail().withMessage('Valid email required'),
         body('password').notEmpty().withMessage('Password is required')
@@ -167,7 +167,7 @@ app.post('/login',
 );
 
 // GET /api/auth/verify
-app.get('/verify', (req, res) => {
+app.get('/api/auth/verify', (req, res) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
         

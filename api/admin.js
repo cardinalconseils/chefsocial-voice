@@ -125,11 +125,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { pathname } = new URL(req.url, 'https://example.com');
-    const pathParts = pathname.split('/').filter(Boolean);
-    const route = pathParts.slice(2).join('/'); // Remove 'api' and 'admin'
+    // Parse the route from the URL
+    let route = '';
+    if (req.url) {
+      // Handle different URL formats
+      if (req.url.includes('/api/admin/')) {
+        route = req.url.split('/api/admin/')[1] || '';
+      } else if (req.url === '/api/admin') {
+        route = '';
+      } else {
+        route = req.url.replace(/^\//, ''); // Remove leading slash
+      }
+    }
 
-    console.log('Admin API Route:', route, 'Method:', req.method);
+    console.log('Admin API - Full URL:', req.url, 'Parsed Route:', route, 'Method:', req.method);
 
     // Authentication check for protected routes
     const protectedRoutes = ['stats', 'users', 'activity', 'settings', 'stripe'];
@@ -149,6 +158,24 @@ module.exports = async (req, res) => {
 
     switch (route) {
       case '':
+        // Base admin endpoint - return available endpoints
+        return res.status(200).json({
+          success: true,
+          service: 'ChefSocial Admin API',
+          message: 'Admin API is running',
+          availableEndpoints: [
+            'POST /api/admin/auth/login',
+            'GET /api/admin/stats',
+            'GET /api/admin/users',
+            'POST /api/admin/users/action',
+            'GET /api/admin/activity',
+            'GET /api/admin/settings',
+            'PUT /api/admin/settings',
+            'POST /api/admin/stripe/webhook',
+            'POST /api/admin/stripe/create-customer'
+          ]
+        });
+
       case 'auth/login':
         if (req.method === 'POST') {
           const { email, password } = req.body || {};
@@ -443,16 +470,17 @@ module.exports = async (req, res) => {
         return res.status(404).json({ 
           error: 'Admin endpoint not found',
           path: route,
+          fullUrl: req.url,
           availableEndpoints: [
-            'POST /auth/login',
-            'GET /stats',
-            'GET /users',
-            'POST /users/action',
-            'GET /activity',
-            'GET /settings',
-            'PUT /settings',
-            'POST /stripe/webhook',
-            'POST /stripe/create-customer'
+            'POST /api/admin/auth/login',
+            'GET /api/admin/stats',
+            'GET /api/admin/users',
+            'POST /api/admin/users/action',
+            'GET /api/admin/activity',
+            'GET /api/admin/settings',
+            'PUT /api/admin/settings',
+            'POST /api/admin/stripe/webhook',
+            'POST /api/admin/stripe/create-customer'
           ]
         });
     }

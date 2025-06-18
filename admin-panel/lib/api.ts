@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.chefsocial.io';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:3004' : 'https://api.chefsocial.io');
 
 // Create axios instance with default config
 const api = axios.create({

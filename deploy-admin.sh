@@ -44,6 +44,6 @@ fi
 echo ""
 echo "🎉 Admin panel deployment completed!"
 echo "📋 Next steps:"
-echo "1. Start the main server: npm start"
-echo "2. Access admin panel at: http://localhost:3000/admin"
+echo "1. Start the main server: npm start (runs on PORT 3004)"
+echo "2. Access admin panel at: http://localhost:3004/admin"
 echo "3. For production: Deploy main app with integrated admin panel"

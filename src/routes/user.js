@@ -6,10 +6,20 @@ const { body, query } = require('express-validator');
 
 // User management routes module - receives services from app.js
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService, validationSystem } = app.locals.services;
+    // Helper function to get services (handles async initialization)
+    const getServices = () => {
+        const services = app.locals.services;
+        if (!services.rateLimitService || !services.logger) {
+            throw new Error('Services not yet initialized');
+        }
+        return services;
+    };
     
-    // Rate limiter for user management endpoints
-    const userLimiter = rateLimitService.createEndpointLimiter('user');
+    // Helper function to get rate limiter (created on demand)
+    const getUserLimiter = () => {
+        const { rateLimitService } = getServices();
+        return rateLimitService.createEndpointLimiter('user');
+    };
     
     // Validation schemas
     const profileUpdateValidation = validateRequest([
@@ -31,8 +41,16 @@ module.exports = (app) => {
 
     // GET /api/user/profile
     router.get('/profile', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const user = await authSystem.db.getUserById(req.userId);
             if (!user) {
                 return res.status(404).json({ 
@@ -62,9 +80,17 @@ module.exports = (app) => {
 
     // PUT /api/user/profile
     router.put('/profile', 
-        authSystem.authMiddleware(), 
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        }, 
         profileUpdateValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const { name, restaurantName, cuisineType, location, phone } = req.body;
             
             // Update user profile
@@ -116,8 +142,16 @@ module.exports = (app) => {
 
     // GET /api/user/usage-dashboard
     router.get('/usage-dashboard', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             // Get current usage for the month
             const currentUsage = await authSystem.db.getCurrentUsage(req.user.id);
             
@@ -187,8 +221,16 @@ module.exports = (app) => {
 
     // GET /api/user/billing-history
     router.get('/billing-history', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const { limit = 12 } = req.query;
             const user = await authSystem.db.getUserById(req.user.id);
             
@@ -229,9 +271,17 @@ module.exports = (app) => {
 
     // PUT /api/user/subscription
     router.put('/subscription', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         subscriptionValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const { action, paymentMethodId } = req.body;
             const user = await authSystem.db.getUserById(req.user.id);
             
@@ -369,8 +419,16 @@ module.exports = (app) => {
 
     // POST /api/user/billing-portal
     router.post('/billing-portal', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const user = await authSystem.db.getUserById(req.user.id);
             
             if (!user || !user.stripe_customer_id) {
@@ -412,7 +470,14 @@ module.exports = (app) => {
 
     // POST /api/user/logout
     router.post('/logout', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
             // Note: This is a legacy endpoint, actual logout is handled in auth routes
             // Keeping for backward compatibility
@@ -425,8 +490,16 @@ module.exports = (app) => {
 
     // DELETE /api/user/account
     router.delete('/account', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             // Cancel subscription if active
             const user = await authSystem.db.getUserById(req.userId);
             if (user.stripe_customer_id) {
@@ -475,9 +548,17 @@ module.exports = (app) => {
 
     // POST /api/user/language
     router.post('/language', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         languageValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const { language } = req.body;
 
             // Update user's preferred language in database
@@ -512,8 +593,16 @@ module.exports = (app) => {
 
     // GET /api/user/rate-limits/status
     router.get('/rate-limits/status', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { rateLimitService } = getServices();
             const limits = await rateLimitService.getUserLimits(req.userId);
             
             res.json({
@@ -526,9 +615,11 @@ module.exports = (app) => {
 
     // Error handling middleware for user routes
     router.use((error, req, res, next) => {
-        // Log user management errors
-        if (error.message && error.message.includes('Stripe')) {
-            logger.logSecurityEvent(
+        try {
+            const { logger } = getServices();
+            // Log user management errors
+            if (error.message && error.message.includes('Stripe')) {
+                logger.logSecurityEvent(
                 'stripe_error',
                 `Stripe operation failed: ${error.message}`,
                 'medium',
@@ -539,6 +630,10 @@ module.exports = (app) => {
                     error: error.message
                 }
             );
+            }
+        } catch (serviceError) {
+            // If services aren't available, just log to console
+            console.error('❌ User error (services unavailable):', error.message);
         }
 
         // Handle user-specific errors

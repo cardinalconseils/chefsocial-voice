@@ -12,17 +12,34 @@ const VoiceBriefingService = require('../services/voice-briefing-service');
 const VoiceTwiMLService = require('../services/voice-twiml-service');
 
 module.exports = (app) => {
-    const services = app.locals.services;
-    const { authSystem, logger, rateLimitService, liveKitService } = services;
-    
-    // Initialize voice services
-    const voiceProcessing = new VoiceProcessingService(services);
-    const voiceSession = new VoiceSessionService(services);
-    const voiceConversation = new VoiceConversationService(services);
-    const voiceBriefing = new VoiceBriefingService(services);
-    const voiceTwiML = new VoiceTwiMLService(services);
-    
-    const voiceLimiter = rateLimitService.createEndpointLimiter('voice');
+    // Helper function to get services (handles async initialization)
+    const getServices = () => {
+        const services = app.locals.services;
+        if (!services.rateLimitService || !services.logger || !services.authSystem) {
+            throw new Error('Services not yet initialized');
+        }
+        return services;
+    };
+
+    // Helper function to get rate limiter (created on demand)
+    const getVoiceLimiter = () => {
+        const { rateLimitService } = getServices();
+        return rateLimitService.createEndpointLimiter('voice');
+    };
+
+    // Initialize voice services (but handle async service loading)
+    let voiceProcessing, voiceSession, voiceConversation, voiceBriefing, voiceTwiML;
+    const initVoiceServices = () => {
+        const services = getServices();
+        if (!voiceProcessing) {
+            voiceProcessing = new VoiceProcessingService(services);
+            voiceSession = new VoiceSessionService(services);
+            voiceConversation = new VoiceConversationService(services);
+            voiceBriefing = new VoiceBriefingService(services);
+            voiceTwiML = new VoiceTwiMLService(services);
+        }
+        return { voiceProcessing, voiceSession, voiceConversation, voiceBriefing, voiceTwiML };
+    };
     
     // Validation schemas
     const voiceProcessingValidation = validateRequest([
@@ -46,11 +63,33 @@ module.exports = (app) => {
 
     // Main voice processing endpoint
     router.post('/process', 
-        voiceLimiter,
-        authSystem.authMiddleware(), 
-        authSystem.featureAccessMiddleware('voice_content_creation'),
+        (req, res, next) => {
+            try {
+                const voiceLimiter = getVoiceLimiter();
+                voiceLimiter(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.featureAccessMiddleware('voice_content_creation')(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         voiceProcessingValidation,
         asyncHandler(async (req, res) => {
+            const { voiceProcessing } = initVoiceServices();
             const { audio, image } = req.body;
             const userLanguage = req.language || 'en';
             
@@ -72,6 +111,7 @@ module.exports = (app) => {
     // Demo voice processing endpoint
     router.post('/process-demo', 
         asyncHandler(async (req, res) => {
+            const { voiceProcessing } = initVoiceServices();
             const { audio, image, language } = req.body;
             const userLanguage = language || 'en';
             

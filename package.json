@@ -1,11 +1,16 @@
 {
   "name": "chefsocial-voice",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "build": "echo \"✅ Build complete - static files ready in public/\"",
+    "start": "PORT=3004 node src/server.js",
+    "dev": "PORT=3004 nodemon src/server.js",
+    "dev:admin": "cd admin-panel && PORT=3005 npm run dev",
+    "dev:marketing": "cd marketing-site && python3 -m http.server 3006",
+    "build:admin": "cd admin-panel && npm run build",
+    "deploy:admin": "./deploy-admin.sh",
+    "deploy:marketing": "cd marketing-site && vercel --prod",
+    "deploy:all": "npm run deploy:admin && vercel --prod",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "echo \"No linter configured\"",
     "typecheck": "echo \"No TypeScript configured\""
@@ -13,7 +18,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "ChefSocial Voice AI platform for restaurant social media content",
   "dependencies": {
     "@sentry/node": "^9.30.0",
     "bcryptjs": "^3.0.2",

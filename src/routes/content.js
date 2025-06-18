@@ -3,13 +3,11 @@ const express = require('express');
 const router = express.Router();
 const { asyncHandler, validateRequest } = require('../middleware/validation');
 const { body, param, query } = require('express-validator');
+const { createServiceHelpers } = require('./route-helpers');
 
 // Content management routes module - receives services from app.js
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService, validationSystem } = app.locals.services;
-    
-    // Rate limiter for content management endpoints
-    const contentLimiter = rateLimitService.createEndpointLimiter('content');
+    const { getServices, authMiddleware, rateLimitMiddleware, authWithRateLimit } = createServiceHelpers(app);
     
     // Validation schemas
     const contentSaveValidation = validateRequest([

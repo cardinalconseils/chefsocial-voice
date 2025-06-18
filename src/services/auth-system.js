@@ -11,6 +11,7 @@ class ChefSocialAuth {
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         this.db = new ChefSocialDatabase();
         this.jwtSecret = process.env.JWT_SECRET || 'chefsocial-super-secret-key-change-in-production';
+        this.initialized = false;
         
         // ChefSocial Complete Plan - Single pricing model with usage-based overages
         this.pricingPlan = {
@@ -85,6 +86,36 @@ class ChefSocialAuth {
                 description: 'Extra API calls'
             }
         };
+        
+        // Initialize the database connection asynchronously
+        this._initialize();
+    }
+
+    async _initialize() {
+        try {
+            await this.db.waitForInitialization();
+            this.initialized = true;
+            console.log('✅ Auth system fully initialized');
+        } catch (error) {
+            console.error('❌ Auth system initialization failed:', error);
+        }
+    }
+
+    async waitForInitialization() {
+        if (this.initialized) return;
+        
+        const maxWaitTime = 15000; // 15 seconds
+        const checkInterval = 100;
+        let waited = 0;
+        
+        while (!this.initialized && waited < maxWaitTime) {
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            waited += checkInterval;
+        }
+        
+        if (!this.initialized) {
+            throw new Error('Auth system initialization timeout');
+        }
     }
 
     // Registration with Stripe

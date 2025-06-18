@@ -6,10 +6,20 @@ const { body } = require('express-validator');
 
 // Authentication routes module - receives services from app.js
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService, validationSystem } = app.locals.services;
+    // Helper function to get services (handles async initialization)
+    const getServices = () => {
+        const services = app.locals.services;
+        if (!services.rateLimitService || !services.logger) {
+            throw new Error('Services not yet initialized');
+        }
+        return services;
+    };
     
-    // Rate limiter for authentication endpoints
-    const authLimiter = rateLimitService.createEndpointLimiter('auth');
+    // Helper function to get rate limiter (created on demand)
+    const getAuthLimiter = () => {
+        const { rateLimitService } = getServices();
+        return rateLimitService.createEndpointLimiter('auth');
+    };
     
     // Validation schemas
     const registerValidation = validateRequest([
@@ -32,9 +42,17 @@ module.exports = (app) => {
 
     // POST /api/auth/register
     router.post('/register', 
-        authLimiter,
+        (req, res, next) => {
+            try {
+                const authLimiter = getAuthLimiter();
+                authLimiter(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         registerValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const { email, name, password, restaurantName, planName, paymentMethodId } = req.body;
 
             const result = await authSystem.registerUser({
@@ -75,9 +93,17 @@ module.exports = (app) => {
 
     // POST /api/auth/login
     router.post('/login', 
-        authLimiter,
+        (req, res, next) => {
+            try {
+                const authLimiter = getAuthLimiter();
+                authLimiter(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         loginValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem, logger } = getServices();
             const { email, password } = req.body;
             const clientIP = req.ip || req.connection.remoteAddress;
             const userAgent = req.get('User-Agent');
@@ -111,7 +137,14 @@ module.exports = (app) => {
 
     // POST /api/auth/verify
     router.post('/verify', 
-        authSystem.authMiddleware(), 
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        }, 
         (req, res) => {
             res.json({
                 success: true,
@@ -128,9 +161,17 @@ module.exports = (app) => {
 
     // POST /api/auth/refresh
     router.post('/refresh', 
-        authLimiter,
+        (req, res, next) => {
+            try {
+                const authLimiter = getAuthLimiter();
+                authLimiter(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         tokenValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const { refreshToken } = req.body;
 
             const tokens = await authSystem.refreshAccessToken(refreshToken);
@@ -145,9 +186,17 @@ module.exports = (app) => {
 
     // POST /api/auth/logout
     router.post('/logout', 
-        authLimiter,
+        (req, res, next) => {
+            try {
+                const authLimiter = getAuthLimiter();
+                authLimiter(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         tokenValidation,
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const { refreshToken } = req.body;
 
             await authSystem.logoutUser(refreshToken);
@@ -161,12 +210,20 @@ module.exports = (app) => {
 
     // POST /api/auth/logout-all
     router.post('/logout-all', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         validateRequest([
             body('exceptCurrent').optional().isBoolean(),
             body('refreshToken').optional().isString()
         ]),
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const { exceptCurrent } = req.body;
             const currentRefreshToken = exceptCurrent ? req.body.refreshToken : null;
             
@@ -182,8 +239,16 @@ module.exports = (app) => {
 
     // GET /api/auth/sessions
     router.get('/sessions', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const sessions = await authSystem.getUserSessions(req.userId);
             
             res.json({
@@ -196,8 +261,16 @@ module.exports = (app) => {
 
     // GET /api/auth/security-status
     router.get('/security-status', 
-        authSystem.authMiddleware(),
+        (req, res, next) => {
+            try {
+                const { authSystem } = getServices();
+                authSystem.authMiddleware()(req, res, next);
+            } catch (error) {
+                res.status(503).json({ success: false, error: 'Service initializing', message: error.message });
+            }
+        },
         asyncHandler(async (req, res) => {
+            const { authSystem } = getServices();
             const securityStatus = await authSystem.getSecurityStatus(req.userId);
             
             res.json({
@@ -207,33 +280,40 @@ module.exports = (app) => {
         })
     );
 
-    // Error handling middleware for auth routes
+        // Error handling middleware for auth routes
     router.use((error, req, res, next) => {
-        // Log authentication errors
-        if (error.message && error.message.includes('registration')) {
-            logger.logSecurityEvent(
-                'registration_failed',
-                `Registration attempt failed: ${error.message}`,
-                'medium',
-                {
-                    email: req.body?.email,
-                    ipAddress: req.ip,
-                    userAgent: req.get('User-Agent'),
-                    error: error.message
-                }
-            );
-        } else if (error.message && error.message.includes('login')) {
-            logger.logSecurityEvent(
-                'login_failed',
-                `Login attempt failed: ${error.message}`,
-                'high',
-                {
-                    email: req.body?.email,
-                    ipAddress: req.ip,
-                    userAgent: req.get('User-Agent'),
-                    error: error.message
-                }
-            );
+        try {
+            const { logger } = getServices();
+            
+            // Log authentication errors
+            if (error.message && error.message.includes('registration')) {
+                logger.logSecurityEvent(
+                    'registration_failed',
+                    `Registration attempt failed: ${error.message}`,
+                    'medium',
+                    {
+                        email: req.body?.email,
+                        ipAddress: req.ip,
+                        userAgent: req.get('User-Agent'),
+                        error: error.message
+                    }
+                );
+            } else if (error.message && error.message.includes('login')) {
+                logger.logSecurityEvent(
+                    'login_failed',
+                    `Login attempt failed: ${error.message}`,
+                    'high',
+                    {
+                        email: req.body?.email,
+                        ipAddress: req.ip,
+                        userAgent: req.get('User-Agent'),
+                        error: error.message
+                    }
+                );
+            }
+        } catch (serviceError) {
+            // If services aren't available, just log to console
+            console.error('❌ Auth error (services unavailable):', error.message);
         }
 
         // Handle authentication-specific errors

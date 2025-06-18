@@ -3,13 +3,11 @@ const express = require('express');
 const router = express.Router();
 const { asyncHandler, validateRequest } = require('../middleware/validation');
 const { body } = require('express-validator');
+const { createServiceHelpers } = require('./route-helpers');
 
 // Restaurant routes module - receives services from app.js
 module.exports = (app) => {
-    const { authSystem, logger, rateLimitService } = app.locals.services;
-    
-    // Rate limiter for restaurant endpoints
-    const restaurantLimiter = rateLimitService.createEndpointLimiter('restaurant');
+    const { getServices, authMiddleware, rateLimitMiddleware, authWithRateLimit } = createServiceHelpers(app);
     
     // Validation schemas
     const restaurantProfileValidation = validateRequest([

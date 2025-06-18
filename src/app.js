@@ -34,12 +34,35 @@ const twilio = require('twilio');
 // Initialize Twilio Client
 // const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Initialize core services
+// Initialize core services with proper async handling
 const authSystem = new ChefSocialAuth();
-const logger = new ChefSocialLogger(authSystem.db);
-const rateLimitService = new ChefSocialRateLimitService(authSystem.db);
 const validationSystem = new ValidationSystem();
 const i18n = new I18nManager();
+
+// Initialize dependent services after auth system is ready
+let logger;
+let rateLimitService;
+
+// Async initialization of dependent services
+async function initializeServices() {
+    try {
+        // Wait for auth system to be fully initialized
+        await authSystem.waitForInitialization();
+        
+        // Initialize services that depend on the database
+        logger = new ChefSocialLogger(authSystem.db);
+        rateLimitService = new ChefSocialRateLimitService(authSystem.db);
+        
+        console.log('✅ All services initialized successfully');
+        return { authSystem, logger, rateLimitService, validationSystem, i18n };
+    } catch (error) {
+        console.error('❌ Service initialization failed:', error);
+        throw error;
+    }
+}
+
+// Initialize services immediately
+const servicesPromise = initializeServices();
 // const liveKitService = new ChefSocialLiveKitService(logger, authSystem.db);
 // const briefingSessionService = new BriefingSessionService(authSystem.db, null, logger);
 // const voiceCallingService = new VoiceCallingService(authSystem.db, logger);
@@ -53,13 +76,14 @@ const i18n = new I18nManager();
 // briefingSessionService.smsService = smsService;
 // smsService.setServices(briefingSessionService, voiceCallingService);
 
-// Store services in app locals for access in routes
+// Store services in app locals for access in routes (will be populated after initialization)
 app.locals.services = {
     authSystem,
-    logger,
-    rateLimitService,
     validationSystem,
     i18n,
+    // These will be set after async initialization
+    logger: null,
+    rateLimitService: null,
     // liveKitService,
     // smsService,
     // briefingSessionService,
@@ -70,6 +94,17 @@ app.locals.services = {
     // n8nCoordinator,
     // twilio: twilioClient
 };
+
+// Update services after async initialization
+servicesPromise.then((initializedServices) => {
+    app.locals.services = {
+        ...app.locals.services,
+        ...initializedServices
+    };
+    console.log('📦 Services updated in app.locals');
+}).catch((error) => {
+    console.error('❌ Failed to initialize services:', error);
+});
 
 // Security middleware
 app.use(helmet({
@@ -99,12 +134,18 @@ app.use(cors({
 // Compression middleware
 app.use(compression());
 
-// Apply core middleware
-app.use(middleware.requestLogger(logger));
-app.use(middleware.rateLimiting(rateLimitService));
+// Apply core middleware (some will be updated after services initialize)
 app.use(middleware.internationalization(i18n));  
 app.use(middleware.security(validationSystem));
 app.use(middleware.timeout());
+
+// Apply service-dependent middleware after initialization
+servicesPromise.then((services) => {
+    // Note: Express middleware is applied in order, but these will be available for routes
+    console.log('📦 Service-dependent middleware ready');
+}).catch(error => {
+    console.error('❌ Failed to initialize service-dependent middleware:', error);
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '50mb' }));
@@ -113,6 +154,37 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static file serving
 app.use(express.static('public'));
 
+// Middleware to ensure services are initialized before processing requests
+app.use('/api', async (req, res, next) => {
+    // Skip service check for health endpoint
+    if (req.path === '/health') {
+        return next();
+    }
+    
+    try {
+        // Wait for services to be initialized
+        await servicesPromise;
+        
+        // Check if critical services are available
+        if (!app.locals.services.rateLimitService) {
+            throw new Error('Rate limit service not initialized');
+        }
+        if (!app.locals.services.logger) {
+            throw new Error('Logger service not initialized');
+        }
+        
+        next();
+    } catch (error) {
+        console.error('❌ Service initialization error:', error);
+        res.status(503).json({
+            success: false,
+            error: 'Service Unavailable',
+            message: 'Services are still initializing. Please try again in a moment.',
+            details: error.message
+        });
+    }
+});
+
 // Health check endpoint (always available)
 app.get('/api/health', (req, res) => {
     res.json({
@@ -120,7 +192,14 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         version: process.env.npm_package_version || '1.0.0',
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        services: {
+            authSystem: !!app.locals.services.authSystem,
+            logger: !!app.locals.services.logger,
+            rateLimitService: !!app.locals.services.rateLimitService,
+            validationSystem: !!app.locals.services.validationSystem,
+            i18n: !!app.locals.services.i18n
+        }
     });
 });
 

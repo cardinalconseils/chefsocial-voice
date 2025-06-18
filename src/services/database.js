@@ -1,12 +1,30 @@
 // ChefSocial Database Setup and Management
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 class ChefSocialDatabase {
     constructor() {
-        this.dbPath = path.join(__dirname, 'chefsocial.db');
+        // Handle database path for different environments
+        this.dbPath = this.getDBPath();
         this.db = null;
+        this.initialized = false;
         this.init();
+    }
+
+    // Get appropriate database path for environment
+    getDBPath() {
+        // In serverless environments, use /tmp for writable storage
+        if (this.isServerlessEnvironment()) {
+            const tmpDbPath = '/tmp/chefsocial.db';
+            console.log('📦 Serverless environment - using temporary database:', tmpDbPath);
+            return tmpDbPath;
+        }
+        
+        // For local development, use the project root
+        const localDbPath = path.join(process.cwd(), 'chefsocial.db');
+        console.log('🏠 Local environment - using project database:', localDbPath);
+        return localDbPath;
     }
 
     // Check if running in serverless environment (Vercel, AWS Lambda, etc.)
@@ -19,20 +37,61 @@ class ChefSocialDatabase {
         );
     }
 
-    init() {
-        this.db = new sqlite3.Database(this.dbPath, (err) => {
-            if (err) {
-                console.error('❌ Database connection error:', err);
-            } else {
-                console.log('✅ Connected to ChefSocial database');
-                // Only create tables if not in serverless environment
-                if (!this.isServerlessEnvironment()) {
-                    this.createTables();
+    async init() {
+        return new Promise((resolve, reject) => {
+            try {
+                // In serverless environments, create database in memory if /tmp fails
+                if (this.isServerlessEnvironment()) {
+                    // Try to create in-memory database as fallback
+                    this.db = new sqlite3.Database(':memory:', (err) => {
+                        if (err) {
+                            console.error('❌ In-memory database creation error:', err);
+                            reject(err);
+                        } else {
+                            console.log('🧠 Connected to in-memory ChefSocial database (serverless mode)');
+                            this.createTables();
+                            this.initialized = true;
+                            resolve();
+                        }
+                    });
                 } else {
-                    console.log('📦 Serverless environment detected - skipping table creation');
+                    // Local environment - use file database
+                    this.db = new sqlite3.Database(this.dbPath, (err) => {
+                        if (err) {
+                            console.error('❌ Database connection error:', err);
+                            reject(err);
+                        } else {
+                            console.log('✅ Connected to ChefSocial database');
+                            this.createTables();
+                            this.initialized = true;
+                            resolve();
+                        }
+                    });
                 }
+            } catch (error) {
+                console.error('❌ Database initialization error:', error);
+                reject(error);
             }
         });
+    }
+
+    // Wait for database to be initialized
+    async waitForInitialization() {
+        if (this.initialized) return;
+        
+        // Wait up to 10 seconds for initialization
+        const maxWaitTime = 10000;
+        const checkInterval = 100;
+        let waited = 0;
+        
+        while (!this.initialized && waited < maxWaitTime) {
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            waited += checkInterval;
+        }
+        
+        if (!this.initialized) {
+            throw new Error('Database initialization timeout');
+        }
     }
 
     createTables() {

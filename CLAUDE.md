@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ChefSocial Voice is a full-stack Node.js application that provides AI-powered voice conversation tools for restaurant marketing. The codebase consists of a main monolithic backend application and a separate Next.js admin panel.
+ChefSocial Voice is a full-stack Node.js application that provides AI-powered voice conversation tools for restaurant marketing. The codebase consists of a modular backend application (with files limited to 300 lines maximum for maintainability) and a separate Next.js admin panel.
 
 ## Development Commands
 
@@ -15,7 +15,7 @@ npm run dev
 # or
 npm start
 
-# Both commands run: node src/server.js
+# Both commands run: node simple_voice_backend.js
 # Server runs on port 3001 by default
 ```
 
@@ -71,7 +71,7 @@ The application follows a modular service-based architecture where each major fe
 - **LoggingSystem** (`logging-system.js`) - Winston-based logging with database persistence
 
 ### Main Server Structure
-The main server (`src/server.js`) initializes all services and provides:
+The main server (`simple_voice_backend.js`) initializes all services and provides:
 - RESTful API endpoints for voice processing
 - WebSocket connections for real-time communication
 - Admin API endpoints for user management

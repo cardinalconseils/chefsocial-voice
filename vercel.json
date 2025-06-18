@@ -6,23 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "marketing-site/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "auth/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "dashboard/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "apps/**/*",
+      "src": "**/*",
       "use": "@vercel/static"
     }
   ],

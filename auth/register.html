@@ -11,18 +11,7 @@
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
-    <div class="header">
-        <div class="nav">
-            <a href="/" class="logo">
-                <span class="logo-icon">👨‍🍳</span>
-                ChefSocial Voice
-            </a>
-            <div class="language-toggle">
-                <button class="lang-btn active" data-lang="en">EN</button>
-                <button class="lang-btn" data-lang="fr">FR</button>
-            </div>
-        </div>
-    </div>
+    <!-- Header will be injected by header component -->
 
     <div class="main-content">
         <div class="container">
@@ -133,6 +122,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="/dashboard/shared/header.js"></script>
     <script src="/auth/shared/js/i18n.js"></script>
     <script src="/auth/shared/js/auth-handler.js"></script>
     <script>

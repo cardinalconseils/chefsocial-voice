@@ -8,8 +8,14 @@
 
 ChefSocial consists of **4 main components**:
 
-### 1. 🎯 **User Dashboard** (Currently Live)
+### 1. 🏠 **Homepage (Marketing Site)** (Currently Live)
 - **URL**: https://chefsocial-voice.vercel.app/
+- **Purpose**: Public-facing marketing website and landing page
+- **Features**: Product overview, demos, pricing, registration
+- **Status**: ✅ **LIVE** - Marketing site serves as homepage
+
+### 1.5. 📊 **User Dashboard** (Currently Live)  
+- **URL**: https://chefsocial-voice.vercel.app/dashboard/
 - **Purpose**: Main user interface for restaurant owners
 - **Features**: Session management, content creation, analytics
 - **Status**: ✅ **LIVE** - Dashboard interface accessible
@@ -40,10 +46,11 @@ ChefSocial consists of **4 main components**:
 
 ### Main Application URLs
 ```
-🏠 Main Dashboard:     https://chefsocial-voice.vercel.app/
-🔧 Admin Panel:        https://chefsocial-voice.vercel.app/admin/
-🚀 Marketing Site:     https://chefsocial-voice.vercel.app/marketing/ (NOT WORKING)
-🎮 Voice Apps:         https://chefsocial-voice.vercel.app/apps/
+🏠 Homepage (Marketing): https://chefsocial-voice.vercel.app/
+📊 User Dashboard:       https://chefsocial-voice.vercel.app/dashboard/
+🔧 Admin Panel:          https://chefsocial-voice.vercel.app/admin/
+🚀 Marketing Pages:      https://chefsocial-voice.vercel.app/marketing/
+🎮 Voice Apps:           https://chefsocial-voice.vercel.app/apps/
 ```
 
 ### Authentication URLs
@@ -197,13 +204,14 @@ curl -I https://chefsocial-voice.vercel.app/admin/
 
 ## 🔄 Deployment Status Summary
 
-| Component | Status | URL | Issues |
-|-----------|--------|-----|--------|
-| User Dashboard | ✅ Live | `/` | None |
+| Component | Status | URL | Notes |
+|-----------|--------|-----|-------|
+| Homepage (Marketing) | ✅ Live | `/` | Landing page |
+| User Dashboard | ✅ Live | `/dashboard/` | Main app interface |
 | Admin Panel | ✅ Live | `/admin/` | Login: admin@chefsocial.io / admin123 |
-| Marketing Site | ✅ Live | `/marketing/` | None |
-| Backend API | ✅ Live | `/api/` | Working |
-| Authentication | ✅ Live | `/auth/` | Working |
-| Voice Apps | ✅ Live | `/apps/` | Working |
+| Marketing Pages | ✅ Live | `/marketing/` | Additional marketing content |
+| Backend API | ✅ Live | `/api/` | All endpoints working |
+| Authentication | ✅ Live | `/auth/` | Login/register pages |
+| Voice Apps | ✅ Live | `/apps/` | Voice interaction tools |
 
 **Overall Platform Status**: 🟢 **Fully Functional** - All components deployed and working! 

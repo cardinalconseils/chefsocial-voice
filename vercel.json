@@ -64,6 +64,10 @@
       "destination": "/auth/login.html"
     },
     {
+      "source": "/auth",
+      "destination": "/auth/login.html"
+    },
+    {
       "source": "/auth/(.*)",
       "destination": "/auth/$1"
     },

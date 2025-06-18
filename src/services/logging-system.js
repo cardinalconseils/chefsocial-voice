@@ -175,6 +175,16 @@ class ChefSocialLogger {
         return uuidv4().substr(0, 8);
     }
 
+    // Check if running in serverless environment (Vercel, AWS Lambda, etc.)
+    isServerlessEnvironment() {
+        return !!(
+            process.env.VERCEL || 
+            process.env.AWS_LAMBDA_FUNCTION_NAME || 
+            process.env.FUNCTION_NAME ||
+            process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV
+        );
+    }
+
     // Enhanced logging methods with context
     info(message, context = {}) {
         this.logger.info(message, context);
@@ -230,8 +240,8 @@ class ChefSocialLogger {
             category: 'user_action'
         });
 
-        // Store in database if available
-        if (this.db) {
+        // Store in database if available and not in serverless environment
+        if (this.db && !this.isServerlessEnvironment()) {
             try {
                 await this.db.logAuditEvent({
                     userId,
@@ -272,8 +282,8 @@ class ChefSocialLogger {
             priority: 'high'
         });
 
-        // Store in database
-        if (this.db) {
+        // Store in database if not in serverless environment
+        if (this.db && !this.isServerlessEnvironment()) {
             try {
                 await this.db.logAuditEvent({
                     userId: null,

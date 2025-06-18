@@ -98,9 +98,9 @@ app.use(compression());
 
 // Apply core middleware
 app.use(middleware.requestLogger(logger));
-app.use(middleware.rateLimiting(rateLimitService));
-app.use(middleware.internationalization(i18n));
-app.use(middleware.security(validationSystem));
+// app.use(middleware.rateLimiting(rateLimitService));
+// app.use(middleware.internationalization(i18n));  
+// app.use(middleware.security(validationSystem));
 app.use(middleware.timeout());
 
 // Body parsing middleware
@@ -125,7 +125,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', routes(app));
 
 // Set up N8N callback endpoints
-n8nCoordinator.createN8NEndpoints(app);
+// n8nCoordinator.createN8NEndpoints(app);
 
 // Global error handling middleware (must be last)
 app.use(middleware.errorHandler(logger));
@@ -148,6 +148,7 @@ app.use('*', (req, res) => {
 });
 
 // Schedule periodic cleanup tasks
+/*
 setInterval(() => {
     try {
         smsService.cleanupExpiredWorkflows();
@@ -156,6 +157,7 @@ setInterval(() => {
         logger.error('Scheduled cleanup failed', error, { task: 'sms_workflows' });
     }
 }, 60 * 60 * 1000); // 1 hour
+*/
 
 // Log application startup
 logger.info('ChefSocial Voice AI application initialized', {

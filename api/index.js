@@ -69,22 +69,18 @@ app.get('/api/languages', (req, res) => {
     });
 });
 
-// Temporary auth endpoints (simplified)
-app.post('/api/auth/login', (req, res) => {
-    res.status(503).json({
-        success: false,
-        error: 'Service Unavailable',
-        message: 'Authentication service is being migrated to microservices architecture',
-        temporaryStatus: 'under-maintenance'
-    });
-});
-
-app.post('/api/auth/register', (req, res) => {
-    res.status(503).json({
-        success: false,
-        error: 'Service Unavailable', 
-        message: 'Registration service is being migrated to microservices architecture',
-        temporaryStatus: 'under-maintenance'
+// Redirect auth requests to dedicated microservice
+app.use('/api/auth*', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Authentication service is now available as a dedicated microservice',
+        redirectTo: '/api/auth',
+        availableEndpoints: [
+            'POST /api/auth/register',
+            'POST /api/auth/login',
+            'GET /api/auth/verify'
+        ],
+        note: 'Authentication requests are handled by a separate serverless function'
     });
 });
 

@@ -2,45 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/server.js",
+      "src": "src/minimal-server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/auth/(.*)",
-      "dest": "/auth/$1"
-    },
-    {
-      "src": "/apps/(.*)",
-      "dest": "/apps/$1"
-    },
-    {
-      "src": "/dashboard/(.*)",
-      "dest": "/dashboard/$1"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/admin-panel/out/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "src/server.js"
-    },
-    {
-      "src": "/favicon\\.(ico|svg)",
-      "dest": "/public/favicon.$1"
-    },
-    {
-      "src": "/cleanup-sw\\.js",
-      "dest": "/public/cleanup-sw.js"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/src/server.js"
+      "dest": "src/minimal-server.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

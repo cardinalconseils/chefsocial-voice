@@ -1,93 +1,14 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/auth/(.*)",
-      "destination": "/api/auth.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/_next/(.*)",
-      "destination": "/public/admin/_next/$1"
-    },
-    {
-      "source": "/admin/_next/(.*)",
-      "destination": "/public/admin/_next/$1"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/public/admin/$1"
-    },
-    {
-      "source": "/admin",
-      "destination": "/public/admin/index.html"
-    },
-    {
-      "source": "/demo.html",
-      "destination": "/marketing-site/pages/demo.html"
-    },
-    {
-      "source": "/demo",
-      "destination": "/marketing-site/pages/demo.html"
-    },
-    {
-      "source": "/register.html",
-      "destination": "/auth/register.html"
-    },
-    {
-      "source": "/register",
-      "destination": "/auth/register.html"
-    },
-    {
-      "source": "/login.html",
-      "destination": "/auth/login.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/auth/login.html"
-    },
-    {
-      "source": "/auth",
-      "destination": "/auth/login.html"
-    },
-    {
-      "source": "/auth/(.*)",
-      "destination": "/auth/$1"
-    },
-    {
-      "source": "/dashboard/(.*)",
-      "destination": "/dashboard/$1"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/dashboard/index.html"
-    },
-    {
-      "source": "/apps/(.*)",
-      "destination": "/apps/$1"
-    },
-    {
-      "source": "/marketing/(.*)",
-      "destination": "/marketing-site/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/marketing-site/pages/index.html"
-    }
-  ],
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "env": {
+    "JWT_SECRET": "@jwt_secret",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key",
+    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key"
+  },
   "headers": [
     {
       "source": "/api/(.*)",
@@ -105,65 +26,6 @@
           "value": "Content-Type, Authorization"
         }
       ]
-    },
-    {
-      "source": "/_next/static/chunks/(.*)\\.js",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/javascript; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/admin/_next/static/(.*)\\.js",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/javascript; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)\\.js",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/javascript; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)\\.css",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/css; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "public": true,
-  "github": {
-    "silent": true
-  }
+  ]
 } 

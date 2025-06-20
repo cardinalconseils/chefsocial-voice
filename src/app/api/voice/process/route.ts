@@ -6,128 +6,71 @@ import {
   VoiceProcessingAPIResponse, 
   ContentGenerationRequest,
   RestaurantContext,
-  SocialPlatform 
+  SocialPlatform,
+  TranscriptionResult
 } from '@/types/voice'
+import { writeFile } from 'fs/promises'
+import { join } from 'path'
+import { transcribeAudioWithWhisper } from '@/lib/whisper-integration'
 
 /**
  * POST /api/voice/process
- * Process voice recording: transcribe audio and generate social media content
+ * Handles voice recording upload and transcription.
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   const requestId = `voice_${Date.now()}_${Math.random().toString(36).substring(7)}`
 
   try {
-    // Parse form data
     const formData = await request.formData()
     const audioFile = formData.get('audio') as File
-    const contextData = formData.get('context') as string
-    const platformsData = formData.get('platforms') as string
-    const configData = formData.get('config') as string
 
-    // Validate required fields
     if (!audioFile) {
       return NextResponse.json({
         success: false,
-        error: {
-          code: 'MISSING_AUDIO',
-          message: 'Audio file is required'
-        },
-        metadata: {
-          request_id: requestId,
-          processing_time: Date.now() - startTime
-        }
-      } as VoiceProcessingAPIResponse, { status: 400 })
+        error: { code: 'MISSING_AUDIO', message: 'Audio file is required' },
+        metadata: { request_id: requestId, processing_time: Date.now() - startTime }
+      }, { status: 400 })
     }
 
-    // Validate audio file
     const audioValidation = validateAudioFile(audioFile)
     if (!audioValidation.valid) {
       return NextResponse.json({
         success: false,
-        error: {
-          code: 'INVALID_AUDIO',
-          message: 'Invalid audio file',
-          details: audioValidation.errors
-        },
-        metadata: {
-          request_id: requestId,
-          processing_time: Date.now() - startTime
-        }
-      } as VoiceProcessingAPIResponse, { status: 400 })
+        error: { code: 'INVALID_AUDIO', message: 'Invalid audio file', details: audioValidation.errors },
+        metadata: { request_id: requestId, processing_time: Date.now() - startTime }
+      }, { status: 400 })
     }
 
-    // Parse context and configuration
-    const context: RestaurantContext = contextData ? JSON.parse(contextData) : getDefaultContext()
-    const platforms: SocialPlatform[] = platformsData ? JSON.parse(platformsData) : getDefaultPlatforms()
-    const config = configData ? JSON.parse(configData) : {}
+    // Save the file to a temporary directory
+    const bytes = await audioFile.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const tempFilePath = join(process.cwd(), 'tmp', `${requestId}-${audioFile.name}`)
+    await writeFile(tempFilePath, buffer)
+    console.log(`Uploaded file saved to: ${tempFilePath}`)
 
-    // Initialize AI content generator
-    const aiGenerator = new AIContentGenerator()
-
-    // Step 1: Transcribe audio
-    console.log('Starting transcription...')
-    const transcription = await aiGenerator.transcribeAudio(audioFile)
+    // Step 2: Transcribe the audio file
+    const transcription = await transcribeAudioWithWhisper(tempFilePath);
     
-    if (!transcription.text || transcription.text.trim().length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'TRANSCRIPTION_EMPTY',
-          message: 'No speech detected in audio file'
-        },
-        metadata: {
-          request_id: requestId,
-          processing_time: Date.now() - startTime
-        }
-      } as VoiceProcessingAPIResponse, { status: 400 })
-    }
-
-    // Step 2: Generate content for each platform
-    console.log('Generating content for platforms...')
-    const contentRequest: ContentGenerationRequest = {
-      transcript: transcription.text,
-      context,
-      platforms,
-      contentType: config.contentType || 'dish_description',
-      mood: config.mood || 'excited',
-      includeHashtags: config.includeHashtags ?? true,
-      includeEmojis: config.includeEmojis ?? true,
-      maxLength: config.maxLength
-    }
-
-    const generatedContent = await aiGenerator.generateContent(contentRequest)
-
-    if (generatedContent.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'CONTENT_GENERATION_FAILED',
-          message: 'Failed to generate content for any platform'
-        },
-        metadata: {
-          request_id: requestId,
-          processing_time: Date.now() - startTime
-        }
-      } as VoiceProcessingAPIResponse, { status: 500 })
-    }
-
-    // Step 3: Calculate quality metrics
+    // Persist transcription result to a file (acting as a temporary DB)
+    const transcriptionLogPath = join(process.cwd(), 'tmp', `${requestId}-transcription.json`);
+    await writeFile(transcriptionLogPath, JSON.stringify(transcription, null, 2));
+    console.log(`Transcription result saved to: ${transcriptionLogPath}`);
+    
     const processingTime = Date.now() - startTime
-    const qualityMetrics = calculateQualityMetrics(transcription, generatedContent, processingTime)
-
-    // Step 4: Build response
+    
     const result: VoiceProcessingResult = {
       success: true,
       transcript: transcription,
-      generatedContent,
+      generatedContent: [], // To be implemented in Task B3
       processingTime,
-      qualityMetrics
-    }
-
-    // Check if processing took too long (>30 seconds)
-    if (processingTime > 30000) {
-      console.warn(`Voice processing took ${processingTime}ms - exceeds 30s target`)
+      qualityMetrics: { // To be replaced with real metrics
+        transcription_accuracy: transcription.confidence,
+        content_relevance: 0,
+        brand_alignment: 0,
+        engagement_potential: 0,
+        processing_speed: processingTime
+      }
     }
 
     return NextResponse.json({
@@ -136,27 +79,26 @@ export async function POST(request: NextRequest) {
       metadata: {
         request_id: requestId,
         processing_time: processingTime,
-        cost: estimateProcessingCost(audioFile, generatedContent.length)
+        message: "File transcribed successfully.",
+        filePath: tempFilePath,
+        fileSize: audioFile.size
       }
-    } as VoiceProcessingAPIResponse)
+    })
 
   } catch (error) {
     console.error('Voice processing error:', error)
     
-    const errorResponse: VoiceProcessingAPIResponse = {
+    return NextResponse.json({
       success: false,
       error: {
         code: 'PROCESSING_ERROR',
         message: error instanceof Error ? error.message : 'Unknown processing error',
-        details: process.env.NODE_ENV === 'development' ? error : undefined
       },
       metadata: {
         request_id: requestId,
         processing_time: Date.now() - startTime
       }
-    }
-
-    return NextResponse.json(errorResponse, { status: 500 })
+    }, { status: 500 })
   }
 }
 

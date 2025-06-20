@@ -206,7 +206,7 @@ export default function AdminPanel() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-white/90">Voice session completed</p>
-                  <p className="text-white/60 text-sm">Generated content for "Truffle Pasta Special"</p>
+                  <p className="text-white/60 text-sm">Generated content for &quot;Truffle Pasta Special&quot;</p>
                 </div>
                 <span className="text-white/60 text-sm">1 hour ago</span>
               </div>

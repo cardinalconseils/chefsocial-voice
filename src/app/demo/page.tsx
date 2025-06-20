@@ -25,7 +25,7 @@ function ContentDisplay({ content, transcript, processingTime }: ContentDisplayP
       <div className="bg-white/10 rounded-lg p-6">
         <h3 className="text-xl font-bold text-white mb-3">🎤 What You Said</h3>
         <p className="text-white/90 text-lg leading-relaxed italic">
-          "{transcript}"
+          &quot;{transcript}&quot;
         </p>
         <div className="text-white/60 text-sm mt-2">
           Processed in {processingTime}ms
@@ -333,19 +333,19 @@ export default function DemoPage() {
               <div className="bg-white/10 rounded-lg p-6">
                 <h3 className="font-bold text-white mb-3">🍝 Perfect for Pasta Dishes</h3>
                 <p className="text-white/80 italic">
-                  "This is our signature truffle carbonara - we use fresh house-made pasta, 
+                  &quot;This is our signature truffle carbonara - we use fresh house-made pasta, 
                   real Pecorino Romano, and shave black truffles right at the table. 
                   The sauce is silky, the pasta has perfect bite, and that truffle aroma 
-                  just fills the whole dining room."
+                  just fills the whole dining room.&quot;
                 </p>
               </div>
               <div className="bg-white/10 rounded-lg p-6">
                 <h3 className="font-bold text-white mb-3">🥩 Great for Meat Dishes</h3>
                 <p className="text-white/80 italic">
-                  "Our dry-aged ribeye is marbled beautifully and grilled to perfection. 
+                  &quot;Our dry-aged ribeye is marbled beautifully and grilled to perfection. 
                   We serve it with roasted garlic butter, grilled asparagus, and these 
                   amazing truffle fingerling potatoes. Every bite is incredibly tender 
-                  and packed with flavor."
+                  and packed with flavor.&quot;
                 </p>
               </div>
             </div>

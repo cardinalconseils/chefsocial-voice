@@ -265,7 +265,7 @@ export class TelephonyIntegration {
       console.log(`Handling incoming call from ${callData.phoneNumber}`)
       
       // Set up call handling logic
-      this.liveKitProcessor.on('recording_stopped', async (data) => {
+      this.liveKitProcessor.on('recording_stopped', async (data: any) => {
         // Process the recorded audio when call ends
         await this.processCallRecording(data)
       })

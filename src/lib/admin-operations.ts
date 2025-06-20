@@ -292,7 +292,7 @@ export class AdminOperations {
         ORDER BY date
       `;
 
-      const result = await db.query(query);
+      const result = await getPool().query(query);
       return result.rows.map(row => ({
         date: row.date,
         users: parseInt(row.users)
@@ -317,7 +317,7 @@ export class AdminOperations {
         ORDER BY count DESC
       `;
 
-      const result = await db.query(query);
+      const result = await getPool().query(query);
       return result.rows.map(row => ({
         status: row.status,
         count: parseInt(row.count)
@@ -355,7 +355,7 @@ export class AdminOperations {
         LIMIT $2
       `;
 
-      const result = await db.query(query, [`%${searchTerm}%`, limit]);
+      const result = await getPool().query(query, [`%${searchTerm}%`, limit]);
       return result.rows.map(row => db.mapRowToUser(row));
     } catch (error) {
       console.error('Error searching users:', error);

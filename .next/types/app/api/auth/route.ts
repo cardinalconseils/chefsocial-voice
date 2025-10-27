@@ -1,4 +1,4 @@
-// File: /Users/pierre-marccardinal/Documents/chefsocial-voice/src/app/api/auth/route.ts
+// File: /home/runner/work/chefsocial-voice/chefsocial-voice/src/app/api/auth/route.ts
 import * as entry from '../../../../../src/app/api/auth/route.js'
 import type { NextRequest } from 'next/server.js'
 

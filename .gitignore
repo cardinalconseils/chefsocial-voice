@@ -9,3 +9,8 @@ node_modules/
 uploads/
 *.db
 .vercel
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

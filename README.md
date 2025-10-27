@@ -94,6 +94,31 @@ STRIPE_PUBLISHABLE_KEY=your-stripe-publishable
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run test:e2e` - Run end-to-end tests with Playwright
+- `npm run test:e2e:ui` - Run Playwright tests in UI mode
+- `npm run test:e2e:headed` - Run Playwright tests in headed mode (visible browser)
+- `npm run test:e2e:debug` - Debug Playwright tests
+
+### Testing
+
+The project uses Playwright for end-to-end testing. Tests are located in the `e2e/` directory.
+
+To run tests:
+```bash
+# Run all e2e tests
+npm run test:e2e
+
+# Run tests in UI mode (interactive)
+npm run test:e2e:ui
+
+# Run tests with visible browser
+npm run test:e2e:headed
+
+# Debug tests
+npm run test:e2e:debug
+```
+
+Tests run automatically on pull requests via GitHub Actions. All tests must pass before merging.
 
 ### Database
 
